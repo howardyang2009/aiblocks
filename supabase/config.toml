@@ -1,0 +1,11 @@
+# Minimal Supabase project config. Run `supabase init` to regenerate a full
+# one, or link an existing project with `supabase link --project-ref <ref>`.
+project_id = "aiblocks"
+
+[db]
+port = 54322
+
+[storage]
+# Bucket for component zip files. Keep it PRIVATE — downloads are served
+# via short-lived signed URLs after an entitlement check (see the download route).
+enabled = true

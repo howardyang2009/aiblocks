@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ----------------------------------------------------------
+   AiBlocks design tokens
+   Identity: a developer marketplace for modular AI building
+   blocks. The signature is a literal "assembly grid" of blocks;
+   metadata (counts, prices, tags) is set in monospace because
+   the content itself is data. Restraint everywhere else.
+   ---------------------------------------------------------- */
+:root {
+  --ink: #15161b;        /* primary text */
+  --paper: #f7f7f9;      /* page background */
+  --surface: #ffffff;    /* cards, panels */
+  --muted: #5b606b;      /* secondary text */
+  --subtle: #9aa0aa;     /* tertiary text, captions */
+  --line: #e6e7eb;       /* borders, hairlines */
+  --accent: #5b3df5;     /* the one bold color — used sparingly */
+  --accent-ink: #ffffff; /* text on accent */
+  --free: #0e9f6e;       /* "free" price signal */
+}
+
+* { border-color: var(--line); }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Eyebrow / data label — monospace, tracked out, uppercase */
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--subtle);
+}
+
+/* The signature: an assembly grid of small blocks */
+.assembly-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
+}
+.assembly-grid > i {
+  aspect-ratio: 1 / 1;
+  border-radius: 3px;
+  background: var(--line);
+  display: block;
+}
+.assembly-grid > i.on { background: var(--ink); }
+.assembly-grid > i.hot { background: var(--accent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .assembly-grid > i.hot { animation: settle 2.4s ease-in-out infinite alternate; }
+  @keyframes settle { from { opacity: 0.55; } to { opacity: 1; } }
+}
+
+/* Focus visibility floor */
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
