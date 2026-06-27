@@ -11,3 +11,26 @@ export function formatPrice(cents: number, currency = "usd"): string {
 export function normalizeTag(raw: string): string {
   return raw.trim().toLowerCase();
 }
+
+// Turn a component name into a URL-friendly slug fragment.
+export function slugify(s: string): string {
+  return (
+    s
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "component"
+  );
+}
+
+// Split a comma/space separated string into a clean, deduped, lowercased list.
+export function parseList(input: string | string[] | undefined): string[] {
+  const raw = Array.isArray(input) ? input.join(",") : input ?? "";
+  const seen = new Set<string>();
+  for (const part of raw.split(/[,\n]/)) {
+    const v = part.trim().toLowerCase();
+    if (v) seen.add(v);
+  }
+  return [...seen];
+}
