@@ -1,4 +1,4 @@
-# AiBlocks
+# [AiBlocks](https://aiblocks-six.vercel.app/)
 
 > An open marketplace for reusable AI components — prompts, skills, agents, MCP servers, CLAUDE.md configs, hooks, and more. Cross-ecosystem (Claude, GPT, Gemini, Deepseek), community-driven, with optional paid downloads.
 
