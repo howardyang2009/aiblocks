@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { ensureProfile } from "@/lib/clerk";
 import { createServiceClient } from "@/lib/supabase/server";
 
 // Toggle a star for the current user. The star_count trigger keeps
@@ -8,12 +9,10 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   const { userId } = auth();
   if (!userId) return NextResponse.json({ error: "Sign in to star." }, { status: 401 });
 
+  // Bootstrap the profile on first action.
+  const profile = await ensureProfile();
   const supabase = createServiceClient();
-  const { data: profile } = await supabase
-    .from("profiles").select("id").eq("clerk_user_id", userId).single();
-  if (!profile) return NextResponse.json({ error: "No profile." }, { status: 403 });
 
-  // Is it already starred?
   const { data: existing } = await supabase
     .from("stars").select("user_id").eq("user_id", profile.id).eq("component_id", params.id).maybeSingle();
 
