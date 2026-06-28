@@ -1,7 +1,12 @@
 import Link from "next/link";
+import { createServiceClient } from "@/lib/supabase/server";
+import { ComponentCard } from "@/components/component-card";
+import type { ComponentSummary } from "@/types/database";
 
 // Home. The hero opens with the most characteristic thing in this product's
 // world: components snapping into an assembly. The grid IS the brand.
+export const dynamic = "force-dynamic";
+
 const Pimary_TAGS = ["mcp-server", "claude-md", "agent", "hook", "prompt", "skill"];
 
 function AssemblyGrid() {
@@ -18,7 +23,16 @@ function AssemblyGrid() {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = createServiceClient();
+  const { data } = await supabase
+    .from("components")
+    .select("id, name, description, ecosystems, price_cents, currency, star_count, download_count")
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(6);
+  const latest = (data ?? []) as ComponentSummary[];
+
   return (
     <div className="mx-auto max-w-shell px-5">
       {/* Hero */}
@@ -72,6 +86,20 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Latest components — real data */}
+      {latest.length > 0 && (
+        <section className="py-12 border-t">
+          <div className="flex items-end justify-between">
+            <h2 className="font-display font-bold text-2xl">Latest components</h2>
+            <Link href="/browse" className="font-mono text-xs text-accent hover:underline">browse all →</Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+            {latest.map((c) => <ComponentCard key={c.id} c={c} />)}
+          </div>
+        </section>
+      )}
+
     </div>
   );
 }
