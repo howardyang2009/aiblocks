@@ -109,6 +109,7 @@ export default function PublishPage() {
     <div className="mx-auto max-w-shell px-5 py-10">
       <p className="eyebrow">Seller</p>
       <h1 className="font-display font-bold text-3xl mt-2">Publish a component</h1>
+      <a href="/docs/seller/publish" className="inline-block mt-2 text-accent text-sm hover:underline">New here? Read the publishing guide →</a>
 
       <div className="grid lg:grid-cols-2 gap-8 mt-8">
         {/* ---- Form ---- */}

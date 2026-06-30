@@ -17,6 +17,7 @@ export default function StripeOnboardingPage() {
         AiBlocks routes payments directly to your Stripe account with a 0%
         platform fee. Connect once to start selling paid components.
       </p>
+      <a href="/docs/seller/stripe" className="inline-block mt-3 text-accent text-sm hover:underline">Read the step-by-step onboarding guide →</a>
       <button onClick={connect} className="mt-6 rounded-block bg-ink text-paper px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors">
         Connect with Stripe
       </button>
