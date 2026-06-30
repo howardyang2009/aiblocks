@@ -56,10 +56,10 @@ Human-Led items from the delegation plan.
 
 ## Before launch (Diligence checklist)
 
-- [ ] Enable Row Level Security on every table and write policies (see schema notes)
+- [x] Enable Row Level Security on every table and write policies (see schema notes)
 - [ ] Wire Clerk → Supabase JWT so RLS can read `clerk_user_id`
-- [ ] Verify the Stripe webhook signature path end-to-end with a test purchase
-- [ ] Confirm the zip bucket is private and only reachable via signed URLs
+- [x] Verify the Stripe webhook signature path end-to-end with a test purchase
+- [x] Confirm the zip bucket is private and only reachable via signed URLs
 - [ ] Replace placeholder Terms / Privacy with reviewed legal copy
 - [ ] Generate real DB types: `npx supabase gen types typescript > types/database.ts`
 

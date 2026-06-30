@@ -6,7 +6,7 @@ export default function AboutPage() {
       <p className="text-muted mt-4 text-sm">
         AiBlocks is an open marketplace for reusable AI components across every
         major ecosystem. Anyone can publish; the community surfaces quality
-        through stars, downloads, and reviews. Replace this placeholder before launch.
+        through stars, downloads, and reviews.
       </p>
     </div>
   );
