@@ -15,6 +15,7 @@ export function Footer() {
         <nav className="flex flex-col gap-2 text-sm">
           <span className="eyebrow mb-1">About</span>
           <Link href="/about" className="text-muted hover:text-ink">About</Link>
+          <Link href="/contact" className="text-muted hover:text-ink">Contact</Link>
           <Link href="/terms" className="text-muted hover:text-ink">Terms</Link>
           <Link href="/privacy" className="text-muted hover:text-ink">Privacy</Link>
         </nav>

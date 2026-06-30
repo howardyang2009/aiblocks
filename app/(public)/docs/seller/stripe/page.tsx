@@ -70,7 +70,7 @@ export default function StripeGuidePage() {
       <Guide
         eyebrow="Seller guide"
         title="Connect Stripe to get paid"
-        intro="To sell paid components, connect a Stripe account so buyers can pay you directly. AiBlocks takes 0% — Stripe’s standard processing fee applies. Here is the full onboarding flow."
+        intro="To sell paid components, connect a Stripe account so buyers can pay you directly. AiBlocks takes 0% — Stripe’s standard processing fee applies. Here is the full onboarding flow. After onboard your Stripe account, Stripe will sent your money to your Bank account every Monday."
         steps={steps}
         related={{ href: "/docs/seller/publish", label: "See how to publish a component" }}
       />
