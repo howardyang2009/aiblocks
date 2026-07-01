@@ -19,6 +19,20 @@ export async function POST(req: NextRequest) {
   const componentId = String(body.componentId ?? "");
   if (!componentId) return NextResponse.json({ error: "Missing component." }, { status: 400 });
 
+  // EU/EEA Consumer Rights Directive (Art. 16(m)): buyers get a 14-day
+  // withdrawal right on digital content unless they've expressly consented
+  // to immediate delivery and acknowledged that this waives that right.
+  // The checkbox lives in components/download-button.tsx; this is the
+  // server-side enforcement so the waiver can't be skipped by calling
+  // this endpoint directly. See Terms Section 7.
+  const withdrawalWaived = body.withdrawalWaived === true;
+  if (!withdrawalWaived) {
+    return NextResponse.json(
+      { error: "Please confirm the digital delivery notice before checking out." },
+      { status: 400 }
+    );
+  }
+
   // Bootstrap the buyer's profile on first action (they may never have published).
   const buyer = await ensureProfile();
   const supabase = createServiceClient();
@@ -67,6 +81,8 @@ export async function POST(req: NextRequest) {
       amount_cents: c.price_cents,
       currency: c.currency,
       status: "pending",
+      withdrawal_waived: true,
+      withdrawal_waived_at: new Date().toISOString(),
     })
     .select("id").single();
 
@@ -84,7 +100,25 @@ export async function POST(req: NextRequest) {
     ],
     // 0% platform fee at launch: full amount routed to the seller.
     payment_intent_data: { transfer_data: { destination: (seller as any).stripe_account_id } },
-    metadata: { purchase_id: (purchase as any)?.id ?? "", component_id: c.id, buyer_id: buyer.id },
+    metadata: {
+      purchase_id: (purchase as any)?.id ?? "",
+      component_id: c.id,
+      buyer_id: buyer.id,
+      withdrawal_waived: "true",
+    },
+    // Second, Stripe-enforced consent layer on top of the checkbox in
+    // download-button.tsx: Stripe requires the buyer to check a ToS box
+    // before paying, and records that acceptance on its own side too.
+    // Requires a Terms of Service URL set in the Stripe Dashboard
+    // (Settings -> Business -> Public details -> Terms of service link ->
+    // https://aiblocks-six.vercel.app/terms), or Stripe will reject this.
+    consent_collection: { terms_of_service: "required" },
+    custom_text: {
+      terms_of_service_acceptance: {
+        message:
+          "I agree to the [Terms of Service](" + appUrl + "/terms), and I want immediate access to this digital component — I understand this means I give up my 14-day EU/EEA right of withdrawal.",
+      },
+    },
     success_url: `${appUrl}/components/${c.id}?paid=1`,
     cancel_url: `${appUrl}/components/${c.id}?canceled=1`,
   });
