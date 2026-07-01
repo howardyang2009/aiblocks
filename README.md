@@ -2,8 +2,6 @@
 
 > An open marketplace for reusable AI components — prompts, skills, agents, MCP servers, CLAUDE.md configs, hooks, and more. Cross-ecosystem (Claude, GPT, Gemini, Deepseek), community-driven, with optional paid downloads.
 
-This is the V1 MVP scaffold: Next.js (App Router) + Tailwind, Clerk auth, Supabase (Postgres + Storage), and Stripe Connect.
-
 ---
 
 ## Quick start

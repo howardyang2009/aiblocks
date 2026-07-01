@@ -110,7 +110,7 @@ export default function AboutPage() {
         </p>
       </section>
 
-      {/* CTA */}
+      {/* CTA 
       <section className="py-16 border-t flex flex-wrap gap-3">
         <Link href="/browse" className="rounded-block bg-ink text-paper px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors">
           Browse components
@@ -119,6 +119,7 @@ export default function AboutPage() {
           Publish yours
         </Link>
       </section>
+      */}
     </div>
   );
 }

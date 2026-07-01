@@ -28,3 +28,6 @@ yarn-error.log*
 # vercel / supabase local
 .vercel
 .supabase
+
+# supabase
+/supabase/.temp
