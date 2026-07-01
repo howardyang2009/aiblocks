@@ -1,3 +1,5 @@
+import { LegalSection as Section, LegalCallout as Callout, LegalToc } from "@/components/legal/legal-page";
+
 const sections = [
   { id: "acceptance", label: "1. Acceptance of Terms" },
   { id: "service", label: "2. What AiBlocks Is" },
@@ -19,33 +21,6 @@ const sections = [
   { id: "contact", label: "18. Contact" },
 ];
 
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section id={id} className="border-t border-line pt-8 mt-8 scroll-mt-24">
-      <h2 className="font-display font-semibold text-lg">{title}</h2>
-      <div className="mt-3 space-y-3 text-sm text-muted leading-relaxed">
-        {children}
-      </div>
-    </section>
-  );
-}
-
-function Callout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-4 rounded-block border border-line bg-surface px-4 py-3 text-xs text-muted leading-relaxed">
-      {children}
-    </div>
-  );
-}
-
 export default function TermsPage() {
   return (
     <div className="mx-auto max-w-2xl px-5 py-16">
@@ -60,19 +35,7 @@ export default function TermsPage() {
       </p>
       <p className="eyebrow mt-3">Last updated: July 2026</p>
 
-      {/* Table of contents */}
-      <nav className="mt-8 border-t border-line pt-6">
-        <p className="eyebrow mb-3">On this page</p>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
-          {sections.map((s) => (
-            <li key={s.id}>
-              <a href={`#${s.id}`} className="text-muted hover:text-ink underline underline-offset-2">
-                {s.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <LegalToc sections={sections} />
 
       <Section id="acceptance" title="1. Acceptance of Terms">
         <p>

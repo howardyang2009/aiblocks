@@ -60,7 +60,7 @@ Human-Led items from the delegation plan.
 - [ ] Wire Clerk → Supabase JWT so RLS can read `clerk_user_id`
 - [x] Verify the Stripe webhook signature path end-to-end with a test purchase
 - [x] Confirm the zip bucket is private and only reachable via signed URLs
-- [ ] Replace placeholder Terms / Privacy with reviewed legal copy
+- [x] Replace placeholder Terms / Privacy with reviewed legal copy
 - [ ] Generate real DB types: `npx supabase gen types typescript > types/database.ts`
 
 ## Stack
