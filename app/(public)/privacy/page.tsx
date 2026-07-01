@@ -108,7 +108,9 @@ export default function PrivacyPage() {
       <Section id="retention" title="7. Data Retention">
         <ul className="list-disc pl-5 space-y-1">
           <li>Account data is kept while your account is active, and deleted or anonymized within a reasonable period after you delete your account, except where we're legally required to keep it longer.</li>
-          <li>Transaction and payment records are retained as required by applicable tax and financial law (commonly several years — <strong className="text-ink">[confirm exact retention period under your local requirements, e.g. German GoBD]</strong>).</li>
+          <li>Transaction and payment records (purchases, Stripe payment data) are retained for <strong className="text-ink">8 years</strong> under German tax law (GoBD / Abgabenordnung §147), reduced from 10 years by the Bürokratieentlastungsgesetz IV effective for periods starting after December 31, 2024. The period runs from the end of the calendar year the record was created — e.g., a purchase from 2026 is retained through December 31, 2034.</li>
+          <li>Annual financial statements and bookkeeping records: 10 years.</li>
+          <li>Business correspondence tied to a specific transaction: 6 years.</li>
           <li>A published component's files are retained while it's live on the marketplace, and for a reasonable period after unpublishing to support buyers' re-downloads of what they already purchased.</li>
         </ul>
       </Section>

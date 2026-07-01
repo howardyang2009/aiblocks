@@ -237,12 +237,8 @@ export default function TermsPage() {
 
       <Section id="law" title="17. Governing Law & Disputes">
         <p>
-          <strong className="text-ink">
-            [Placeholder — Han/legal to confirm.]
-          </strong>{" "}
-          These Terms are governed by the laws of [jurisdiction — e.g.
-          Germany], without regard to conflict-of-law rules, and disputes
-          will be resolved in the courts of [venue]. If you're a consumer in
+          These Terms are governed by the laws of Germany, without regard to conflict-of-law rules, and disputes
+          will be resolved in the courts of Germany. If you're a consumer in
           the EU/EEA or another jurisdiction with mandatory local consumer
           protections, this choice of law doesn't remove protections you're
           otherwise entitled to under your home country's law.

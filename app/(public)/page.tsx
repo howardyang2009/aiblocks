@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ComponentCard } from "@/components/component-card";
+import { AssemblyGrid } from "@/components/brand/assembly-grid";
 import type { ComponentSummary } from "@/types/database";
 
 // Home. The hero opens with the most characteristic thing in this product's
@@ -8,20 +9,6 @@ import type { ComponentSummary } from "@/types/database";
 export const dynamic = "force-dynamic";
 
 const Pimary_TAGS = ["mcp-server", "claude-md", "agent", "hook", "prompt", "skill"];
-
-function AssemblyGrid() {
-  // 12x4 grid; a handful of cells are "on"/"hot" to read as assembling blocks.
-  const hot = new Set([3, 14, 15, 26, 27, 28, 39, 40]);
-  const on = new Set([1, 2, 13, 25, 38, 41, 42, 16, 29]);
-  const cells = Array.from({ length: 48 }, (_, i) => i);
-  return (
-    <div className="assembly-grid" aria-hidden>
-      {cells.map((i) => (
-        <i key={i} className={hot.has(i) ? "hot" : on.has(i) ? "on" : ""} />
-      ))}
-    </div>
-  );
-}
 
 export default async function HomePage() {
   const supabase = createServiceClient();
