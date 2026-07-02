@@ -59,7 +59,7 @@ Human-Led items from the delegation plan.
 - [x] Verify the Stripe webhook signature path end-to-end with a test purchase
 - [x] Confirm the zip bucket is private and only reachable via signed URLs
 - [x] Replace placeholder Terms / Privacy with reviewed legal copy
-- [ ] Generate real DB types: `npx supabase gen types typescript > types/database.ts`
+- [x] Generate real DB types: `npx supabase gen types typescript --project-id mvuzsjhqqggcccydflkv > types/database.ts`
 
 ## Stack
 

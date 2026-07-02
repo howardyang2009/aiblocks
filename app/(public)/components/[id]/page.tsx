@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { StarButton } from "@/components/star-button";
 import { DownloadButton } from "@/components/download-button";
+import { ReviewsSection, type Review } from "@/components/reviews-section";
 import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -43,11 +44,13 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
   const { userId } = auth();
   let starred = false;
   let owned = false;
+  let viewerProfileId: string | null = null;
   if (userId) {
     const { data: profile } = await supabase
       .from("profiles").select("id").eq("clerk_user_id", userId).maybeSingle();
     if (profile) {
       const pid = (profile as any).id;
+      viewerProfileId = pid;
       const { data: s } = await supabase
         .from("stars").select("user_id").eq("user_id", pid).eq("component_id", component.id).maybeSingle();
       starred = !!s;
@@ -56,6 +59,46 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
       owned = !!d;
     }
   }
+  const isSeller = viewerProfileId !== null && viewerProfileId === component.seller_id;
+
+  // Reviews (V2) — two-step fetch, matching the tags pattern above.
+  const { data: reviewRows } = await supabase
+    .from("reviews")
+    .select("id, buyer_id, rating, body, created_at")
+    .eq("component_id", component.id)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const reviewerIds = [...new Set((reviewRows ?? []).map((r: any) => r.buyer_id))];
+  let reviewerById = new Map<string, any>();
+  if (reviewerIds.length) {
+    const { data: reviewers } = await supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url")
+      .in("id", reviewerIds);
+    reviewerById = new Map((reviewers ?? []).map((p: any) => [p.id, p]));
+  }
+
+  const reviews: Review[] = (reviewRows ?? []).map((r: any) => {
+    const p = reviewerById.get(r.buyer_id);
+    return {
+      id: r.id,
+      rating: r.rating,
+      body: r.body,
+      created_at: r.created_at,
+      reviewer: {
+        username: p?.username ?? "unknown",
+        display_name: p?.display_name ?? null,
+        avatar_url: p?.avatar_url ?? null,
+      },
+      mine: viewerProfileId !== null && r.buyer_id === viewerProfileId,
+    };
+  });
+
+  const reviewCount = reviews.length;
+  const avgRating = reviewCount
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+    : null;
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10 grid lg:grid-cols-[1fr_320px] gap-10">
@@ -89,6 +132,15 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
         {component.readme?.trim()
           ? <MarkdownRenderer source={component.readme} />
           : <p className="text-sm text-subtle">No README provided.</p>}
+
+        <hr className="my-8" />
+        <ReviewsSection
+          componentId={component.id}
+          initialReviews={reviews}
+          canReview={owned && !isSeller}
+          signedIn={!!userId}
+          isSeller={isSeller}
+        />
       </article>
 
       <aside className="lg:sticky lg:top-8 h-fit rounded-block border bg-surface p-5">
@@ -110,6 +162,18 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
         <dl className="mt-6 space-y-2 font-mono text-xs text-subtle">
           <div className="flex justify-between"><dt>downloads</dt><dd>{component.download_count}</dd></div>
           <div className="flex justify-between"><dt>stars</dt><dd>{component.star_count}</dd></div>
+          <div className="flex justify-between">
+            <dt>rating</dt>
+            <dd>
+              {avgRating !== null ? (
+                <a href="#reviews" className="hover:text-accent">
+                  {avgRating.toFixed(1)} ({reviewCount})
+                </a>
+              ) : (
+                "—"
+              )}
+            </dd>
+          </div>
         </dl>
       </aside>
     </div>
