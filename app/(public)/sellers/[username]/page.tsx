@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { getStripe } from "@/lib/stripe";
 import { getSellerPayoutStatus } from "@/lib/seller";
 import { StripeNudge } from "@/components/stripe-nudge";
 import { ComponentCard } from "@/components/component-card";
@@ -33,7 +34,7 @@ export default async function SellerProfilePage({ params }: { params: { username
   if (userId && profile.clerk_user_id === userId) {
     const hasPaid = components.some((c) => c.price_cents > 0);
     if (hasPaid) {
-      const status = await getSellerPayoutStatus(profile);
+      const status = await getSellerPayoutStatus(profile, getStripe(), supabase);
       showNudge = status !== "ready";
     }
   }

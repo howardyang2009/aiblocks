@@ -1,5 +1,6 @@
-import { getStripe } from "@/lib/stripe";
-import { createServiceClient } from "@/lib/supabase/server";
+import Stripe from "stripe";
+import type { Tables } from "@/types/database";
+import type { createServiceClient } from "@/lib/supabase/server";
 
 export type PayoutStatus = "ready" | "incomplete" | "none";
 
@@ -13,19 +14,21 @@ export type PayoutStatus = "ready" | "incomplete" | "none";
 //   "none"       -> no connected account yet
 //   "incomplete" -> account exists but can't receive transfers yet
 //   "ready"      -> good to go (cached after first confirmation)
-export async function getSellerPayoutStatus(profile: any): Promise<PayoutStatus> {
+export async function getSellerPayoutStatus(
+  profile: Tables<"profiles">,
+  stripe: Stripe,
+  supabase: ReturnType<typeof createServiceClient>
+): Promise<PayoutStatus> {
   if (!profile?.stripe_account_id) return "none";
   if (profile.stripe_onboarding_done) return "ready"; // cached — no Stripe call
 
   try {
-    const stripe = getStripe();
     const acct = await stripe.accounts.retrieve(profile.stripe_account_id);
     const ready =
       acct.details_submitted === true && acct.capabilities?.transfers === "active";
 
     if (ready) {
       // Cache it so future dashboard loads skip the Stripe round-trip.
-      const supabase = createServiceClient();
       await supabase
         .from("profiles")
         .update({ stripe_onboarding_done: true })

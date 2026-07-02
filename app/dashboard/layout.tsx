@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { getStripe } from "@/lib/stripe";
 import { getSellerPayoutStatus } from "@/lib/seller";
 import { StripeNudge } from "@/components/stripe-nudge";
 
@@ -27,7 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         .limit(1);
 
       if (paid && paid.length > 0) {
-        const status = await getSellerPayoutStatus(profile);
+        const status = await getSellerPayoutStatus(profile, getStripe(), supabase);
         showNudge = status !== "ready";
       }
     }

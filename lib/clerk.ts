@@ -30,12 +30,10 @@ export function requireUserId(): string {
 // Return the current user's profile, creating it on first use.
 // A user "becomes" a seller the first time they publish, so we lazily
 // bootstrap a profile row here rather than needing a separate sign-up step.
-export async function ensureProfile() {
-  const { userId } = auth();
-  if (!userId) throw new UnauthenticatedError();
-
-  const supabase = createServiceClient();
-
+export async function ensureProfile(
+  userId: string,
+  supabase: ReturnType<typeof createServiceClient>
+) {
   const { data: existing } = await supabase
     .from("profiles")
     .select("*")
