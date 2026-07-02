@@ -8,9 +8,11 @@ export const POST = withAuth(async (_req, { params, profile, supabase }) => {
     .from("stars").select("user_id").eq("user_id", profile.id).eq("component_id", params.id).maybeSingle();
 
   if (existing) {
-    await supabase.from("stars").delete().eq("user_id", profile.id).eq("component_id", params.id);
+    const { error } = await supabase.from("stars").delete().eq("user_id", profile.id).eq("component_id", params.id);
+    if (error) return NextResponse.json({ error: "Failed to remove star." }, { status: 500 });
     return NextResponse.json({ starred: false });
   }
-  await supabase.from("stars").insert({ user_id: profile.id, component_id: params.id });
+  const { error } = await supabase.from("stars").insert({ user_id: profile.id, component_id: params.id });
+  if (error) return NextResponse.json({ error: "Failed to add star." }, { status: 500 });
   return NextResponse.json({ starred: true });
 });

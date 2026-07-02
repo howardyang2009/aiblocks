@@ -21,7 +21,8 @@ export function StarButton({
     setStarred((s) => !s);
     setCount((n) => (starred ? n - 1 : n + 1));
     try {
-      await fetch(`/api/components/${componentId}/star`, { method: "POST" });
+      const res = await fetch(`/api/components/${componentId}/star`, { method: "POST" });
+      if (!res.ok) throw new Error("star toggle failed");
     } catch {
       // revert on failure
       setStarred((s) => !s);
