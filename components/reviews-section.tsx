@@ -24,6 +24,10 @@ export type Review = {
     avatar_url: string | null;
   };
   mine: boolean;
+  reply: {
+    body: string;
+    created_at: string;
+  } | null;
 };
 
 function Stars({ value, size = "text-sm" }: { value: number; size?: string }) {
@@ -71,12 +75,14 @@ export function ReviewsSection({
   canReview,
   signedIn,
   isSeller,
+  sellerUsername,
 }: {
   componentId: string;
   initialReviews: Review[];
   canReview: boolean;
   signedIn: boolean;
   isSeller: boolean;
+  sellerUsername?: string | null;
 }) {
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const mine = reviews.find((r) => r.mine) ?? null;
@@ -86,6 +92,71 @@ export function ReviewsSection({
   const [body, setBody] = useState(mine?.body ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ---- Seller reply state (one open editor at a time) ----
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState("");
+  const [replyBusy, setReplyBusy] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
+
+  function openReplyEditor(review: Review) {
+    setReplyingTo(review.id);
+    setReplyBody(review.reply?.body ?? "");
+    setReplyError(null);
+  }
+
+  async function saveReply(reviewId: string) {
+    if (!replyBody.trim()) {
+      setReplyError("Reply text is required.");
+      return;
+    }
+    setReplyBusy(true);
+    setReplyError(null);
+    try {
+      const res = await fetch(`/api/reviews/${reviewId}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: replyBody }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setReplyError(data.error ?? "Could not save the reply. Try again.");
+        return;
+      }
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === reviewId
+            ? { ...r, reply: { body: data.reply.body, created_at: data.reply.created_at } }
+            : r
+        )
+      );
+      setReplyingTo(null);
+      setReplyBody("");
+    } catch {
+      setReplyError("Network error — the reply was not saved.");
+    } finally {
+      setReplyBusy(false);
+    }
+  }
+
+  async function removeReply(reviewId: string) {
+    setReplyBusy(true);
+    setReplyError(null);
+    try {
+      const res = await fetch(`/api/reviews/${reviewId}/reply`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setReplyError(data.error ?? "Could not delete the reply. Try again.");
+        return;
+      }
+      setReviews((prev) => prev.map((r) => (r.id === reviewId ? { ...r, reply: null } : r)));
+      setReplyingTo(null);
+    } catch {
+      setReplyError("Network error — the reply was not deleted.");
+    } finally {
+      setReplyBusy(false);
+    }
+  }
 
   const count = reviews.length;
   const average = count ? reviews.reduce((sum, r) => sum + r.rating, 0) / count : 0;
@@ -117,6 +188,7 @@ export function ReviewsSection({
         created_at: data.review.created_at,
         reviewer: mine?.reviewer ?? { username: "you", display_name: "You", avatar_url: null },
         mine: true,
+        reply: mine?.reply ?? null,
       };
       setReviews((prev) => [saved, ...prev.filter((r) => !r.mine)]);
       setEditing(false);
@@ -220,7 +292,7 @@ export function ReviewsSection({
       )}
       {isSeller && (
         <p className="mt-5 font-mono text-[11px] text-subtle">
-          Sellers can't review their own components.
+          Sellers can't review their own components — but you can respond to each review below.
         </p>
       )}
 
@@ -272,6 +344,90 @@ export function ReviewsSection({
                 </div>
               </div>
               {r.body && <p className="mt-2 text-sm text-muted whitespace-pre-wrap">{r.body}</p>}
+
+              {/* ---- Seller response (visible to everyone) ---- */}
+              {r.reply && replyingTo !== r.id && (
+                <div className="mt-3 ml-4 rounded-block border-l-2 border-accent bg-surface px-3 py-2.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-[10px] rounded-[3px] border px-1 py-0.5 text-accent">
+                      seller response
+                    </span>
+                    {sellerUsername && (
+                      <span className="font-mono text-[10px] text-subtle">@{sellerUsername}</span>
+                    )}
+                    <span className="font-mono text-[10px] text-subtle">
+                      {new Date(r.reply.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-sm text-muted whitespace-pre-wrap">{r.reply.body}</p>
+                  {isSeller && (
+                    <div className="mt-2 flex gap-3">
+                      <button
+                        onClick={() => openReplyEditor(r)}
+                        className="font-mono text-[11px] text-subtle hover:text-accent"
+                      >
+                        edit
+                      </button>
+                      <button
+                        onClick={() => removeReply(r.id)}
+                        disabled={replyBusy}
+                        className="font-mono text-[11px] text-subtle hover:text-red-600"
+                      >
+                        delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ---- Seller: write a reply ---- */}
+              {isSeller && !r.reply && replyingTo !== r.id && (
+                <button
+                  onClick={() => openReplyEditor(r)}
+                  className="mt-2 font-mono text-[11px] text-subtle hover:text-accent"
+                >
+                  reply
+                </button>
+              )}
+              {isSeller && replyingTo === r.id && (
+                <div className="mt-3 ml-4 rounded-block border bg-surface p-3">
+                  <p className="font-mono text-[11px] text-subtle mb-2">
+                    {r.reply ? "update your response" : "respond as the seller — this is public"}
+                  </p>
+                  <textarea
+                    value={replyBody}
+                    onChange={(e) => setReplyBody(e.target.value)}
+                    maxLength={2000}
+                    rows={3}
+                    placeholder="Thank the reviewer, answer their question, or explain a fix"
+                    className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
+                  />
+                  {replyError && <p className="mt-2 text-xs text-red-600">{replyError}</p>}
+                  <div className="mt-2 flex items-center gap-3">
+                    <button
+                      onClick={() => saveReply(r.id)}
+                      disabled={replyBusy}
+                      className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50"
+                    >
+                      {replyBusy ? "Saving…" : r.reply ? "Save changes" : "Publish response"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setReplyError(null);
+                      }}
+                      className="text-sm text-subtle hover:text-muted"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {r.mine && !editing && (
                 <div className="mt-2 flex gap-3">
                   <button

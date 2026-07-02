@@ -79,8 +79,19 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
     reviewerById = new Map((reviewers ?? []).map((p: any) => [p.id, p]));
   }
 
+  // Seller replies (V2) — one query for the whole component, keyed by review.
+  let replyByReviewId = new Map<string, any>();
+  if ((reviewRows ?? []).length) {
+    const { data: replyRows } = await supabase
+      .from("review_replies")
+      .select("review_id, body, created_at")
+      .eq("component_id", component.id);
+    replyByReviewId = new Map((replyRows ?? []).map((r: any) => [r.review_id, r]));
+  }
+
   const reviews: Review[] = (reviewRows ?? []).map((r: any) => {
     const p = reviewerById.get(r.buyer_id);
+    const reply = replyByReviewId.get(r.id);
     return {
       id: r.id,
       rating: r.rating,
@@ -92,6 +103,7 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
         avatar_url: p?.avatar_url ?? null,
       },
       mine: viewerProfileId !== null && r.buyer_id === viewerProfileId,
+      reply: reply ? { body: reply.body, created_at: reply.created_at } : null,
     };
   });
 
@@ -140,6 +152,7 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
           canReview={owned && !isSeller}
           signedIn={!!userId}
           isSeller={isSeller}
+          sellerUsername={(seller as any)?.username ?? null}
         />
       </article>
 
