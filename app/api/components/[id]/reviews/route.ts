@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
+import { MAX_BODY_LENGTH } from "@/lib/constants";
 
 // Verified-buyer reviews (V2).
 //
@@ -16,7 +17,6 @@ import { withAuth } from "@/lib/auth";
 //   * rating is an integer 1..5, body optional, max 2000 chars
 //   * one review per buyer per component (DB unique) -> POST upserts
 
-const MAX_BODY_LENGTH = 2000;
 
 export const POST = withAuth(async (req, { params, profile, supabase }) => {
   let payload: { rating?: unknown; body?: unknown };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MAX_BODY_LENGTH } from "@/lib/constants";
 
 // Open comments section (V2), rendered on the component detail page
 // below the reviews. Unlike reviews, comments are ungated: any
@@ -187,7 +188,7 @@ export function CommentsSection({
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            maxLength={2000}
+            maxLength={MAX_BODY_LENGTH}
             rows={3}
             placeholder="Ask a question or share a tip"
             className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
@@ -278,7 +279,7 @@ export function CommentsSection({
                       <textarea
                         value={replyBody}
                         onChange={(e) => setReplyBody(e.target.value)}
-                        maxLength={2000}
+                        maxLength={MAX_BODY_LENGTH}
                         rows={2}
                         placeholder={`Reply to ${c.author.display_name ?? `@${c.author.username}`}`}
                         className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
+import { MAX_BODY_LENGTH } from "@/lib/constants";
 
 // Open comments (V2). Unlike reviews, comments are NOT gated:
 // "anyone can ask questions or comment" (vision doc). Any signed-in
@@ -13,7 +14,6 @@ import { withAuth } from "@/lib/auth";
 //   * one level of threading only: a reply's parent must be a
 //     top-level comment on the SAME component
 
-const MAX_BODY_LENGTH = 2000;
 
 export const POST = withAuth(async (req, { params, profile, supabase }) => {
   let payload: { body?: unknown; parentId?: unknown };
