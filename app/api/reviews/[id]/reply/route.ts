@@ -1,7 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { ensureProfile } from "@/lib/clerk";
-import { createServiceClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { withAuth } from "@/lib/auth";
 
 // Seller replies to verified-buyer reviews (V2).
 //
@@ -16,10 +14,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 
 const MAX_BODY_LENGTH = 2000;
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
-  if (!userId) return NextResponse.json({ error: "Sign in to reply." }, { status: 401 });
-
+export const POST = withAuth(async (req, { params, profile, supabase }) => {
   let payload: { body?: unknown };
   try {
     payload = await req.json();
@@ -37,9 +32,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       { status: 400 }
     );
   }
-
-  const profile = await ensureProfile();
-  const supabase = createServiceClient();
 
   // Load the review to learn which component it belongs to.
   const { data: review } = await supabase
@@ -84,15 +76,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   return NextResponse.json({ reply });
-}
+});
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
-  if (!userId) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
-
-  const profile = await ensureProfile();
-  const supabase = createServiceClient();
-
+export const DELETE = withAuth(async (_req, { params, profile, supabase }) => {
   // Scoped to the caller's own reply — matches the RLS delete policy.
   const { error } = await supabase
     .from("review_replies")
@@ -105,4 +91,4 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   }
 
   return NextResponse.json({ deleted: true });
-}
+});

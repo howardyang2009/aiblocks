@@ -1,15 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { ensureProfile } from "@/lib/clerk";
+import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
-import { createServiceClient } from "@/lib/supabase/server";
+import { withAuth } from "@/lib/auth";
 
 // Create a Stripe Checkout session for a paid component.
 // Money flows buyer -> seller via Stripe Connect (0% platform fee for now).
-export async function POST(req: NextRequest) {
-  const { userId } = auth();
-  if (!userId) return NextResponse.json({ error: "Sign in to buy." }, { status: 401 });
-
+export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
   let body: any;
   try {
     body = await req.json();
@@ -32,10 +27,6 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-
-  // Bootstrap the buyer's profile on first action (they may never have published).
-  const buyer = await ensureProfile();
-  const supabase = createServiceClient();
 
   const { data: component } = await supabase
     .from("components")
@@ -123,4 +114,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ url: session.url });
-}
+});

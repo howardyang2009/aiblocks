@@ -2,6 +2,8 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils";
 
+export class UnauthenticatedError extends Error {}
+
 // Resolve the current Clerk user to their AiBlocks profile row.
 // Returns null if signed out or no profile exists yet.
 export async function getCurrentProfile() {
@@ -21,7 +23,7 @@ export async function getCurrentProfile() {
 // Require a signed-in user; throws if not. Use in API routes.
 export function requireUserId(): string {
   const { userId } = auth();
-  if (!userId) throw new Error("UNAUTHENTICATED");
+  if (!userId) throw new UnauthenticatedError();
   return userId;
 }
 
@@ -30,7 +32,7 @@ export function requireUserId(): string {
 // bootstrap a profile row here rather than needing a separate sign-up step.
 export async function ensureProfile() {
   const { userId } = auth();
-  if (!userId) throw new Error("UNAUTHENTICATED");
+  if (!userId) throw new UnauthenticatedError();
 
   const supabase = createServiceClient();
 

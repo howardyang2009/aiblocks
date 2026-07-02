@@ -1,7 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { ensureProfile } from "@/lib/clerk";
-import { createServiceClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { withAuth } from "@/lib/auth";
 import { ZIP_BUCKET } from "@/lib/constants";
 
 // ============================================================
@@ -11,14 +9,7 @@ import { ZIP_BUCKET } from "@/lib/constants";
 //   Paid component -> requires a `downloads` row (created after purchase).
 // Never returns zip_path directly; the bucket stays private.
 // ============================================================
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
-  if (!userId) return NextResponse.json({ error: "Sign in to download." }, { status: 401 });
-
-  // Bootstrap the profile on first action (buyer may never have published).
-  const profile = await ensureProfile();
-  const supabase = createServiceClient();
-
+export const POST = withAuth(async (_req, { params, profile, supabase }) => {
   const { data: component } = await supabase
     .from("components")
     .select("id, price_cents, zip_path, status")
@@ -51,4 +42,4 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   }
 
   return NextResponse.json({ url: signed.signedUrl });
-}
+});

@@ -1,7 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { ensureProfile } from "@/lib/clerk";
-import { createServiceClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { withAuth } from "@/lib/auth";
 
 // Open comments (V2). Unlike reviews, comments are NOT gated:
 // "anyone can ask questions or comment" (vision doc). Any signed-in
@@ -17,10 +15,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 
 const MAX_BODY_LENGTH = 2000;
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
-  if (!userId) return NextResponse.json({ error: "Sign in to comment." }, { status: 401 });
-
+export const POST = withAuth(async (req, { params, profile, supabase }) => {
   let payload: { body?: unknown; parentId?: unknown };
   try {
     payload = await req.json();
@@ -40,9 +35,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const parentId = typeof payload.parentId === "string" && payload.parentId ? payload.parentId : null;
-
-  const profile = await ensureProfile();
-  const supabase = createServiceClient();
 
   // Component must exist and be published.
   const { data: component } = await supabase
@@ -89,4 +81,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   return NextResponse.json({ comment });
-}
+});

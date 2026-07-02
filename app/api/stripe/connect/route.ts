@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { ensureProfile } from "@/lib/clerk";
 import { getStripe } from "@/lib/stripe";
-import { createServiceClient } from "@/lib/supabase/server";
+import { withAuth } from "@/lib/auth";
 
 // Start (or resume) Stripe Connect onboarding for a seller and return the
 // hosted onboarding link.
-export async function POST() {
-  const { userId } = auth();
-  if (!userId) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
-
-  const profile = await ensureProfile();
-  const supabase = createServiceClient();
+export const POST = withAuth(async (_req, { profile, supabase }) => {
   const stripe = getStripe();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -50,4 +43,4 @@ export async function POST() {
   });
 
   return NextResponse.json({ url: link.url });
-}
+});

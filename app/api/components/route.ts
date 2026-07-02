@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { ensureProfile } from "@/lib/clerk";
 import { createServiceClient } from "@/lib/supabase/server";
+import { withAuth } from "@/lib/auth";
 import { slugify, parseList } from "@/lib/utils";
 import { ZIP_BUCKET, MAX_ZIP_BYTES } from "@/lib/constants";
 
@@ -32,12 +31,7 @@ export async function GET(req: NextRequest) {
 // POST /api/components — create a listing AFTER the zip has been uploaded
 // via a signed upload URL. Body:
 //   { name, description, readme, ecosystems[], tags[], price, zipPath }
-export async function POST(req: NextRequest) {
-  const { userId } = auth();
-  if (!userId) return NextResponse.json({ error: "Sign in to publish." }, { status: 401 });
-
-  const profile = await ensureProfile();
-  const supabase = createServiceClient();
+export const POST = withAuth(async (req, { profile, supabase }) => {
   const bucket = process.env.SUPABASE_ZIP_BUCKET ?? ZIP_BUCKET;
 
   let body: any;
@@ -134,4 +128,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ id: component.id, slug: component.slug });
-}
+});
