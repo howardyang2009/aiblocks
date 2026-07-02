@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { withAuth } from "@/lib/auth";
+import { APP_URL } from "@/lib/constants";
 
 // Start (or resume) Stripe Connect onboarding for a seller and return the
 // hosted onboarding link.
 export const POST = withAuth(async (_req, { profile, supabase }) => {
   const stripe = getStripe();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   let accountId: string | null = profile.stripe_account_id ?? null;
 
@@ -37,8 +37,8 @@ export const POST = withAuth(async (_req, { profile, supabase }) => {
 
   const link = await stripe.accountLinks.create({
     account: accountId,
-    refresh_url: `${appUrl}/dashboard/seller/stripe`,
-    return_url: `${appUrl}/dashboard/seller/stripe?done=1`,
+    refresh_url: `${APP_URL}/dashboard/seller/stripe`,
+    return_url: `${APP_URL}/dashboard/seller/stripe?done=1`,
     type: "account_onboarding",
   });
 

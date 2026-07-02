@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { MAX_BODY_LENGTH } from "@/lib/constants";
 
 // Verified-buyer reviews section (V2), rendered on the component
 // detail page below the README.
@@ -249,7 +250,7 @@ export function ReviewsSection({
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            maxLength={2000}
+            maxLength={MAX_BODY_LENGTH}
             rows={3}
             placeholder="What worked, what didn't, how you used it (optional)"
             className="mt-3 w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
@@ -380,7 +381,7 @@ export function ReviewsSection({
                   <textarea
                     value={replyBody}
                     onChange={(e) => setReplyBody(e.target.value)}
-                    maxLength={2000}
+                    maxLength={MAX_BODY_LENGTH}
                     rows={3}
                     placeholder="Thank the reviewer, answer their question, or explain a fix"
                     className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"

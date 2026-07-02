@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { withAuth } from "@/lib/auth";
 import { parseBody } from "@/lib/request";
+import { APP_URL } from "@/lib/constants";
 
 // Create a Stripe Checkout session for a paid component.
 // Money flows buyer -> seller via Stripe Connect (0% platform fee for now).
@@ -55,7 +56,6 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
     return NextResponse.json({ error: "Seller cannot accept payments yet." }, { status: 400 });
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const stripe = getStripe();
 
   // Create a pending purchase first so the webhook can reconcile by id.
@@ -113,11 +113,11 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
     custom_text: {
       terms_of_service_acceptance: {
         message:
-          "I agree to the [Terms of Service](" + appUrl + "/terms), and I want immediate access to this digital component — I understand this means I give up my 14-day EU/EEA right of withdrawal.",
+          "I agree to the [Terms of Service](" + APP_URL + "/terms), and I want immediate access to this digital component — I understand this means I give up my 14-day EU/EEA right of withdrawal.",
       },
     },
-    success_url: `${appUrl}/components/${component.id}?paid=1`,
-    cancel_url: `${appUrl}/components/${component.id}?canceled=1`,
+    success_url: `${APP_URL}/components/${component.id}?paid=1`,
+    cancel_url: `${APP_URL}/components/${component.id}?canceled=1`,
   });
 
   return NextResponse.json({ url: session.url });
