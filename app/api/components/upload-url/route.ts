@@ -3,14 +3,16 @@ import { randomUUID } from "crypto";
 import { withAuth } from "@/lib/auth";
 import { MAX_ZIP_BYTES } from "@/lib/constants";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
+import { parseBody } from "@/lib/request";
 
 // Mint a one-time signed upload URL so the browser can upload the zip
 // DIRECTLY to Supabase Storage (good for 10MB — never flows through this
 // API route). The object path is namespaced under the seller's profile id,
 // which the create route later verifies to prevent path hijacking.
 export const POST = withAuth(async (req, { profile, supabase }) => {
-  const { size } = await req.json().catch(() => ({}));
-  if (typeof size === "number" && size > MAX_ZIP_BYTES) {
+  const body = await parseBody<{ size?: unknown }>(req);
+  if (body instanceof NextResponse) return body;
+  if (typeof body.size === "number" && body.size > MAX_ZIP_BYTES) {
     return NextResponse.json({ error: "Zip exceeds the 10MB limit." }, { status: 413 });
   }
 

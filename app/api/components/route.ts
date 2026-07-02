@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { withAuth } from "@/lib/auth";
 import { slugify, parseList } from "@/lib/utils";
-import { MAX_ZIP_BYTES } from "@/lib/constants";
+import { MAX_ZIP_BYTES, COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
+import { parseBody } from "@/lib/request";
 
 // GET /api/components?q=&sort=  — browse + search.
 // Uses Postgres full-text search on the generated search_tsv column.
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
   const supabase = createServiceClient();
   let query = supabase
     .from("components")
-    .select("id, name, description, ecosystems, price_cents, currency, star_count, download_count")
+    .select(COMPONENT_SUMMARY_COLS)
     .eq("status", "published");
 
   if (q) query = query.textSearch("search_tsv", q, { type: "websearch" });
@@ -35,12 +36,12 @@ export async function GET(req: NextRequest) {
 export const POST = withAuth(async (req, { profile, supabase }) => {
   const bucket = ACTIVE_ZIP_BUCKET;
 
-  let body: any;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-  }
+  const body = await parseBody<{
+    name?: unknown; description?: unknown; readme?: unknown;
+    zipPath?: unknown; price?: unknown;
+    ecosystems?: string | string[]; tags?: string | string[];
+  }>(req);
+  if (body instanceof NextResponse) return body;
 
   // ---- Validate core fields ----
   const name = String(body.name ?? "").trim();

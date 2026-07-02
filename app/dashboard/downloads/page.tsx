@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
 import type { ComponentSummary } from "@/types/database";
 
@@ -31,7 +32,7 @@ export default async function MyDownloadsPage() {
       if (ids.length) {
         const { data: comps } = await supabase
           .from("components")
-          .select("id, name, description, ecosystems, price_cents, currency, star_count, download_count")
+          .select(COMPONENT_SUMMARY_COLS)
           .in("id", ids);
 
         // Preserve the acquired-at ordering from the downloads query.

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { shouldShowStripeNudge } from "@/lib/seller";
+import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { StripeNudge } from "@/components/stripe-nudge";
 import { ComponentCard } from "@/components/component-card";
 import type { ComponentSummary } from "@/types/database";
@@ -18,7 +19,7 @@ export default async function SellerProfilePage({ params }: { params: { username
 
   const { data: comps } = await supabase
     .from("components")
-    .select("id, name, description, ecosystems, price_cents, currency, star_count, download_count")
+    .select(COMPONENT_SUMMARY_COLS)
     .eq("seller_id", profile.id)
     .eq("status", "published")
     .order("created_at", { ascending: false });

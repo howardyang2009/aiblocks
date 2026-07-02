@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
+import { parseBody } from "@/lib/request";
 
 // Verified-buyer reviews (V2).
 //
@@ -19,12 +20,8 @@ import { MAX_BODY_LENGTH } from "@/lib/constants";
 
 
 export const POST = withAuth(async (req, { params, profile, supabase }) => {
-  let payload: { rating?: unknown; body?: unknown };
-  try {
-    payload = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-  }
+  const payload = await parseBody<{ rating?: unknown; body?: unknown }>(req);
+  if (payload instanceof NextResponse) return payload;
 
   const rating = Number(payload.rating);
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {

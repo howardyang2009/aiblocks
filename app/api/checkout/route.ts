@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { withAuth } from "@/lib/auth";
+import { parseBody } from "@/lib/request";
 
 // Create a Stripe Checkout session for a paid component.
 // Money flows buyer -> seller via Stripe Connect (0% platform fee for now).
 export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
-  let body: any;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
-  }
+  const body = await parseBody<{ componentId?: unknown; withdrawalWaived?: unknown }>(req);
+  if (body instanceof NextResponse) return body;
   const componentId = String(body.componentId ?? "");
   if (!componentId) return NextResponse.json({ error: "Missing component." }, { status: 400 });
 
@@ -62,7 +59,10 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
   const stripe = getStripe();
 
   // Create a pending purchase first so the webhook can reconcile by id.
-  const { data: purchase } = await supabase
+  // Guard the error: if the insert fails we must NOT proceed to Stripe —
+  // charging the buyer with purchase_id="" means the webhook can never
+  // match the row and the buyer would pay without receiving their download.
+  const { data: purchase, error: purchaseErr } = await supabase
     .from("purchases")
     .insert({
       buyer_id: buyer.id,
@@ -75,6 +75,13 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
       withdrawal_waived_at: new Date().toISOString(),
     })
     .select("id").single();
+
+  if (purchaseErr || !purchase) {
+    return NextResponse.json(
+      { error: "Could not create purchase record. Please try again." },
+      { status: 500 }
+    );
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -91,7 +98,7 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
     // 0% platform fee at launch: full amount routed to the seller.
     payment_intent_data: { transfer_data: { destination: seller.stripe_account_id } },
     metadata: {
-      purchase_id: purchase?.id ?? "",
+      purchase_id: purchase.id,
       component_id: component.id,
       buyer_id: buyer.id,
       withdrawal_waived: "true",

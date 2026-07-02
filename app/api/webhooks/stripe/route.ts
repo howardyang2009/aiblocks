@@ -23,16 +23,25 @@ export async function POST(req: NextRequest) {
     const { purchase_id, component_id, buyer_id } = session.metadata ?? {};
     const supabase = createServiceClient();
 
-    await supabase
+    const { error: updateErr } = await supabase
       .from("purchases")
       .update({ status: "succeeded", stripe_checkout_session_id: session.id })
       .eq("id", purchase_id);
 
+    // Return 500 on DB failures so Stripe retries the webhook delivery.
+    if (updateErr) {
+      return NextResponse.json({ error: "Failed to update purchase." }, { status: 500 });
+    }
+
     // Grant access (idempotent). The downloads trigger bumps download_count.
-    await supabase.from("downloads").upsert(
+    const { error: upsertErr } = await supabase.from("downloads").upsert(
       { user_id: buyer_id, component_id, purchase_id },
       { onConflict: "user_id,component_id", ignoreDuplicates: true }
     );
+
+    if (upsertErr) {
+      return NextResponse.json({ error: "Failed to grant download access." }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ received: true });

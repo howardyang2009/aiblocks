@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
+import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
 import { AssemblyGrid } from "@/components/brand/assembly-grid";
 import type { ComponentSummary } from "@/types/database";
@@ -14,7 +15,7 @@ export default async function HomePage() {
   const supabase = createServiceClient();
   const { data } = await supabase
     .from("components")
-    .select("id, name, description, ecosystems, price_cents, currency, star_count, download_count")
+    .select(COMPONENT_SUMMARY_COLS)
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(6);

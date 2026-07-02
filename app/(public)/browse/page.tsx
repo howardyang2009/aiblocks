@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
+import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
 import type { ComponentSummary } from "@/types/database";
 
@@ -40,7 +41,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
 
   let query = supabase
     .from("components")
-    .select("id, name, description, ecosystems, price_cents, currency, star_count, download_count")
+    .select(COMPONENT_SUMMARY_COLS)
     .eq("status", "published");
 
   if (q) query = query.textSearch("search_tsv", q, { type: "websearch" });
