@@ -6,6 +6,7 @@ import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { StarButton } from "@/components/star-button";
 import { DownloadButton } from "@/components/download-button";
 import { ReviewsSection, type Review } from "@/components/reviews-section";
+import { CommentsSection, type CommentNode } from "@/components/comments-section";
 import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -45,12 +46,22 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
   let starred = false;
   let owned = false;
   let viewerProfileId: string | null = null;
+  let viewer: { username: string; display_name: string | null; avatar_url: string | null } | null =
+    null;
   if (userId) {
     const { data: profile } = await supabase
-      .from("profiles").select("id").eq("clerk_user_id", userId).maybeSingle();
+      .from("profiles")
+      .select("id, username, display_name, avatar_url")
+      .eq("clerk_user_id", userId)
+      .maybeSingle();
     if (profile) {
       const pid = (profile as any).id;
       viewerProfileId = pid;
+      viewer = {
+        username: (profile as any).username,
+        display_name: (profile as any).display_name ?? null,
+        avatar_url: (profile as any).avatar_url ?? null,
+      };
       const { data: s } = await supabase
         .from("stars").select("user_id").eq("user_id", pid).eq("component_id", component.id).maybeSingle();
       starred = !!s;
@@ -112,6 +123,56 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
     : null;
 
+  // Comments (V2) — open discussion. Same two-step fetch pattern,
+  // then assemble parent -> replies on the server so the client just
+  // renders a tree. Oldest first: threads read top-down like a
+  // conversation (unlike reviews, which lead with the newest).
+  const { data: commentRows } = await supabase
+    .from("comments")
+    .select("id, user_id, parent_id, body, created_at")
+    .eq("component_id", component.id)
+    .order("created_at", { ascending: true })
+    .limit(200);
+
+  const commenterIds = [...new Set((commentRows ?? []).map((r: any) => r.user_id))];
+  let commenterById = new Map<string, any>();
+  if (commenterIds.length) {
+    const { data: commenters } = await supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url")
+      .in("id", commenterIds);
+    commenterById = new Map((commenters ?? []).map((p: any) => [p.id, p]));
+  }
+
+  const toNode = (r: any): CommentNode => {
+    const p = commenterById.get(r.user_id);
+    return {
+      id: r.id,
+      body: r.body,
+      created_at: r.created_at,
+      author: {
+        username: p?.username ?? "unknown",
+        display_name: p?.display_name ?? null,
+        avatar_url: p?.avatar_url ?? null,
+      },
+      isSeller: r.user_id === component.seller_id,
+      mine: viewerProfileId !== null && r.user_id === viewerProfileId,
+      replies: [],
+    };
+  };
+
+  const nodeById = new Map<string, CommentNode>();
+  const commentTree: CommentNode[] = [];
+  for (const r of commentRows ?? []) {
+    const node = toNode(r);
+    nodeById.set((r as any).id, node);
+    if (!(r as any).parent_id) commentTree.push(node);
+  }
+  for (const r of commentRows ?? []) {
+    const parentId = (r as any).parent_id;
+    if (parentId) nodeById.get(parentId)?.replies.push(nodeById.get((r as any).id)!);
+  }
+
   return (
     <div className="mx-auto max-w-shell px-5 py-10 grid lg:grid-cols-[1fr_320px] gap-10">
       <article>
@@ -153,6 +214,15 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
           signedIn={!!userId}
           isSeller={isSeller}
           sellerUsername={(seller as any)?.username ?? null}
+        />
+
+        <hr className="my-8" />
+        <CommentsSection
+          componentId={component.id}
+          initialComments={commentTree}
+          signedIn={!!userId}
+          viewer={viewer}
+          isSeller={isSeller}
         />
       </article>
 
