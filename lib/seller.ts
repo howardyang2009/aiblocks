@@ -41,3 +41,16 @@ export async function getSellerPayoutStatus(
     return profile.stripe_onboarding_done ? "ready" : "incomplete";
   }
 }
+
+// True when the seller has paid components but payouts aren't connected yet.
+// Used by dashboard layout and seller profile page to decide whether to show
+// the Stripe onboarding nudge.
+export async function shouldShowStripeNudge(
+  profile: Tables<"profiles">,
+  hasPaidComponent: boolean,
+  stripe: Stripe,
+  supabase: ReturnType<typeof createServiceClient>
+): Promise<boolean> {
+  if (!hasPaidComponent) return false;
+  return (await getSellerPayoutStatus(profile, stripe, supabase)) !== "ready";
+}

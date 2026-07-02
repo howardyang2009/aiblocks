@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
-import { getSellerPayoutStatus } from "@/lib/seller";
+import { shouldShowStripeNudge } from "@/lib/seller";
 import { StripeNudge } from "@/components/stripe-nudge";
 import { ComponentCard } from "@/components/component-card";
 import type { ComponentSummary } from "@/types/database";
@@ -30,14 +30,13 @@ export default async function SellerProfilePage({ params }: { params: { username
   // Owner-only Stripe nudge: only the signed-in owner of THIS profile sees it,
   // and only if they have paid components but payouts aren't connected yet.
   const { userId } = auth();
-  let showNudge = false;
-  if (userId && profile.clerk_user_id === userId) {
-    const hasPaid = components.some((c) => c.price_cents > 0);
-    if (hasPaid) {
-      const status = await getSellerPayoutStatus(profile, getStripe(), supabase);
-      showNudge = status !== "ready";
-    }
-  }
+  const isOwner = !!userId && profile.clerk_user_id === userId;
+  const showNudge = isOwner && await shouldShowStripeNudge(
+    profile,
+    components.some((c) => c.price_cents > 0),
+    getStripe(),
+    supabase
+  );
 
   return (
     <>

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
-import { getSellerPayoutStatus } from "@/lib/seller";
+import { shouldShowStripeNudge } from "@/lib/seller";
 import { StripeNudge } from "@/components/stripe-nudge";
 
 // Wraps every /dashboard page. Surfaces the Stripe-onboarding nudge only to
@@ -27,10 +27,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         .gt("price_cents", 0)
         .limit(1);
 
-      if (paid && paid.length > 0) {
-        const status = await getSellerPayoutStatus(profile, getStripe(), supabase);
-        showNudge = status !== "ready";
-      }
+      showNudge = await shouldShowStripeNudge(profile, (paid?.length ?? 0) > 0, getStripe(), supabase);
     }
   }
 
