@@ -16,6 +16,7 @@ async function loadComponentPageData(
   userId: string | null,
   supabase: ReturnType<typeof createServiceClient>
 ) {
+  // Q1 — gate: everything depends on the component existing.
   const { data: component } = await supabase
     .from("components")
     .select("*")
@@ -25,81 +26,76 @@ async function loadComponentPageData(
 
   if (!component) return null;
 
-  // Seller for attribution.
-  const { data: seller } = await supabase
-    .from("profiles")
-    .select("username, display_name")
-    .eq("id", component.seller_id)
-    .maybeSingle();
+  // Tier 2 — five queries independent of each other, all unblocked after Q1.
+  const [
+    { data: seller },
+    { data: ctRows },
+    { data: viewerProfileRow },
+    { data: reviewRows },
+    { data: commentRows },
+  ] = await Promise.all([
+    supabase.from("profiles").select("username, display_name").eq("id", component.seller_id).maybeSingle(),
+    supabase.from("component_tags").select("tag_id").eq("component_id", component.id),
+    userId
+      ? supabase.from("profiles").select("id, username, display_name, avatar_url").eq("clerk_user_id", userId).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase.from("reviews").select("id, buyer_id, rating, body, created_at").eq("component_id", component.id).order("created_at", { ascending: false }).limit(100),
+    supabase.from("comments").select("id, user_id, parent_id, body, created_at").eq("component_id", component.id).order("created_at", { ascending: true }).limit(200),
+  ]);
 
-  // Tags (two-step to avoid join-shape ambiguity).
-  const { data: ctRows } = await supabase
-    .from("component_tags").select("tag_id").eq("component_id", component.id);
-  const tagIds = (ctRows ?? []).map(r => r.tag_id);
-  let tags: string[] = [];
-  if (tagIds.length) {
-    const { data: tg } = await supabase.from("tags").select("name").in("id", tagIds);
-    tags = (tg ?? []).map(r => r.name);
-  }
+  // Derived inputs for tier 3.
+  const tagIds       = (ctRows ?? []).map(r => r.tag_id);
+  const reviewerIds  = [...new Set((reviewRows ?? []).map(r => r.buyer_id))];
+  const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
 
-  // Current user: starred? owns it?
-  let starred = false;
-  let owned = false;
-  let viewerProfileId: string | null = null;
-  let viewer: { username: string; display_name: string | null; avatar_url: string | null } | null =
-    null;
-  if (userId) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, username, display_name, avatar_url")
-      .eq("clerk_user_id", userId)
-      .maybeSingle();
-    if (profile) {
-      viewerProfileId = profile.id;
-      viewer = {
-        username: profile.username,
-        display_name: profile.display_name ?? null,
-        avatar_url: profile.avatar_url ?? null,
-      };
-      const { data: s } = await supabase
-        .from("stars").select("user_id").eq("user_id", profile.id).eq("component_id", component.id).maybeSingle();
-      starred = !!s;
-      const { data: d } = await supabase
-        .from("downloads").select("id").eq("user_id", profile.id).eq("component_id", component.id).maybeSingle();
-      owned = !!d;
-    }
-  }
+  const viewerProfileId = viewerProfileRow?.id ?? null;
+  const viewer = viewerProfileRow
+    ? {
+        username: viewerProfileRow.username,
+        display_name: viewerProfileRow.display_name ?? null,
+        avatar_url: viewerProfileRow.avatar_url ?? null,
+      }
+    : null;
+
+  // Tier 3 — six queries, each depends on one tier-2 result, none on each other.
+  const [
+    { data: tagRows },
+    { data: starRow },
+    { data: downloadRow },
+    { data: reviewers },
+    { data: replyRows },
+    { data: commenters },
+  ] = await Promise.all([
+    tagIds.length
+      ? supabase.from("tags").select("name").in("id", tagIds)
+      : Promise.resolve({ data: [] as { name: string }[] }),
+    viewerProfileRow
+      ? supabase.from("stars").select("user_id").eq("user_id", viewerProfileRow.id).eq("component_id", component.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    viewerProfileRow
+      ? supabase.from("downloads").select("id").eq("user_id", viewerProfileRow.id).eq("component_id", component.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    reviewerIds.length
+      ? supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", reviewerIds)
+      : Promise.resolve({ data: [] as { id: string; username: string; display_name: string | null; avatar_url: string | null }[] }),
+    (reviewRows ?? []).length
+      ? supabase.from("review_replies").select("review_id, body, created_at").eq("component_id", component.id)
+      : Promise.resolve({ data: [] as { review_id: string; body: string; created_at: string }[] }),
+    commenterIds.length
+      ? supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", commenterIds)
+      : Promise.resolve({ data: [] as { id: string; username: string; display_name: string | null; avatar_url: string | null }[] }),
+  ]);
+
+  const tags    = (tagRows ?? []).map(r => r.name);
+  const starred = !!starRow;
+  const owned   = !!downloadRow;
   const isSeller = viewerProfileId !== null && viewerProfileId === component.seller_id;
 
-  // Reviews — two-step: rows then reviewer profiles.
-  const { data: reviewRows } = await supabase
-    .from("reviews")
-    .select("id, buyer_id, rating, body, created_at")
-    .eq("component_id", component.id)
-    .order("created_at", { ascending: false })
-    .limit(100);
-
-  const reviewerIds = [...new Set((reviewRows ?? []).map(r => r.buyer_id))];
-  let reviewerById = new Map<string, any>();
-  if (reviewerIds.length) {
-    const { data: reviewers } = await supabase
-      .from("profiles")
-      .select("id, username, display_name, avatar_url")
-      .in("id", reviewerIds);
-    reviewerById = new Map((reviewers ?? []).map(p => [p.id, p]));
-  }
-
-  let replyByReviewId = new Map<string, any>();
-  if ((reviewRows ?? []).length) {
-    const { data: replyRows } = await supabase
-      .from("review_replies")
-      .select("review_id, body, created_at")
-      .eq("component_id", component.id);
-    replyByReviewId = new Map((replyRows ?? []).map(r => [r.review_id, r]));
-  }
+  const reviewerById   = new Map((reviewers ?? []).map(p => [p.id, p]));
+  const replyByReviewId = new Map((replyRows ?? []).map(r => [r.review_id, r]));
 
   const reviews: Review[] = (reviewRows ?? []).map(r => {
-    const p = reviewerById.get(r.buyer_id);
+    const p     = reviewerById.get(r.buyer_id);
     const reply = replyByReviewId.get(r.id);
     return {
       id: r.id,
@@ -117,27 +113,11 @@ async function loadComponentPageData(
   });
 
   const reviewCount = reviews.length;
-  const avgRating = reviewCount
+  const avgRating   = reviewCount
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
     : null;
 
-  // Comments — two-step: rows then commenter profiles, then assemble tree.
-  const { data: commentRows } = await supabase
-    .from("comments")
-    .select("id, user_id, parent_id, body, created_at")
-    .eq("component_id", component.id)
-    .order("created_at", { ascending: true })
-    .limit(200);
-
-  const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
-  let commenterById = new Map<string, any>();
-  if (commenterIds.length) {
-    const { data: commenters } = await supabase
-      .from("profiles")
-      .select("id, username, display_name, avatar_url")
-      .in("id", commenterIds);
-    commenterById = new Map((commenters ?? []).map(p => [p.id, p]));
-  }
+  const commenterById = new Map((commenters ?? []).map(p => [p.id, p]));
 
   const toNode = (r: NonNullable<typeof commentRows>[number]): CommentNode => {
     const p = commenterById.get(r.user_id);
