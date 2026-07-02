@@ -11,17 +11,19 @@ import { formatPrice } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function ComponentDetailPage({ params }: { params: { id: string } }) {
-  const supabase = createServiceClient();
-
+async function loadComponentPageData(
+  id: string,
+  userId: string | null,
+  supabase: ReturnType<typeof createServiceClient>
+) {
   const { data: component } = await supabase
     .from("components")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("status", "published")
     .maybeSingle();
 
-  if (!component) notFound();
+  if (!component) return null;
 
   // Seller for attribution.
   const { data: seller } = await supabase
@@ -41,7 +43,6 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
   }
 
   // Current user: starred? owns it?
-  const { userId } = auth();
   let starred = false;
   let owned = false;
   let viewerProfileId: string | null = null;
@@ -54,24 +55,23 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
       .eq("clerk_user_id", userId)
       .maybeSingle();
     if (profile) {
-      const pid = profile.id;
-      viewerProfileId = pid;
+      viewerProfileId = profile.id;
       viewer = {
         username: profile.username,
         display_name: profile.display_name ?? null,
         avatar_url: profile.avatar_url ?? null,
       };
       const { data: s } = await supabase
-        .from("stars").select("user_id").eq("user_id", pid).eq("component_id", component.id).maybeSingle();
+        .from("stars").select("user_id").eq("user_id", profile.id).eq("component_id", component.id).maybeSingle();
       starred = !!s;
       const { data: d } = await supabase
-        .from("downloads").select("id").eq("user_id", pid).eq("component_id", component.id).maybeSingle();
+        .from("downloads").select("id").eq("user_id", profile.id).eq("component_id", component.id).maybeSingle();
       owned = !!d;
     }
   }
   const isSeller = viewerProfileId !== null && viewerProfileId === component.seller_id;
 
-  // Reviews (V2) — two-step fetch, matching the tags pattern above.
+  // Reviews — two-step: rows then reviewer profiles.
   const { data: reviewRows } = await supabase
     .from("reviews")
     .select("id, buyer_id, rating, body, created_at")
@@ -89,7 +89,6 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
     reviewerById = new Map((reviewers ?? []).map(p => [p.id, p]));
   }
 
-  // Seller replies (V2) — one query for the whole component, keyed by review.
   let replyByReviewId = new Map<string, any>();
   if ((reviewRows ?? []).length) {
     const { data: replyRows } = await supabase
@@ -122,10 +121,7 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
     : null;
 
-  // Comments (V2) — open discussion. Same two-step fetch pattern,
-  // then assemble parent -> replies on the server so the client just
-  // renders a tree. Oldest first: threads read top-down like a
-  // conversation (unlike reviews, which lead with the newest).
+  // Comments — two-step: rows then commenter profiles, then assemble tree.
   const { data: commentRows } = await supabase
     .from("comments")
     .select("id, user_id, parent_id, body, created_at")
@@ -168,9 +164,31 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
     if (!r.parent_id) commentTree.push(node);
   }
   for (const r of commentRows ?? []) {
-    const parentId = r.parent_id;
-    if (parentId) nodeById.get(parentId)?.replies.push(nodeById.get(r.id)!);
+    if (r.parent_id) nodeById.get(r.parent_id)?.replies.push(nodeById.get(r.id)!);
   }
+
+  return {
+    component,
+    seller,
+    tags,
+    starred,
+    owned,
+    viewer,
+    isSeller,
+    reviews,
+    reviewCount,
+    avgRating,
+    commentTree,
+  };
+}
+
+export default async function ComponentDetailPage({ params }: { params: { id: string } }) {
+  const { userId } = auth();
+  const supabase = createServiceClient();
+  const data = await loadComponentPageData(params.id, userId ?? null, supabase);
+  if (!data) notFound();
+
+  const { component, seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10 grid lg:grid-cols-[1fr_320px] gap-10">
