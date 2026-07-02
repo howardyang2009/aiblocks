@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       const { data: paid } = await supabase
         .from("components")
         .select("id")
-        .eq("seller_id", (profile as any).id)
+        .eq("seller_id", profile.id)
         .eq("status", "published")
         .gt("price_cents", 0)
         .limit(1);

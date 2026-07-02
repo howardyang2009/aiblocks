@@ -350,6 +350,58 @@ export type Database = {
           },
         ]
       }
+      review_replies: {
+        Row: {
+          body: string
+          component_id: string
+          created_at: string
+          id: string
+          review_id: string
+          seller_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          component_id: string
+          created_at?: string
+          id?: string
+          review_id: string
+          seller_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          component_id?: string
+          created_at?: string
+          id?: string
+          review_id?: string
+          seller_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_replies_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_replies_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: true
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_replies_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           body: string | null

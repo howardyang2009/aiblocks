@@ -31,8 +31,8 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
     const { data: tagRow } = await supabase.from("tags").select("id").eq("name", tag).maybeSingle();
     if (tagRow) {
       const { data: ct } = await supabase
-        .from("component_tags").select("component_id").eq("tag_id", (tagRow as any).id);
-      tagComponentIds = (ct ?? []).map((r: any) => r.component_id);
+        .from("component_tags").select("component_id").eq("tag_id", tagRow.id);
+      tagComponentIds = (ct ?? []).map(r => r.component_id);
     } else {
       tagComponentIds = []; // unknown tag -> no matches
     }

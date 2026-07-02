@@ -24,10 +24,10 @@ export default async function MyDownloadsPage() {
       const { data: dl } = await supabase
         .from("downloads")
         .select("component_id, acquired_at")
-        .eq("user_id", (profile as any).id)
+        .eq("user_id", profile.id)
         .order("acquired_at", { ascending: false });
 
-      const ids = (dl ?? []).map((r: any) => r.component_id);
+      const ids = (dl ?? []).map(r => r.component_id);
       if (ids.length) {
         const { data: comps } = await supabase
           .from("components")

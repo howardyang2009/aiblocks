@@ -14,15 +14,14 @@ export const dynamic = "force-dynamic";
 export default async function ComponentDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServiceClient();
 
-  const { data: c } = await supabase
+  const { data: component } = await supabase
     .from("components")
     .select("*")
     .eq("id", params.id)
     .eq("status", "published")
     .maybeSingle();
 
-  if (!c) notFound();
-  const component = c as any;
+  if (!component) notFound();
 
   // Seller for attribution.
   const { data: seller } = await supabase
@@ -34,11 +33,11 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
   // Tags (two-step to avoid join-shape ambiguity).
   const { data: ctRows } = await supabase
     .from("component_tags").select("tag_id").eq("component_id", component.id);
-  const tagIds = (ctRows ?? []).map((r: any) => r.tag_id);
+  const tagIds = (ctRows ?? []).map(r => r.tag_id);
   let tags: string[] = [];
   if (tagIds.length) {
     const { data: tg } = await supabase.from("tags").select("name").in("id", tagIds);
-    tags = (tg ?? []).map((r: any) => r.name);
+    tags = (tg ?? []).map(r => r.name);
   }
 
   // Current user: starred? owns it?
@@ -55,12 +54,12 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
       .eq("clerk_user_id", userId)
       .maybeSingle();
     if (profile) {
-      const pid = (profile as any).id;
+      const pid = profile.id;
       viewerProfileId = pid;
       viewer = {
-        username: (profile as any).username,
-        display_name: (profile as any).display_name ?? null,
-        avatar_url: (profile as any).avatar_url ?? null,
+        username: profile.username,
+        display_name: profile.display_name ?? null,
+        avatar_url: profile.avatar_url ?? null,
       };
       const { data: s } = await supabase
         .from("stars").select("user_id").eq("user_id", pid).eq("component_id", component.id).maybeSingle();
@@ -80,14 +79,14 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
     .order("created_at", { ascending: false })
     .limit(100);
 
-  const reviewerIds = [...new Set((reviewRows ?? []).map((r: any) => r.buyer_id))];
+  const reviewerIds = [...new Set((reviewRows ?? []).map(r => r.buyer_id))];
   let reviewerById = new Map<string, any>();
   if (reviewerIds.length) {
     const { data: reviewers } = await supabase
       .from("profiles")
       .select("id, username, display_name, avatar_url")
       .in("id", reviewerIds);
-    reviewerById = new Map((reviewers ?? []).map((p: any) => [p.id, p]));
+    reviewerById = new Map((reviewers ?? []).map(p => [p.id, p]));
   }
 
   // Seller replies (V2) — one query for the whole component, keyed by review.
@@ -97,10 +96,10 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
       .from("review_replies")
       .select("review_id, body, created_at")
       .eq("component_id", component.id);
-    replyByReviewId = new Map((replyRows ?? []).map((r: any) => [r.review_id, r]));
+    replyByReviewId = new Map((replyRows ?? []).map(r => [r.review_id, r]));
   }
 
-  const reviews: Review[] = (reviewRows ?? []).map((r: any) => {
+  const reviews: Review[] = (reviewRows ?? []).map(r => {
     const p = reviewerById.get(r.buyer_id);
     const reply = replyByReviewId.get(r.id);
     return {
@@ -134,17 +133,17 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
     .order("created_at", { ascending: true })
     .limit(200);
 
-  const commenterIds = [...new Set((commentRows ?? []).map((r: any) => r.user_id))];
+  const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
   let commenterById = new Map<string, any>();
   if (commenterIds.length) {
     const { data: commenters } = await supabase
       .from("profiles")
       .select("id, username, display_name, avatar_url")
       .in("id", commenterIds);
-    commenterById = new Map((commenters ?? []).map((p: any) => [p.id, p]));
+    commenterById = new Map((commenters ?? []).map(p => [p.id, p]));
   }
 
-  const toNode = (r: any): CommentNode => {
+  const toNode = (r: NonNullable<typeof commentRows>[number]): CommentNode => {
     const p = commenterById.get(r.user_id);
     return {
       id: r.id,
@@ -165,12 +164,12 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
   const commentTree: CommentNode[] = [];
   for (const r of commentRows ?? []) {
     const node = toNode(r);
-    nodeById.set((r as any).id, node);
-    if (!(r as any).parent_id) commentTree.push(node);
+    nodeById.set(r.id, node);
+    if (!r.parent_id) commentTree.push(node);
   }
   for (const r of commentRows ?? []) {
-    const parentId = (r as any).parent_id;
-    if (parentId) nodeById.get(parentId)?.replies.push(nodeById.get((r as any).id)!);
+    const parentId = r.parent_id;
+    if (parentId) nodeById.get(parentId)?.replies.push(nodeById.get(r.id)!);
   }
 
   return (
@@ -183,8 +182,8 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
         {seller && (
           <p className="text-sm text-subtle mt-3">
             by{" "}
-            <Link href={`/sellers/${(seller as any).username}`} className="text-accent hover:underline">
-              @{(seller as any).username}
+            <Link href={`/sellers/${seller.username}`} className="text-accent hover:underline">
+              @{seller.username}
             </Link>
           </p>
         )}
@@ -213,7 +212,7 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
           canReview={owned && !isSeller}
           signedIn={!!userId}
           isSeller={isSeller}
-          sellerUsername={(seller as any)?.username ?? null}
+          sellerUsername={seller?.username ?? null}
         />
 
         <hr className="my-8" />

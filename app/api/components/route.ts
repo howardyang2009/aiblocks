@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
 
     if (tagRows && tagRows.length > 0) {
       await supabase.from("component_tags").insert(
-        tagRows.map((t: any) => ({ component_id: component.id, tag_id: t.id }))
+        tagRows.map(t => ({ component_id: component.id, tag_id: t.id }))
       );
     }
   }

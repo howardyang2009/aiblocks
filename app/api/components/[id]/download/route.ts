@@ -25,28 +25,27 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     .eq("id", params.id)
     .maybeSingle();
 
-  const c = component as any;
-  if (!c || c.status !== "published" || !c.zip_path) {
+  if (!component || component.status !== "published" || !component.zip_path) {
     return NextResponse.json({ error: "Not available." }, { status: 404 });
   }
 
-  if (c.price_cents > 0) {
+  if (component.price_cents > 0) {
     // Paid: require an existing entitlement.
     const { data: entitlement } = await supabase
-      .from("downloads").select("id").eq("user_id", profile.id).eq("component_id", c.id).maybeSingle();
+      .from("downloads").select("id").eq("user_id", profile.id).eq("component_id", component.id).maybeSingle();
     if (!entitlement) {
       return NextResponse.json({ error: "Purchase required." }, { status: 402 });
     }
   } else {
     // Free: ensure a library entry (idempotent; trigger bumps download_count).
     await supabase.from("downloads").upsert(
-      { user_id: profile.id, component_id: c.id },
+      { user_id: profile.id, component_id: component.id },
       { onConflict: "user_id,component_id", ignoreDuplicates: true }
     );
   }
 
   const bucket = process.env.SUPABASE_ZIP_BUCKET ?? ZIP_BUCKET;
-  const { data: signed, error } = await supabase.storage.from(bucket).createSignedUrl(c.zip_path, 60);
+  const { data: signed, error } = await supabase.storage.from(bucket).createSignedUrl(component.zip_path, 60);
   if (error || !signed) {
     return NextResponse.json({ error: "Could not prepare download." }, { status: 500 });
   }

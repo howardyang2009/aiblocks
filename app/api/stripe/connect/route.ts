@@ -15,7 +15,7 @@ export async function POST() {
   const stripe = getStripe();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-  let accountId: string | null = (profile as any).stripe_account_id ?? null;
+  let accountId: string | null = profile.stripe_account_id ?? null;
 
   // A stored account id can be STALE after switching Stripe modes: an account
   // created in test mode does not exist under live keys (and vice-versa).
@@ -39,7 +39,7 @@ export async function POST() {
     await supabase
       .from("profiles")
       .update({ stripe_account_id: accountId, stripe_onboarding_done: false })
-      .eq("id", (profile as any).id);
+      .eq("id", profile.id);
   }
 
   const link = await stripe.accountLinks.create({

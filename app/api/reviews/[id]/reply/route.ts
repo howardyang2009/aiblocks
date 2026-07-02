@@ -55,9 +55,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { data: component } = await supabase
     .from("components")
     .select("id, seller_id")
-    .eq("id", (review as any).component_id)
+    .eq("id", review.component_id)
     .maybeSingle();
-  if (!component || (component as any).seller_id !== profile.id) {
+  if (!component || component.seller_id !== profile.id) {
     return NextResponse.json(
       { error: "Only the seller of this component can reply to its reviews." },
       { status: 403 }
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .upsert(
       {
         review_id: params.id,
-        component_id: (component as any).id,
+        component_id: component.id,
         seller_id: profile.id,
         body,
       },

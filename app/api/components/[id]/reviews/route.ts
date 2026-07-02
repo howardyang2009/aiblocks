@@ -53,12 +53,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .select("id, seller_id, status")
     .eq("id", params.id)
     .maybeSingle();
-  if (!component || (component as any).status !== "published") {
+  if (!component || component.status !== "published") {
     return NextResponse.json({ error: "Component not found." }, { status: 404 });
   }
 
   // No self-reviews.
-  if ((component as any).seller_id === profile.id) {
+  if (component.seller_id === profile.id) {
     return NextResponse.json({ error: "You can't review your own component." }, { status: 403 });
   }
 

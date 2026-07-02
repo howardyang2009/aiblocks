@@ -50,7 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .select("id, status")
     .eq("id", params.id)
     .maybeSingle();
-  if (!component || (component as any).status !== "published") {
+  if (!component || component.status !== "published") {
     return NextResponse.json({ error: "Component not found." }, { status: 404 });
   }
 
@@ -61,10 +61,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       .select("id, component_id, parent_id")
       .eq("id", parentId)
       .maybeSingle();
-    if (!parent || (parent as any).component_id !== params.id) {
+    if (!parent || parent.component_id !== params.id) {
       return NextResponse.json({ error: "Comment to reply to was not found." }, { status: 404 });
     }
-    if ((parent as any).parent_id) {
+    if (parent.parent_id) {
       // One level of threading only — replies to replies are not allowed.
       return NextResponse.json(
         { error: "Replies can only be added to top-level comments." },

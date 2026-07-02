@@ -11,10 +11,9 @@ export const dynamic = "force-dynamic";
 export default async function SellerProfilePage({ params }: { params: { username: string } }) {
   const supabase = createServiceClient();
 
-  const { data: p } = await supabase
+  const { data: profile } = await supabase
     .from("profiles").select("*").eq("username", params.username).maybeSingle();
-  if (!p) notFound();
-  const profile = p as any;
+  if (!profile) notFound();
 
   const { data: comps } = await supabase
     .from("components")
