@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-import { ZIP_BUCKET, MAX_ZIP_BYTES } from "@/lib/constants";
+import { MAX_ZIP_BYTES } from "@/lib/constants";
 
 type Status = "idle" | "uploading" | "saving" | "done" | "error";
 
@@ -47,7 +47,7 @@ export default function PublishPage() {
       // 2. Upload the zip DIRECTLY to Supabase Storage.
       const supabase = createBrowserClient();
       const { error: upErr } = await supabase.storage
-        .from(ZIP_BUCKET)
+        .from(urlJson.bucket)
         .uploadToSignedUrl(urlJson.path, urlJson.token, file);
       if (upErr) throw new Error("Upload failed. Please try again.");
 

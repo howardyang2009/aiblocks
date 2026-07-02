@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
-import { ZIP_BUCKET } from "@/lib/constants";
+import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 
 // ============================================================
 // THE PAYWALL. Releases a short-lived signed URL for a component's zip
@@ -35,7 +35,7 @@ export const POST = withAuth(async (_req, { params, profile, supabase }) => {
     );
   }
 
-  const bucket = process.env.SUPABASE_ZIP_BUCKET ?? ZIP_BUCKET;
+  const bucket = ACTIVE_ZIP_BUCKET;
   const { data: signed, error } = await supabase.storage.from(bucket).createSignedUrl(component.zip_path, 60);
   if (error || !signed) {
     return NextResponse.json({ error: "Could not prepare download." }, { status: 500 });

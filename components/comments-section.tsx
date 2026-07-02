@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 // Open comments section (V2), rendered on the component detail page
 // below the reviews. Unlike reviews, comments are ungated: any
@@ -26,24 +28,6 @@ export type CommentNode = {
   replies: CommentNode[];
 };
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function Avatar({ author }: { author: CommentNode["author"] }) {
-  return author.avatar_url ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={author.avatar_url} alt="" className="w-7 h-7 rounded-block object-cover shrink-0" />
-  ) : (
-    <span className="w-7 h-7 rounded-block border bg-surface inline-flex items-center justify-center font-mono text-[11px] text-subtle shrink-0">
-      {(author.display_name ?? author.username).slice(0, 1).toUpperCase()}
-    </span>
-  );
-}
 
 function AuthorLine({ c }: { c: CommentNode }) {
   return (
@@ -219,7 +203,7 @@ export function CommentsSection({
           {comments.map((c) => (
             <li key={c.id} className="border-b border-line pb-5 last:border-b-0">
               <div className="flex items-start gap-2.5">
-                <Avatar author={c.author} />
+                <UserAvatar user={c.author} />
                 <div className="min-w-0 flex-1">
                   <AuthorLine c={c} />
                   <p className="mt-1 text-sm text-muted whitespace-pre-wrap">{c.body}</p>
@@ -253,7 +237,7 @@ export function CommentsSection({
                       {c.replies.map((r) => (
                         <li key={r.id}>
                           <div className="flex items-start gap-2.5">
-                            <Avatar author={r.author} />
+                            <UserAvatar user={r.author} />
                             <div className="min-w-0 flex-1">
                               <AuthorLine c={r} />
                               <p className="mt-1 text-sm text-muted whitespace-pre-wrap">{r.body}</p>

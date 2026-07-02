@@ -1,3 +1,13 @@
+// Format an ISO date string to "Jan 1, 2025" (matches toLocaleDateString used
+// in comments and reviews).
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 // Format integer cents into a display price. 0 cents => "Free".
 export function formatPrice(cents: number, currency = "usd"): string {
   if (cents === 0) return "Free";

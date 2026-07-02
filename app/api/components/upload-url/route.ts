@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { withAuth } from "@/lib/auth";
-import { ZIP_BUCKET, MAX_ZIP_BYTES } from "@/lib/constants";
+import { MAX_ZIP_BYTES } from "@/lib/constants";
+import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 
 // Mint a one-time signed upload URL so the browser can upload the zip
 // DIRECTLY to Supabase Storage (good for 10MB — never flows through this
@@ -14,12 +15,13 @@ export const POST = withAuth(async (req, { profile, supabase }) => {
   }
 
   const path = `${profile.id}/${randomUUID()}.zip`;
-  const bucket = process.env.SUPABASE_ZIP_BUCKET ?? ZIP_BUCKET;
 
-  const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(path);
+  const { data, error } = await supabase.storage.from(ACTIVE_ZIP_BUCKET).createSignedUploadUrl(path);
   if (error || !data) {
     return NextResponse.json({ error: "Could not create upload URL." }, { status: 500 });
   }
 
-  return NextResponse.json({ path, token: data.token });
+  // Return the bucket so the client can upload to the exact same bucket the
+  // token was minted for, even if SUPABASE_ZIP_BUCKET overrides the default.
+  return NextResponse.json({ path, token: data.token, bucket: ACTIVE_ZIP_BUCKET });
 });

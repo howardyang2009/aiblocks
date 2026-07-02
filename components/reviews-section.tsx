@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { formatDate } from "@/lib/utils";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 // Verified-buyer reviews section (V2), rendered on the component
 // detail page below the README.
@@ -304,18 +306,7 @@ export function ReviewsSection({
           {reviews.map((r) => (
             <li key={r.id} className="border-b border-line pb-5 last:border-b-0">
               <div className="flex items-center gap-2.5">
-                {r.reviewer.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={r.reviewer.avatar_url}
-                    alt=""
-                    className="w-7 h-7 rounded-block object-cover"
-                  />
-                ) : (
-                  <span className="w-7 h-7 rounded-block border bg-surface inline-flex items-center justify-center font-mono text-[11px] text-subtle">
-                    {(r.reviewer.display_name ?? r.reviewer.username).slice(0, 1).toUpperCase()}
-                  </span>
-                )}
+                <UserAvatar user={r.reviewer} />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <a
@@ -333,13 +324,7 @@ export function ReviewsSection({
                   </div>
                   <div className="flex items-center gap-2">
                     <Stars value={r.rating} size="text-xs" />
-                    <span className="font-mono text-[10px] text-subtle">
-                      {new Date(r.created_at).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
+                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.created_at)}</span>
                   </div>
                 </div>
               </div>
@@ -355,13 +340,7 @@ export function ReviewsSection({
                     {sellerUsername && (
                       <span className="font-mono text-[10px] text-subtle">@{sellerUsername}</span>
                     )}
-                    <span className="font-mono text-[10px] text-subtle">
-                      {new Date(r.reply.created_at).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
+                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.reply.created_at)}</span>
                   </div>
                   <p className="mt-1.5 text-sm text-muted whitespace-pre-wrap">{r.reply.body}</p>
                   {isSeller && (

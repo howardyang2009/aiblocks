@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { withAuth } from "@/lib/auth";
 import { slugify, parseList } from "@/lib/utils";
-import { ZIP_BUCKET, MAX_ZIP_BYTES } from "@/lib/constants";
+import { MAX_ZIP_BYTES } from "@/lib/constants";
+import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 
 // GET /api/components?q=&sort=  — browse + search.
 // Uses Postgres full-text search on the generated search_tsv column.
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
 // via a signed upload URL. Body:
 //   { name, description, readme, ecosystems[], tags[], price, zipPath }
 export const POST = withAuth(async (req, { profile, supabase }) => {
-  const bucket = process.env.SUPABASE_ZIP_BUCKET ?? ZIP_BUCKET;
+  const bucket = ACTIVE_ZIP_BUCKET;
 
   let body: any;
   try {
