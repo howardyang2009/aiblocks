@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
-import { getEntitlement } from "@/lib/entitlements";
+import { getEntitlement, grantEntitlement } from "@/lib/entitlements";
 import { isFreeComponent } from "@/lib/utils";
 
 // ============================================================
@@ -29,10 +29,7 @@ export const POST = withAuth(async (_req, { params, profile, supabase }) => {
     }
   } else {
     // Free: ensure a library entry (idempotent; trigger bumps download_count).
-    await supabase.from("downloads").upsert(
-      { user_id: profile.id, component_id: component.id },
-      { onConflict: "user_id,component_id", ignoreDuplicates: true }
-    );
+    await grantEntitlement(supabase, { userId: profile.id, componentId: component.id });
   }
 
   const bucket = ACTIVE_ZIP_BUCKET;

@@ -33,3 +33,18 @@ export async function listEntitlements(
     .order("acquired_at", { ascending: false });
   return data ?? [];
 }
+
+// Record that a user has acquired a component — idempotent (the downloads
+// trigger bumps download_count only on first insert). Called on a free
+// download and after a paid purchase is confirmed by the Stripe webhook;
+// `purchaseId` is omitted for free downloads.
+export async function grantEntitlement(
+  supabase: ReturnType<typeof createServiceClient>,
+  args: { userId: string; componentId: string; purchaseId?: string }
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("downloads").upsert(
+    { user_id: args.userId, component_id: args.componentId, purchase_id: args.purchaseId ?? null },
+    { onConflict: "user_id,component_id", ignoreDuplicates: true }
+  );
+  return { error: error?.message ?? null };
+}
