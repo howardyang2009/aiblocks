@@ -1,7 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { shouldShowStripeNudge } from "@/lib/seller";
+import { getViewer } from "@/lib/viewer";
 import { StripeNudge } from "@/components/stripe-nudge";
 
 // Wraps every /dashboard page. Surfaces the Stripe-onboarding nudge only to
@@ -9,26 +9,21 @@ import { StripeNudge } from "@/components/stripe-nudge";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = auth();
+  const supabase = createServiceClient();
+  const { profile } = await getViewer(supabase);
   let showNudge = false;
 
-  if (userId) {
-    const supabase = createServiceClient();
-    const { data: profile } = await supabase
-      .from("profiles").select("*").eq("clerk_user_id", userId).maybeSingle();
+  if (profile) {
+    // Does this seller have at least one published PAID component?
+    const { data: paid } = await supabase
+      .from("components")
+      .select("id")
+      .eq("seller_id", profile.id)
+      .eq("status", "published")
+      .gt("price_cents", 0)
+      .limit(1);
 
-    if (profile) {
-      // Does this seller have at least one published PAID component?
-      const { data: paid } = await supabase
-        .from("components")
-        .select("id")
-        .eq("seller_id", profile.id)
-        .eq("status", "published")
-        .gt("price_cents", 0)
-        .limit(1);
-
-      showNudge = await shouldShowStripeNudge(profile, (paid?.length ?? 0) > 0, getStripe(), supabase);
-    }
+    showNudge = await shouldShowStripeNudge(profile, (paid?.length ?? 0) > 0, getStripe(), supabase);
   }
 
   return (

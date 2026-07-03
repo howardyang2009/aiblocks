@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { StarButton } from "@/components/star-button";
@@ -9,12 +8,14 @@ import { ReviewsSection, type Review } from "@/components/reviews-section";
 import { CommentsSection, type CommentNode } from "@/components/comments-section";
 import { formatPrice } from "@/lib/utils";
 import { getEntitlement } from "@/lib/entitlements";
+import { getViewer } from "@/lib/viewer";
+import type { Tables } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
 async function loadComponentPageData(
   id: string,
-  userId: string | null,
+  viewerProfile: Tables<"profiles"> | null,
   supabase: ReturnType<typeof createServiceClient>
 ) {
   // Q1 — gate: everything depends on the component existing.
@@ -27,19 +28,15 @@ async function loadComponentPageData(
 
   if (!component) return null;
 
-  // Tier 2 — five queries independent of each other, all unblocked after Q1.
+  // Tier 2 — four queries independent of each other, all unblocked after Q1.
   const [
     { data: seller },
     { data: ctRows },
-    { data: viewerProfileRow },
     { data: reviewRows },
     { data: commentRows },
   ] = await Promise.all([
     supabase.from("profiles").select("username, display_name").eq("id", component.seller_id).maybeSingle(),
     supabase.from("component_tags").select("tag_id").eq("component_id", component.id),
-    userId
-      ? supabase.from("profiles").select("id, username, display_name, avatar_url").eq("clerk_user_id", userId).maybeSingle()
-      : Promise.resolve({ data: null }),
     supabase.from("reviews").select("id, buyer_id, rating, body, created_at").eq("component_id", component.id).order("created_at", { ascending: false }).limit(100),
     supabase.from("comments").select("id, user_id, parent_id, body, created_at").eq("component_id", component.id).order("created_at", { ascending: true }).limit(200),
   ]);
@@ -49,12 +46,12 @@ async function loadComponentPageData(
   const reviewerIds  = [...new Set((reviewRows ?? []).map(r => r.buyer_id))];
   const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
 
-  const viewerProfileId = viewerProfileRow?.id ?? null;
-  const viewer = viewerProfileRow
+  const viewerProfileId = viewerProfile?.id ?? null;
+  const viewer = viewerProfile
     ? {
-        username: viewerProfileRow.username,
-        display_name: viewerProfileRow.display_name ?? null,
-        avatar_url: viewerProfileRow.avatar_url ?? null,
+        username: viewerProfile.username,
+        display_name: viewerProfile.display_name ?? null,
+        avatar_url: viewerProfile.avatar_url ?? null,
       }
     : null;
 
@@ -70,11 +67,11 @@ async function loadComponentPageData(
     tagIds.length
       ? supabase.from("tags").select("name").in("id", tagIds)
       : Promise.resolve({ data: [] as { name: string }[] }),
-    viewerProfileRow
-      ? supabase.from("stars").select("user_id").eq("user_id", viewerProfileRow.id).eq("component_id", component.id).maybeSingle()
+    viewerProfile
+      ? supabase.from("stars").select("user_id").eq("user_id", viewerProfile.id).eq("component_id", component.id).maybeSingle()
       : Promise.resolve({ data: null }),
-    viewerProfileRow
-      ? getEntitlement(supabase, viewerProfileRow.id, component.id)
+    viewerProfile
+      ? getEntitlement(supabase, viewerProfile.id, component.id)
       : Promise.resolve(false),
     reviewerIds.length
       ? supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", reviewerIds)
@@ -163,9 +160,9 @@ async function loadComponentPageData(
 }
 
 export default async function ComponentDetailPage({ params }: { params: { id: string } }) {
-  const { userId } = auth();
   const supabase = createServiceClient();
-  const data = await loadComponentPageData(params.id, userId ?? null, supabase);
+  const { profile: viewerProfile } = await getViewer(supabase);
+  const data = await loadComponentPageData(params.id, viewerProfile, supabase);
   if (!data) notFound();
 
   const { component, seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
@@ -208,7 +205,7 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
           componentId={component.id}
           initialReviews={reviews}
           canReview={owned && !isSeller}
-          signedIn={!!userId}
+          signedIn={!!viewerProfile}
           isSeller={isSeller}
           sellerUsername={seller?.username ?? null}
         />
@@ -217,7 +214,7 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
         <CommentsSection
           componentId={component.id}
           initialComments={commentTree}
-          signedIn={!!userId}
+          signedIn={!!viewerProfile}
           viewer={viewer}
           isSeller={isSeller}
         />
@@ -233,7 +230,7 @@ export default async function ComponentDetailPage({ params }: { params: { id: st
             componentId={component.id}
             priceCents={component.price_cents}
             owned={owned}
-            signedIn={!!userId}
+            signedIn={!!viewerProfile}
           />
         </div>
         <div className="mt-4">

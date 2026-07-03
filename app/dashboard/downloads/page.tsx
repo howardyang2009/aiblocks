@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
 import { listEntitlements } from "@/lib/entitlements";
+import { getViewer } from "@/lib/viewer";
 import type { ComponentSummary } from "@/types/database";
 
 // My Downloads — the buyer's library. Reads the `downloads` table (the
@@ -12,32 +12,27 @@ import type { ComponentSummary } from "@/types/database";
 export const dynamic = "force-dynamic";
 
 export default async function MyDownloadsPage() {
-  const { userId } = auth();
   const supabase = createServiceClient();
+  const { profile } = await getViewer(supabase);
 
   let components: ComponentSummary[] = [];
 
-  if (userId) {
-    const { data: profile } = await supabase
-      .from("profiles").select("id").eq("clerk_user_id", userId).maybeSingle();
+  if (profile) {
+    // Library entries, newest first.
+    const dl = await listEntitlements(supabase, profile.id);
 
-    if (profile) {
-      // Library entries, newest first.
-      const dl = await listEntitlements(supabase, profile.id);
+    const ids = dl.map(r => r.component_id);
+    if (ids.length) {
+      const { data: comps } = await supabase
+        .from("components")
+        .select(COMPONENT_SUMMARY_COLS)
+        .in("id", ids);
 
-      const ids = dl.map(r => r.component_id);
-      if (ids.length) {
-        const { data: comps } = await supabase
-          .from("components")
-          .select(COMPONENT_SUMMARY_COLS)
-          .in("id", ids);
-
-        // Preserve the acquired-at ordering from the downloads query.
-        const rank = new Map(ids.map((id: string, i: number) => [id, i]));
-        components = ((comps ?? []) as ComponentSummary[]).sort(
-          (a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)
-        );
-      }
+      // Preserve the acquired-at ordering from the downloads query.
+      const rank = new Map(ids.map((id: string, i: number) => [id, i]));
+      components = ((comps ?? []) as ComponentSummary[]).sort(
+        (a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)
+      );
     }
   }
 
