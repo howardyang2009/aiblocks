@@ -2,8 +2,6 @@ import { currentUser } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils";
 
-export class UnauthenticatedError extends Error {}
-
 // Return the current user's profile, creating it on first use.
 // A user "becomes" a seller the first time they publish, so we lazily
 // bootstrap a profile row here rather than needing a separate sign-up step.

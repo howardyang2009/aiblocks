@@ -13,8 +13,8 @@ import { fetchComponentRows, buildComponentView } from "./view-model";
 export const dynamic = "force-dynamic";
 
 export default async function ComponentDetailPage({ params }: { params: { id: string } }) {
+  const { profile: viewerProfile } = await getViewer();
   const supabase = createServiceClient();
-  const { profile: viewerProfile } = await getViewer(supabase);
   const rows = await fetchComponentRows(supabase, params.id, viewerProfile);
   if (!rows) notFound();
   const data = buildComponentView(rows, viewerProfile);

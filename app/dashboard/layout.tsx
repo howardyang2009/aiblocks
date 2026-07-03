@@ -9,8 +9,8 @@ import { StripeNudge } from "@/components/stripe-nudge";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { profile } = await getViewer();
   const supabase = createServiceClient();
-  const { profile } = await getViewer(supabase);
   let showNudge = false;
 
   if (profile) {

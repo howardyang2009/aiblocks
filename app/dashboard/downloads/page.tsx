@@ -12,8 +12,8 @@ import type { ComponentSummary } from "@/types/database";
 export const dynamic = "force-dynamic";
 
 export default async function MyDownloadsPage() {
+  const { profile } = await getViewer();
   const supabase = createServiceClient();
-  const { profile } = await getViewer(supabase);
 
   let components: ComponentSummary[] = [];
 
