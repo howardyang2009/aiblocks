@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { withAuth } from "@/lib/auth";
 import { slugify, parseList } from "@/lib/utils";
-import { MAX_ZIP_BYTES, COMPONENT_SUMMARY_COLS } from "@/lib/constants";
+import { exceedsZipSizeLimit, COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { parseBody } from "@/lib/request";
 
@@ -82,7 +82,7 @@ export const POST = withAuth(async (req, { profile, supabase }) => {
     return NextResponse.json({ error: "Uploaded file not found. Try again." }, { status: 400 });
   }
   const zipSize = (obj as any).metadata?.size ?? null;
-  if (typeof zipSize === "number" && zipSize > MAX_ZIP_BYTES) {
+  if (typeof zipSize === "number" && exceedsZipSizeLimit(zipSize)) {
     // Clean up the oversized object so it doesn't linger.
     await supabase.storage.from(bucket).remove([zipPath]);
     return NextResponse.json({ error: "Zip exceeds the 10MB limit." }, { status: 413 });

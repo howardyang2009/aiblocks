@@ -1,0 +1,5 @@
+# RLS policies are defense-in-depth, not the enforcement layer
+
+Real authorization (entitlement checks, purchase creation, the Stripe webhook) is enforced in server code using the Supabase service-role key, which bypasses RLS entirely (`lib/entitlements.ts`, `lib/purchases.ts`, and the route handlers that call them). `supabase/migrations/0002_rls.sql` separately re-expresses similar rules as Postgres RLS policies scoped to the anon key. We keep both deliberately: RLS is a second line of defense against direct-from-browser access via the anon key, not the primary mechanism.
+
+**Consequences:** until the Clerk↔Supabase JWT bridge is configured, `auth.jwt() ->> 'sub'` is null, so every identity-scoped policy in `0002_rls.sql` denies by default — that layer is currently inert, and all live enforcement rests on the server-side checks. The two layers aren't kept in sync automatically (e.g. the comment-thread one-level-nesting rule has no RLS equivalent). If `0002_rls.sql` looks incomplete or out of date compared to the app-level checks, that's expected drift, not necessarily a bug — check whether the corresponding server-side check exists before treating it as a gap.

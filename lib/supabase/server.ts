@@ -1,9 +1,11 @@
+import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
 // Server-only Supabase client using the SERVICE ROLE key.
-// This BYPASSES Row Level Security — only ever import it in server code
-// (API routes, server actions). NEVER expose it to the browser.
+// This BYPASSES Row Level Security. The `server-only` import above makes an
+// accidental import from a "use client" module a build error rather than a
+// silent runtime failure. NEVER expose it to the browser.
 // Every privileged action (releasing a paid download, writing purchase
 // records) should go through here AFTER an explicit access check.
 export function createServiceClient() {

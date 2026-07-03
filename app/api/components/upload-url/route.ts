@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { withAuth } from "@/lib/auth";
-import { MAX_ZIP_BYTES } from "@/lib/constants";
+import { exceedsZipSizeLimit } from "@/lib/constants";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { parseBody } from "@/lib/request";
 
@@ -12,7 +12,7 @@ import { parseBody } from "@/lib/request";
 export const POST = withAuth(async (req, { profile, supabase }) => {
   const body = await parseBody<{ size?: unknown }>(req);
   if (body instanceof NextResponse) return body;
-  if (typeof body.size === "number" && body.size > MAX_ZIP_BYTES) {
+  if (typeof body.size === "number" && exceedsZipSizeLimit(body.size)) {
     return NextResponse.json({ error: "Zip exceeds the 10MB limit." }, { status: 413 });
   }
 

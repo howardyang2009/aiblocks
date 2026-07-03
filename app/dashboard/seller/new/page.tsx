@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-import { MAX_ZIP_BYTES } from "@/lib/constants";
+import { exceedsZipSizeLimit } from "@/lib/constants";
 
 type Status = "idle" | "uploading" | "saving" | "done" | "error";
 
@@ -31,7 +31,7 @@ export default function PublishPage() {
     if (name.trim().length < 3) return setError("Name must be at least 3 characters.");
     if (description.trim().length < 10) return setError("Add a short description (10+ characters).");
     if (!file) return setError("Choose a zip file to upload.");
-    if (file.size > MAX_ZIP_BYTES) return setError("Zip exceeds the 10MB limit.");
+    if (exceedsZipSizeLimit(file.size)) return setError("Zip exceeds the 10MB limit.");
 
     try {
       // 1. Ask the server for a one-time signed upload URL.

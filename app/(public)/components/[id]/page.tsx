@@ -4,166 +4,20 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { StarButton } from "@/components/star-button";
 import { DownloadButton } from "@/components/download-button";
-import { ReviewsSection, type Review } from "@/components/reviews-section";
-import { CommentsSection, type CommentNode } from "@/components/comments-section";
+import { ReviewsSection } from "@/components/reviews-section";
+import { CommentsSection } from "@/components/comments-section";
 import { formatPrice } from "@/lib/utils";
-import { getEntitlement } from "@/lib/entitlements";
 import { getViewer } from "@/lib/viewer";
-import type { Tables } from "@/types/database";
+import { fetchComponentRows, buildComponentView } from "./view-model";
 
 export const dynamic = "force-dynamic";
-
-async function loadComponentPageData(
-  id: string,
-  viewerProfile: Tables<"profiles"> | null,
-  supabase: ReturnType<typeof createServiceClient>
-) {
-  // Q1 — gate: everything depends on the component existing.
-  const { data: component } = await supabase
-    .from("components")
-    .select("*")
-    .eq("id", id)
-    .eq("status", "published")
-    .maybeSingle();
-
-  if (!component) return null;
-
-  // Tier 2 — four queries independent of each other, all unblocked after Q1.
-  const [
-    { data: seller },
-    { data: ctRows },
-    { data: reviewRows },
-    { data: commentRows },
-  ] = await Promise.all([
-    supabase.from("profiles").select("username, display_name").eq("id", component.seller_id).maybeSingle(),
-    supabase.from("component_tags").select("tag_id").eq("component_id", component.id),
-    supabase.from("reviews").select("id, buyer_id, rating, body, created_at").eq("component_id", component.id).order("created_at", { ascending: false }).limit(100),
-    supabase.from("comments").select("id, user_id, parent_id, body, created_at").eq("component_id", component.id).order("created_at", { ascending: true }).limit(200),
-  ]);
-
-  // Derived inputs for tier 3.
-  const tagIds       = (ctRows ?? []).map(r => r.tag_id);
-  const reviewerIds  = [...new Set((reviewRows ?? []).map(r => r.buyer_id))];
-  const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
-
-  const viewerProfileId = viewerProfile?.id ?? null;
-  const viewer = viewerProfile
-    ? {
-        username: viewerProfile.username,
-        display_name: viewerProfile.display_name ?? null,
-        avatar_url: viewerProfile.avatar_url ?? null,
-      }
-    : null;
-
-  // Tier 3 — six queries, each depends on one tier-2 result, none on each other.
-  const [
-    { data: tagRows },
-    { data: starRow },
-    owned,
-    { data: reviewers },
-    { data: replyRows },
-    { data: commenters },
-  ] = await Promise.all([
-    tagIds.length
-      ? supabase.from("tags").select("name").in("id", tagIds)
-      : Promise.resolve({ data: [] as { name: string }[] }),
-    viewerProfile
-      ? supabase.from("stars").select("user_id").eq("user_id", viewerProfile.id).eq("component_id", component.id).maybeSingle()
-      : Promise.resolve({ data: null }),
-    viewerProfile
-      ? getEntitlement(supabase, viewerProfile.id, component.id)
-      : Promise.resolve(false),
-    reviewerIds.length
-      ? supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", reviewerIds)
-      : Promise.resolve({ data: [] as { id: string; username: string; display_name: string | null; avatar_url: string | null }[] }),
-    (reviewRows ?? []).length
-      ? supabase.from("review_replies").select("review_id, body, created_at").eq("component_id", component.id)
-      : Promise.resolve({ data: [] as { review_id: string; body: string; created_at: string }[] }),
-    commenterIds.length
-      ? supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", commenterIds)
-      : Promise.resolve({ data: [] as { id: string; username: string; display_name: string | null; avatar_url: string | null }[] }),
-  ]);
-
-  const tags    = (tagRows ?? []).map(r => r.name);
-  const starred = !!starRow;
-  const isSeller = viewerProfileId !== null && viewerProfileId === component.seller_id;
-
-  const reviewerById   = new Map((reviewers ?? []).map(p => [p.id, p]));
-  const replyByReviewId = new Map((replyRows ?? []).map(r => [r.review_id, r]));
-
-  const reviews: Review[] = (reviewRows ?? []).map(r => {
-    const p     = reviewerById.get(r.buyer_id);
-    const reply = replyByReviewId.get(r.id);
-    return {
-      id: r.id,
-      rating: r.rating,
-      body: r.body,
-      created_at: r.created_at,
-      reviewer: {
-        username: p?.username ?? "unknown",
-        display_name: p?.display_name ?? null,
-        avatar_url: p?.avatar_url ?? null,
-      },
-      mine: viewerProfileId !== null && r.buyer_id === viewerProfileId,
-      reply: reply ? { body: reply.body, created_at: reply.created_at } : null,
-    };
-  });
-
-  const reviewCount = reviews.length;
-  const avgRating   = reviewCount
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
-    : null;
-
-  const commenterById = new Map((commenters ?? []).map(p => [p.id, p]));
-
-  const toNode = (r: NonNullable<typeof commentRows>[number]): CommentNode => {
-    const p = commenterById.get(r.user_id);
-    return {
-      id: r.id,
-      body: r.body,
-      created_at: r.created_at,
-      author: {
-        username: p?.username ?? "unknown",
-        display_name: p?.display_name ?? null,
-        avatar_url: p?.avatar_url ?? null,
-      },
-      isSeller: r.user_id === component.seller_id,
-      mine: viewerProfileId !== null && r.user_id === viewerProfileId,
-      replies: [],
-    };
-  };
-
-  const nodeById = new Map<string, CommentNode>();
-  const commentTree: CommentNode[] = [];
-  for (const r of commentRows ?? []) {
-    const node = toNode(r);
-    nodeById.set(r.id, node);
-    if (!r.parent_id) commentTree.push(node);
-  }
-  for (const r of commentRows ?? []) {
-    if (r.parent_id) nodeById.get(r.parent_id)?.replies.push(nodeById.get(r.id)!);
-  }
-
-  return {
-    component,
-    seller,
-    tags,
-    starred,
-    owned,
-    viewer,
-    isSeller,
-    reviews,
-    reviewCount,
-    avgRating,
-    commentTree,
-  };
-}
 
 export default async function ComponentDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServiceClient();
   const { profile: viewerProfile } = await getViewer(supabase);
-  const data = await loadComponentPageData(params.id, viewerProfile, supabase);
-  if (!data) notFound();
+  const rows = await fetchComponentRows(supabase, params.id, viewerProfile);
+  if (!rows) notFound();
+  const data = buildComponentView(rows, viewerProfile);
 
   const { component, seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
 
