@@ -14,16 +14,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   let showNudge = false;
 
   if (profile) {
-    // Does this seller have at least one published PAID component?
-    const { data: paid } = await supabase
-      .from("components")
-      .select("id")
-      .eq("seller_id", profile.id)
-      .eq("status", "published")
-      .gt("price_cents", 0)
-      .limit(1);
-
-    showNudge = await shouldShowStripeNudge(profile, (paid?.length ?? 0) > 0, getStripe(), supabase);
+    showNudge = await shouldShowStripeNudge(profile, getStripe(), supabase);
   }
 
   return (

@@ -44,13 +44,26 @@ export async function getSellerPayoutStatus(
 
 // True when the seller has paid components but payouts aren't connected yet.
 // Used by dashboard layout and seller profile page to decide whether to show
-// the Stripe onboarding nudge.
+// the Stripe onboarding nudge. Owns the "has a published paid component"
+// check itself — callers used to compute that two different ways (a
+// dedicated existence query in one, a reduction over already-fetched rows in
+// the other), which meant the same business rule lived partly outside this
+// module. Only ever called for the profile's own owner (a low-traffic path),
+// so the one extra query this costs the caller that already has the
+// components list in memory is not worth avoiding at the cost of a second
+// definition of the same rule.
 export async function shouldShowStripeNudge(
   profile: Tables<"profiles">,
-  hasPaidComponent: boolean,
   stripe: Stripe,
   supabase: ReturnType<typeof createServiceClient>
 ): Promise<boolean> {
-  if (!hasPaidComponent) return false;
+  const { data: paid } = await supabase
+    .from("components")
+    .select("id")
+    .eq("seller_id", profile.id)
+    .eq("status", "published")
+    .gt("price_cents", 0)
+    .limit(1);
+  if (!paid?.length) return false;
   return (await getSellerPayoutStatus(profile, stripe, supabase)) !== "ready";
 }

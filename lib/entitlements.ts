@@ -1,3 +1,4 @@
+import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
 
 // The `downloads` table is the single source of truth for "does this user
@@ -9,6 +10,15 @@ import type { Tables } from "@/types/database";
 // client it actually calls — the real client satisfies these structurally,
 // but a test fake only needs to implement the one chain it's given, not the
 // whole query-builder API.
+//
+// Each port has a matching `to*Db` factory that adapts the real client to
+// it. TypeScript's structural check of the full generic SupabaseClient<Database>
+// against these narrow ports can hit its recursion limit ("Type instantiation
+// is excessively deep") — it's order/cache-sensitive and can pass locally
+// while failing on a clean CI build (this broke a production deploy once
+// already). The factory casts once, here, next to the port it targets,
+// instead of every caller repeating the cast and a comment explaining it.
+type RealDb = ReturnType<typeof createServiceClient>;
 
 export type DownloadLookupDb = {
   from(table: "downloads"): {
@@ -21,6 +31,10 @@ export type DownloadLookupDb = {
     };
   };
 };
+
+export function toDownloadLookupDb(supabase: RealDb): DownloadLookupDb {
+  return supabase as unknown as DownloadLookupDb;
+}
 
 // Does this user own this component?
 export async function getEntitlement(
@@ -50,6 +64,10 @@ export type DownloadListDb = {
   };
 };
 
+export function toDownloadListDb(supabase: RealDb): DownloadListDb {
+  return supabase as unknown as DownloadListDb;
+}
+
 // Every component a user has acquired, newest first — the buyer's library.
 export async function listEntitlements(
   supabase: DownloadListDb,
@@ -71,6 +89,10 @@ export type DownloadGrantDb = {
     ): PromiseLike<{ error: { message: string } | null }>;
   };
 };
+
+export function toDownloadGrantDb(supabase: RealDb): DownloadGrantDb {
+  return supabase as unknown as DownloadGrantDb;
+}
 
 // Record that a user has acquired a component — idempotent (the downloads
 // trigger bumps download_count only on first insert). Called on a free

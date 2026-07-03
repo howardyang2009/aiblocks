@@ -4,7 +4,7 @@ import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
-import type { PublicProfile } from "@/lib/public-profile";
+import { toPublicProfile, type PublicProfile } from "@/lib/public-profile";
 
 // Verified-buyer reviews section (V2), rendered on the component
 // detail page below the README.
@@ -186,7 +186,7 @@ export function ReviewsSection({
         rating: data.review.rating,
         body: data.review.body,
         created_at: data.review.created_at,
-        reviewer: mine?.reviewer ?? { username: "you", display_name: "You", avatar_url: null },
+        reviewer: toPublicProfile(mine?.reviewer, "you", "You"),
         mine: true,
         reply: mine?.reply ?? null,
       };

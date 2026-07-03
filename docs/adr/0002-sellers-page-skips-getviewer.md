@@ -1,0 +1,5 @@
+# The seller profile page intentionally skips `getViewer()`
+
+`app/(public)/sellers/[username]/page.tsx` calls Clerk's `auth()` directly and compares `userId` against `profile.clerk_user_id` to decide page ownership, instead of using the shared `getViewer()` primitive every other Server Component uses. This looks like a missed migration, but it's deliberate: this page never needs the viewer's own Profile row, only the raw Clerk id for a direct comparison. Routing it through `getViewer()` would force an `ensureProfile` bootstrap — a database write — on every signed-in visitor to any seller's page, including ones who have never interacted with anything else in the app, just to answer a question that doesn't require a Profile at all.
+
+**Consequences:** two patterns for resolving identity in a Server Component are now attested in the codebase — `getViewer()` for anything that needs the viewer's Profile, and raw `auth()` for the narrower case of "just the Clerk id, no Profile needed." If a future change to this page starts needing the viewer's Profile for something else, switch it to `getViewer()` at that point; until then, this is a considered exception, not drift.

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import type { PublicProfile } from "@/lib/public-profile";
+import { toPublicProfile, type PublicProfile } from "@/lib/public-profile";
 
 // Open comments section (V2), rendered on the component detail page
 // below the reviews. Unlike reviews, comments are ungated: any
@@ -97,7 +97,7 @@ export function CommentsSection({
         id: data.comment.id,
         body: data.comment.body,
         created_at: data.comment.created_at,
-        author: viewer ?? { username: "you", display_name: "You", avatar_url: null },
+        author: toPublicProfile(viewer, "you", "You"),
         isSeller,
         mine: true,
         replies: [],

@@ -1,6 +1,6 @@
 import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
-import { getEntitlement, type DownloadLookupDb } from "@/lib/entitlements";
+import { getEntitlement, toDownloadLookupDb } from "@/lib/entitlements";
 import { toPublicProfile } from "@/lib/public-profile";
 import type { Review } from "@/components/reviews-section";
 import type { CommentNode } from "@/components/comments-section";
@@ -42,18 +42,14 @@ export async function fetchComponentRows(
   const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
 
   // Dispatched here (not awaited yet) so it still fires in parallel with the
-  // tier-3 Promise.all below.
-  //
-  // This function chains many Supabase queries in one scope; checking
-  // getEntitlement's narrow DownloadLookupDb port against the full
-  // SupabaseClient<Database> type here pushes TypeScript past its
-  // structural-comparison recursion limit ("Type instantiation is
-  // excessively deep") — it type-checks fine at every other call site with
-  // fewer chained queries in scope. The cast is safe: the same assignment
-  // succeeds unassisted in lib/purchases.ts and every API route that calls
-  // getEntitlement with this exact client.
+  // tier-3 Promise.all below. Kept as its own statement rather than inside
+  // that Promise.all tuple: this function chains many Supabase queries in
+  // one scope, and mixing getEntitlement's narrow-port type check with five
+  // other deeply-generic builder types in one tuple literal pushes
+  // TypeScript's structural comparison past its recursion limit ("Type
+  // instantiation is excessively deep").
   const ownedPromise: PromiseLike<boolean> = viewerProfile
-    ? getEntitlement(supabase as unknown as DownloadLookupDb, viewerProfile.id, component.id)
+    ? getEntitlement(toDownloadLookupDb(supabase), viewerProfile.id, component.id)
     : Promise.resolve(false);
 
   // Tier 3 — five queries, each depends on one tier-2 result, none on each other.

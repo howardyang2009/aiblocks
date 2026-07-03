@@ -32,12 +32,7 @@ export default async function SellerProfilePage({ params }: { params: { username
   // and only if they have paid components but payouts aren't connected yet.
   const { userId } = auth();
   const isOwner = !!userId && profile.clerk_user_id === userId;
-  const showNudge = isOwner && await shouldShowStripeNudge(
-    profile,
-    components.some((c) => c.price_cents > 0),
-    getStripe(),
-    supabase
-  );
+  const showNudge = isOwner && await shouldShowStripeNudge(profile, getStripe(), supabase);
 
   return (
     <>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
-import { listEntitlements, type DownloadListDb } from "@/lib/entitlements";
+import { listEntitlements, toDownloadListDb } from "@/lib/entitlements";
 import { getViewer } from "@/lib/viewer";
 import type { ComponentSummary } from "@/types/database";
 
@@ -18,10 +18,8 @@ export default async function MyDownloadsPage() {
   let components: ComponentSummary[] = [];
 
   if (profile) {
-    // Library entries, newest first. Cast: see note in
-    // app/api/components/[id]/download/route.ts on the concrete
-    // SupabaseClient vs. narrow-port type-check depth limit.
-    const dl = await listEntitlements(supabase as unknown as DownloadListDb, profile.id);
+    // Library entries, newest first.
+    const dl = await listEntitlements(toDownloadListDb(supabase), profile.id);
 
     const ids = dl.map(r => r.component_id);
     if (ids.length) {
