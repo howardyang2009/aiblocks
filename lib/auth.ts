@@ -15,12 +15,12 @@ export type AuthContext = {
 export function withAuth(
   handler: (req: NextRequest, ctx: AuthContext) => Promise<NextResponse>
 ) {
-  return async (req: NextRequest, { params }: { params: Record<string, string> }) => {
+  return async (req: NextRequest, { params }: { params: Promise<Record<string, string>> }) => {
     const { profile } = await getViewer();
     if (!profile) {
       return NextResponse.json({ error: "Sign in first." }, { status: 401 });
     }
     const supabase = createServiceClient();
-    return await handler(req, { params, profile, supabase });
+    return await handler(req, { params: await params, profile, supabase });
   };
 }

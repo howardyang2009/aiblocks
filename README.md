@@ -40,7 +40,7 @@ components/         Reusable React UI (NOT the AI "components" — those are DB 
 lib/               Integrations: supabase (client/server), stripe, clerk, utils
 supabase/          migrations/0001_init.sql (the schema) + config
 types/             database.ts (replace with generated types)
-middleware.ts      Clerk route protection for /dashboard
+proxy.ts           Clerk route protection for /dashboard
 ```
 
 ## The security-critical path
@@ -63,4 +63,4 @@ Human-Led items from the delegation plan.
 
 ## Stack
 
-Next.js 14 · Tailwind CSS · Clerk · Supabase · Stripe Connect · react-markdown · Vercel
+Next.js 16 · Tailwind CSS · Clerk · Supabase · Stripe Connect · react-markdown · Vercel

@@ -19,10 +19,11 @@ function qs(next: Search) {
   return s ? `/browse?${s}` : "/browse";
 }
 
-export default async function BrowsePage({ searchParams }: { searchParams: Search }) {
-  const q = searchParams.q?.trim() || undefined;
-  const sort = searchParams.sort || "newest";
-  const tag = searchParams.tag?.trim().toLowerCase() || undefined;
+export default async function BrowsePage({ searchParams }: { searchParams: Promise<Search> }) {
+  const resolvedSearchParams = await searchParams;
+  const q = resolvedSearchParams.q?.trim() || undefined;
+  const sort = resolvedSearchParams.sort || "newest";
+  const tag = resolvedSearchParams.tag?.trim().toLowerCase() || undefined;
 
   const supabase = createServiceClient();
 
@@ -83,7 +84,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Searc
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
         <div className="flex gap-3 font-mono text-xs">
           {sorts.map(([key, label]) => {
-            const active = sort === key || (key === "newest" && !searchParams.sort);
+            const active = sort === key || (key === "newest" && !resolvedSearchParams.sort);
             return (
               <Link
                 key={key}

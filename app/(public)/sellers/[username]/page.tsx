@@ -10,11 +10,12 @@ import type { ComponentSummary } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
-export default async function SellerProfilePage({ params }: { params: { username: string } }) {
+export default async function SellerProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = await params;
   const supabase = createServiceClient();
 
   const { data: profile } = await supabase
-    .from("profiles").select("*").eq("username", params.username).maybeSingle();
+    .from("profiles").select("*").eq("username", username).maybeSingle();
   if (!profile) notFound();
 
   const { data: comps } = await supabase
@@ -30,7 +31,7 @@ export default async function SellerProfilePage({ params }: { params: { username
 
   // Owner-only Stripe nudge: only the signed-in owner of THIS profile sees it,
   // and only if they have paid components but payouts aren't connected yet.
-  const { userId } = auth();
+  const { userId } = await auth();
   const isOwner = !!userId && profile.clerk_user_id === userId;
   const showNudge = isOwner && await shouldShowStripeNudge(profile, getStripe(), supabase);
 

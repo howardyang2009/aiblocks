@@ -4,8 +4,8 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 // seller profiles stay open (SSR + SEO). API routes do their own auth checks.
 const isProtected = createRouteMatcher(["/dashboard(.*)"]);
 
-export default clerkMiddleware((auth, req) => {
-  if (isProtected(req)) auth().protect();
+export default clerkMiddleware(async (auth, req) => {
+  if (isProtected(req)) await auth.protect();
 });
 
 export const config = {
