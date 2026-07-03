@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { parseBody } from "@/lib/request";
-import { getEntitlement } from "@/lib/entitlements";
+import { getEntitlement, type DownloadLookupDb } from "@/lib/entitlements";
 
 // Verified-buyer reviews (V2).
 //
@@ -52,8 +52,10 @@ export const POST = withAuth(async (req, { params, profile, supabase }) => {
     return NextResponse.json({ error: "You can't review your own component." }, { status: 403 });
   }
 
-  // Verified buyer check: entitlement row must exist.
-  if (!(await getEntitlement(supabase, profile.id, params.id))) {
+  // Verified buyer check: entitlement row must exist. Cast: see note in
+  // app/api/components/[id]/download/route.ts on the concrete
+  // SupabaseClient vs. narrow-port type-check depth limit.
+  if (!(await getEntitlement(supabase as unknown as DownloadLookupDb, profile.id, params.id))) {
     return NextResponse.json(
       { error: "Only verified buyers can review. Download this component first." },
       { status: 403 }

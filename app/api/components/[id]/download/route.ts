@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
-import { getEntitlement, grantEntitlement } from "@/lib/entitlements";
+import {
+  getEntitlement,
+  grantEntitlement,
+  type DownloadLookupDb,
+  type DownloadGrantDb,
+} from "@/lib/entitlements";
 import { isFreeComponent } from "@/lib/utils";
 
 // ============================================================
@@ -22,14 +27,20 @@ export const POST = withAuth(async (_req, { params, profile, supabase }) => {
     return NextResponse.json({ error: "Not available." }, { status: 404 });
   }
 
+  // Casts below: TypeScript's structural check of the concrete
+  // SupabaseClient<Database> against these narrow ports can hit its
+  // recursion limit ("Type instantiation is excessively deep") — it's
+  // order/cache-sensitive and can pass locally while failing on a clean
+  // Vercel build, so we cast defensively at every call site rather than
+  // rely on it happening to fit under the limit.
   if (!isFreeComponent(component.price_cents)) {
     // Paid: require an existing entitlement.
-    if (!(await getEntitlement(supabase, profile.id, component.id))) {
+    if (!(await getEntitlement(supabase as unknown as DownloadLookupDb, profile.id, component.id))) {
       return NextResponse.json({ error: "Purchase required." }, { status: 402 });
     }
   } else {
     // Free: ensure a library entry (idempotent; trigger bumps download_count).
-    await grantEntitlement(supabase, { userId: profile.id, componentId: component.id });
+    await grantEntitlement(supabase as unknown as DownloadGrantDb, { userId: profile.id, componentId: component.id });
   }
 
   const bucket = ACTIVE_ZIP_BUCKET;

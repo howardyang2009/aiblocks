@@ -8,6 +8,10 @@
 /out/
 next-env.d.ts
 
+# TypeScript incremental build cache — machine-local, and a stale committed
+# copy can mask type errors that only surface on a clean build (e.g. CI).
+tsconfig.tsbuildinfo
+
 # production
 /build
 

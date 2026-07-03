@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
-import { fulfillPurchase } from "@/lib/purchases";
+import { fulfillPurchase, type FulfillPurchaseDb } from "@/lib/purchases";
 
 // Stripe webhook. On a completed checkout we mark the purchase succeeded
 // and create the buyer's library entry, which unlocks the download.
@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature." }, { status: 400 });
   }
 
-  const result = await fulfillPurchase(createServiceClient(), event);
+  // Cast: see note in app/api/components/[id]/download/route.ts on the
+  // concrete SupabaseClient vs. narrow-port type-check depth limit.
+  const result = await fulfillPurchase(createServiceClient() as unknown as FulfillPurchaseDb, event);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
 
   return NextResponse.json({ received: true });
