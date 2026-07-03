@@ -1,9 +1,7 @@
+import type { PublicProfile } from "@/lib/public-profile";
+
 type Props = {
-  user: {
-    username: string;
-    display_name: string | null;
-    avatar_url: string | null;
-  };
+  user: PublicProfile;
 };
 
 export function UserAvatar({ user }: Props) {

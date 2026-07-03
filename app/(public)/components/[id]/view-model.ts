@@ -1,6 +1,7 @@
 import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
-import { getEntitlement } from "@/lib/entitlements";
+import { getEntitlement, type DownloadLookupDb } from "@/lib/entitlements";
+import { toPublicProfile } from "@/lib/public-profile";
 import type { Review } from "@/components/reviews-section";
 import type { CommentNode } from "@/components/comments-section";
 
@@ -40,11 +41,25 @@ export async function fetchComponentRows(
   const reviewerIds  = [...new Set((reviewRows ?? []).map(r => r.buyer_id))];
   const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
 
-  // Tier 3 — six queries, each depends on one tier-2 result, none on each other.
+  // Dispatched here (not awaited yet) so it still fires in parallel with the
+  // tier-3 Promise.all below.
+  //
+  // This function chains many Supabase queries in one scope; checking
+  // getEntitlement's narrow DownloadLookupDb port against the full
+  // SupabaseClient<Database> type here pushes TypeScript past its
+  // structural-comparison recursion limit ("Type instantiation is
+  // excessively deep") — it type-checks fine at every other call site with
+  // fewer chained queries in scope. The cast is safe: the same assignment
+  // succeeds unassisted in lib/purchases.ts and every API route that calls
+  // getEntitlement with this exact client.
+  const ownedPromise: PromiseLike<boolean> = viewerProfile
+    ? getEntitlement(supabase as unknown as DownloadLookupDb, viewerProfile.id, component.id)
+    : Promise.resolve(false);
+
+  // Tier 3 — five queries, each depends on one tier-2 result, none on each other.
   const [
     { data: tagRows },
     { data: starRow },
-    owned,
     { data: reviewers },
     { data: replyRows },
     { data: commenters },
@@ -55,9 +70,6 @@ export async function fetchComponentRows(
     viewerProfile
       ? supabase.from("stars").select("user_id").eq("user_id", viewerProfile.id).eq("component_id", component.id).maybeSingle()
       : Promise.resolve({ data: null }),
-    viewerProfile
-      ? getEntitlement(supabase, viewerProfile.id, component.id)
-      : Promise.resolve(false),
     reviewerIds.length
       ? supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", reviewerIds)
       : Promise.resolve({ data: [] as { id: string; username: string; display_name: string | null; avatar_url: string | null }[] }),
@@ -68,6 +80,7 @@ export async function fetchComponentRows(
       ? supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", commenterIds)
       : Promise.resolve({ data: [] as { id: string; username: string; display_name: string | null; avatar_url: string | null }[] }),
   ]);
+  const owned = await ownedPromise;
 
   return { component, seller, tagRows, reviewRows, commentRows, starRow, owned, reviewers, replyRows, commenters };
 }
@@ -80,13 +93,7 @@ export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"p
   const { component, seller, tagRows, reviewRows, commentRows, starRow, owned, reviewers, replyRows, commenters } = rows;
 
   const viewerProfileId = viewerProfile?.id ?? null;
-  const viewer = viewerProfile
-    ? {
-        username: viewerProfile.username,
-        display_name: viewerProfile.display_name ?? null,
-        avatar_url: viewerProfile.avatar_url ?? null,
-      }
-    : null;
+  const viewer = viewerProfile ? toPublicProfile(viewerProfile) : null;
 
   const tags     = (tagRows ?? []).map(r => r.name);
   const starred  = !!starRow;
@@ -103,11 +110,7 @@ export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"p
       rating: r.rating,
       body: r.body,
       created_at: r.created_at,
-      reviewer: {
-        username: p?.username ?? "unknown",
-        display_name: p?.display_name ?? null,
-        avatar_url: p?.avatar_url ?? null,
-      },
+      reviewer: toPublicProfile(p),
       mine: viewerProfileId !== null && r.buyer_id === viewerProfileId,
       reply: reply ? { body: reply.body, created_at: reply.created_at } : null,
     };
@@ -126,11 +129,7 @@ export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"p
       id: r.id,
       body: r.body,
       created_at: r.created_at,
-      author: {
-        username: p?.username ?? "unknown",
-        display_name: p?.display_name ?? null,
-        avatar_url: p?.avatar_url ?? null,
-      },
+      author: toPublicProfile(p),
       isSeller: r.user_id === component.seller_id,
       mine: viewerProfileId !== null && r.user_id === viewerProfileId,
       replies: [],

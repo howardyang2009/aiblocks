@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import type { PublicProfile } from "@/lib/public-profile";
 
 // Open comments section (V2), rendered on the component detail page
 // below the reviews. Unlike reviews, comments are ungated: any
@@ -18,11 +19,7 @@ export type CommentNode = {
   id: string;
   body: string;
   created_at: string;
-  author: {
-    username: string;
-    display_name: string | null;
-    avatar_url: string | null;
-  };
+  author: PublicProfile;
   isSeller: boolean;
   mine: boolean;
   replies: CommentNode[];
@@ -61,7 +58,7 @@ export function CommentsSection({
   signedIn: boolean;
   // The viewer's public identity, so freshly posted comments render
   // correctly without a page reload. Null when signed out.
-  viewer: { username: string; display_name: string | null; avatar_url: string | null } | null;
+  viewer: PublicProfile | null;
   isSeller: boolean;
 }) {
   const [comments, setComments] = useState<CommentNode[]>(initialComments);

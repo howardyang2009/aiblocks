@@ -1,21 +1,60 @@
 import type Stripe from "stripe";
-import type { createServiceClient } from "@/lib/supabase/server";
-import type { Tables } from "@/types/database";
+import type { Tables, TablesInsert } from "@/types/database";
 import { APP_URL } from "@/lib/constants";
-import { getEntitlement, grantEntitlement } from "@/lib/entitlements";
+import { getEntitlement, grantEntitlement, type DownloadLookupDb, type DownloadGrantDb } from "@/lib/entitlements";
 import { isFreeComponent } from "@/lib/utils";
 
 export type CheckoutResult =
   | { ok: true; url: string }
   | { ok: false; status: number; error: string };
 
+// The narrow slice of the Supabase client createCheckout touches — a test
+// fake only needs these four tiny methods, not the full query-builder API.
+export type CreateCheckoutDb = DownloadLookupDb & {
+  from(table: "components"): {
+    select(columns: string): {
+      eq(column: string, value: string): {
+        maybeSingle(): PromiseLike<{
+          data: Pick<Tables<"components">, "id" | "name" | "price_cents" | "currency" | "seller_id" | "status"> | null;
+        }>;
+      };
+    };
+  };
+  from(table: "profiles"): {
+    select(columns: string): {
+      eq(column: string, value: string): {
+        maybeSingle(): PromiseLike<{ data: Pick<Tables<"profiles">, "stripe_account_id"> | null }>;
+      };
+    };
+  };
+  from(table: "purchases"): {
+    insert(row: TablesInsert<"purchases">): {
+      select(columns: string): {
+        single(): PromiseLike<{
+          data: Pick<Tables<"purchases">, "id"> | null;
+          error: { message: string } | null;
+        }>;
+      };
+    };
+  };
+};
+
+// The narrow slice of the Stripe client createCheckout touches.
+export type CheckoutStripe = {
+  checkout: {
+    sessions: {
+      create(params: Stripe.Checkout.SessionCreateParams): Promise<Stripe.Checkout.Session>;
+    };
+  };
+};
+
 // Everything needed to buy a paid component: entitlement/eligibility checks,
 // the pending purchase row (so the webhook can reconcile by id), and the
 // Stripe Checkout Session itself — the buyer -> seller leg of the same
 // transaction fulfillPurchase() completes on the other side.
 export async function createCheckout(
-  stripe: Stripe,
-  supabase: ReturnType<typeof createServiceClient>,
+  stripe: CheckoutStripe,
+  supabase: CreateCheckoutDb,
   args: { buyer: Tables<"profiles">; componentId: string; withdrawalWaived: boolean }
 ): Promise<CheckoutResult> {
   // EU/EEA Consumer Rights Directive (Art. 16(m)): buyers get a 14-day
@@ -126,12 +165,21 @@ export async function createCheckout(
 
 export type FulfillResult = { ok: true } | { ok: false; status: number; error: string };
 
+// The narrow slice of the Supabase client fulfillPurchase touches.
+export type FulfillPurchaseDb = DownloadGrantDb & {
+  from(table: "purchases"): {
+    update(row: { status: string; stripe_checkout_session_id: string }): {
+      eq(column: string, value: string): PromiseLike<{ error: { message: string } | null }>;
+    };
+  };
+};
+
 // The other side of the same transaction createCheckout() starts: called
 // from the Stripe webhook once payment succeeds. Marks the purchase
 // succeeded and grants the download entitlement. Returning `ok: false`
 // signals the route to respond with a 5xx so Stripe retries delivery.
 export async function fulfillPurchase(
-  supabase: ReturnType<typeof createServiceClient>,
+  supabase: FulfillPurchaseDb,
   event: Stripe.Event
 ): Promise<FulfillResult> {
   if (event.type !== "checkout.session.completed") return { ok: true };

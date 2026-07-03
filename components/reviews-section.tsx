@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
+import type { PublicProfile } from "@/lib/public-profile";
 
 // Verified-buyer reviews section (V2), rendered on the component
 // detail page below the README.
@@ -21,11 +22,7 @@ export type Review = {
   rating: number;
   body: string | null;
   created_at: string;
-  reviewer: {
-    username: string;
-    display_name: string | null;
-    avatar_url: string | null;
-  };
+  reviewer: PublicProfile;
   mine: boolean;
   reply: {
     body: string;
