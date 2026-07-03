@@ -12,10 +12,11 @@ import { fetchComponentRows, buildComponentView } from "./view-model";
 
 export const dynamic = "force-dynamic";
 
-export default async function ComponentDetailPage({ params }: { params: { id: string } }) {
+export default async function ComponentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { profile: viewerProfile } = await getViewer();
   const supabase = createServiceClient();
-  const rows = await fetchComponentRows(supabase, params.id, viewerProfile);
+  const rows = await fetchComponentRows(supabase, id, viewerProfile);
   if (!rows) notFound();
   const data = buildComponentView(rows, viewerProfile);
 

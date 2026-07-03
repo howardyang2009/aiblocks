@@ -27,7 +27,7 @@ const cache = (React as unknown as { cache: <T extends (...args: never[]) => unk
 // argument-identity keying isn't defeated by callers passing in a freshly
 // constructed client every time.
 export const getViewer = cache(async (): Promise<Viewer> => {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) return { userId: null, profile: null };
   const profile = await ensureProfile(userId, createServiceClient());
   return { userId, profile };
