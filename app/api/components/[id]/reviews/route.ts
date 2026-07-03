@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { parseBody } from "@/lib/request";
+import { getEntitlement } from "@/lib/entitlements";
 
 // Verified-buyer reviews (V2).
 //
@@ -52,13 +53,7 @@ export const POST = withAuth(async (req, { params, profile, supabase }) => {
   }
 
   // Verified buyer check: entitlement row must exist.
-  const { data: entitlement } = await supabase
-    .from("downloads")
-    .select("id")
-    .eq("user_id", profile.id)
-    .eq("component_id", params.id)
-    .maybeSingle();
-  if (!entitlement) {
+  if (!(await getEntitlement(supabase, profile.id, params.id))) {
     return NextResponse.json(
       { error: "Only verified buyers can review. Download this component first." },
       { status: 403 }

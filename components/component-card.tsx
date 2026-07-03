@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ComponentSummary } from "@/types/database";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, isFreeComponent } from "@/lib/utils";
 
 // A card in the browse grid. Metadata sits in monospace because it's data.
 export function ComponentCard({ c }: { c: ComponentSummary }) {
@@ -11,7 +11,7 @@ export function ComponentCard({ c }: { c: ComponentSummary }) {
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="font-display font-medium leading-tight group-hover:text-accent">{c.name}</h3>
-        <span className={`font-mono text-xs shrink-0 ${c.price_cents === 0 ? "text-free" : "text-ink"}`}>
+        <span className={`font-mono text-xs shrink-0 ${isFreeComponent(c.price_cents) ? "text-free" : "text-ink"}`}>
           {formatPrice(c.price_cents, c.currency)}
         </span>
       </div>

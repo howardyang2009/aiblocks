@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
+import { getEntitlement } from "@/lib/entitlements";
+import { isFreeComponent } from "@/lib/utils";
 
 // ============================================================
 // THE PAYWALL. Releases a short-lived signed URL for a component's zip
@@ -20,11 +22,9 @@ export const POST = withAuth(async (_req, { params, profile, supabase }) => {
     return NextResponse.json({ error: "Not available." }, { status: 404 });
   }
 
-  if (component.price_cents > 0) {
+  if (!isFreeComponent(component.price_cents)) {
     // Paid: require an existing entitlement.
-    const { data: entitlement } = await supabase
-      .from("downloads").select("id").eq("user_id", profile.id).eq("component_id", component.id).maybeSingle();
-    if (!entitlement) {
+    if (!(await getEntitlement(supabase, profile.id, component.id))) {
       return NextResponse.json({ error: "Purchase required." }, { status: 402 });
     }
   } else {

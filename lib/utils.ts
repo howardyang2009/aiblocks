@@ -17,6 +17,11 @@ export function formatPrice(cents: number, currency = "usd"): string {
   }).format(cents / 100);
 }
 
+// True when a component's price is zero — free to download without purchase.
+export function isFreeComponent(priceCents: number): boolean {
+  return priceCents === 0;
+}
+
 // Lowercase + trim a free-form tag so "Claude" and "claude" converge.
 export function normalizeTag(raw: string): string {
   return raw.trim().toLowerCase();

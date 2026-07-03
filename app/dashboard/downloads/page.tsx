@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
+import { listEntitlements } from "@/lib/entitlements";
 import type { ComponentSummary } from "@/types/database";
 
 // My Downloads — the buyer's library. Reads the `downloads` table (the
@@ -22,13 +23,9 @@ export default async function MyDownloadsPage() {
 
     if (profile) {
       // Library entries, newest first.
-      const { data: dl } = await supabase
-        .from("downloads")
-        .select("component_id, acquired_at")
-        .eq("user_id", profile.id)
-        .order("acquired_at", { ascending: false });
+      const dl = await listEntitlements(supabase, profile.id);
 
-      const ids = (dl ?? []).map(r => r.component_id);
+      const ids = dl.map(r => r.component_id);
       if (ids.length) {
         const { data: comps } = await supabase
           .from("components")

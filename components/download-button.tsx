@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isFreeComponent } from "@/lib/utils";
 
 // Handles the three states of acquiring a component:
 //   free            -> POST /download, follow the signed URL
@@ -26,7 +27,7 @@ export function DownloadButton({
   const [msg, setMsg] = useState<string | null>(null);
   const [withdrawalWaived, setWithdrawalWaived] = useState(false);
 
-  const isFree = priceCents === 0;
+  const isFree = isFreeComponent(priceCents);
   const canDownload = isFree || owned;
   const needsConsent = !canDownload; // only the actual purchase path
   const label = canDownload ? "Download" : "Buy to download";
@@ -89,13 +90,32 @@ export function DownloadButton({
           </span>
         </label>
       )}
-      <button
-        onClick={handle}
-        disabled={busy || (needsConsent && !withdrawalWaived)}
-        className="w-full rounded-block bg-ink text-paper py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50"
-      >
-        {busy ? "Working…" : label}
-      </button>
+      {/* Wrapper carries the hover state: disabled buttons don't reliably
+          fire their own mouse events cross-browser, but CSS group-hover on
+          the parent works regardless of the button's disabled state. */}
+      <div className="relative group">
+        {needsConsent && !withdrawalWaived && (
+          <div
+            id="withdrawal-consent-tooltip"
+            role="tooltip"
+            className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max max-w-[260px] -translate-x-1/2 rounded-block bg-ink px-3 py-2 text-center text-xs leading-relaxed text-paper opacity-0 invisible transition-opacity duration-150 group-hover:visible group-hover:opacity-100"
+          >
+            Please agree to and check the 14-day withdrawal policy checkbox
+            above to start the payment process.
+            <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-ink" />
+          </div>
+        )}
+        <button
+          onClick={handle}
+          disabled={busy || (needsConsent && !withdrawalWaived)}
+          aria-describedby={
+            needsConsent && !withdrawalWaived ? "withdrawal-consent-tooltip" : undefined
+          }
+          className="w-full rounded-block bg-ink text-paper py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {busy ? "Working…" : label}
+        </button>
+      </div>
       {msg && <p className="text-sm text-accent mt-2">{msg}</p>}
     </div>
   );

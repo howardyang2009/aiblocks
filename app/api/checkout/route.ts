@@ -3,6 +3,8 @@ import { getStripe } from "@/lib/stripe";
 import { withAuth } from "@/lib/auth";
 import { parseBody } from "@/lib/request";
 import { APP_URL } from "@/lib/constants";
+import { getEntitlement } from "@/lib/entitlements";
+import { isFreeComponent } from "@/lib/utils";
 
 // Create a Stripe Checkout session for a paid component.
 // Money flows buyer -> seller via Stripe Connect (0% platform fee for now).
@@ -36,7 +38,7 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
     return NextResponse.json({ error: "Component not found." }, { status: 404 });
   }
 
-  if (component.price_cents <= 0) {
+  if (isFreeComponent(component.price_cents)) {
     return NextResponse.json({ error: "This component is free — just download it." }, { status: 400 });
   }
   if (component.seller_id === buyer.id) {
@@ -44,9 +46,7 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
   }
 
   // Already owns it? Don't double-charge.
-  const { data: existing } = await supabase
-    .from("downloads").select("id").eq("user_id", buyer.id).eq("component_id", component.id).maybeSingle();
-  if (existing) {
+  if (await getEntitlement(supabase, buyer.id, component.id)) {
     return NextResponse.json({ error: "You already own this — find it in My downloads." }, { status: 400 });
   }
 

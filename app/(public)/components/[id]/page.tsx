@@ -8,6 +8,7 @@ import { DownloadButton } from "@/components/download-button";
 import { ReviewsSection, type Review } from "@/components/reviews-section";
 import { CommentsSection, type CommentNode } from "@/components/comments-section";
 import { formatPrice } from "@/lib/utils";
+import { getEntitlement } from "@/lib/entitlements";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,7 @@ async function loadComponentPageData(
   const [
     { data: tagRows },
     { data: starRow },
-    { data: downloadRow },
+    owned,
     { data: reviewers },
     { data: replyRows },
     { data: commenters },
@@ -73,8 +74,8 @@ async function loadComponentPageData(
       ? supabase.from("stars").select("user_id").eq("user_id", viewerProfileRow.id).eq("component_id", component.id).maybeSingle()
       : Promise.resolve({ data: null }),
     viewerProfileRow
-      ? supabase.from("downloads").select("id").eq("user_id", viewerProfileRow.id).eq("component_id", component.id).maybeSingle()
-      : Promise.resolve({ data: null }),
+      ? getEntitlement(supabase, viewerProfileRow.id, component.id)
+      : Promise.resolve(false),
     reviewerIds.length
       ? supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", reviewerIds)
       : Promise.resolve({ data: [] as { id: string; username: string; display_name: string | null; avatar_url: string | null }[] }),
@@ -88,7 +89,6 @@ async function loadComponentPageData(
 
   const tags    = (tagRows ?? []).map(r => r.name);
   const starred = !!starRow;
-  const owned   = !!downloadRow;
   const isSeller = viewerProfileId !== null && viewerProfileId === component.seller_id;
 
   const reviewerById   = new Map((reviewers ?? []).map(p => [p.id, p]));
