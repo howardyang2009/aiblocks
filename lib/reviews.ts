@@ -2,10 +2,12 @@ import type { Tables } from "@/types/database";
 import { getPublishedComponent, type PublishedComponentDb } from "@/lib/components";
 import { validateBody } from "@/lib/validation";
 import { getEntitlement, type DownloadLookupDb } from "@/lib/entitlements";
+import type { Result } from "@/lib/result";
+import type { ScopedDeleteDb } from "@/lib/db-port";
 
-export type PostReviewResult =
-  | { ok: true; review: Pick<Tables<"reviews">, "id" | "rating" | "body" | "created_at" | "updated_at"> }
-  | { ok: false; status: number; error: string };
+export type PostReviewResult = Result<{
+  review: Pick<Tables<"reviews">, "id" | "rating" | "body" | "created_at" | "updated_at">;
+}>;
 
 export type PostReviewDb = PublishedComponentDb &
   DownloadLookupDb & {
@@ -72,17 +74,8 @@ export async function postReview(
   return { ok: true, review };
 }
 
-export type DeleteReviewResult = { ok: true } | { ok: false; status: number; error: string };
-
-export type DeleteReviewDb = {
-  from(table: "reviews"): {
-    delete(): {
-      eq(column: string, value: string): {
-        eq(column: string, value: string): PromiseLike<{ error: { message: string } | null }>;
-      };
-    };
-  };
-};
+export type DeleteReviewResult = Result;
+export type DeleteReviewDb = ScopedDeleteDb<"reviews">;
 
 // Scoped to the caller's own row — a user can only delete their review.
 export async function deleteReview(

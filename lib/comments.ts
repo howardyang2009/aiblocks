@@ -1,10 +1,12 @@
 import type { Tables } from "@/types/database";
 import { getPublishedComponent, type PublishedComponentDb } from "@/lib/components";
 import { validateBody } from "@/lib/validation";
+import type { Result } from "@/lib/result";
+import type { ScopedDeleteDb } from "@/lib/db-port";
 
-export type PostCommentResult =
-  | { ok: true; comment: Pick<Tables<"comments">, "id" | "parent_id" | "body" | "created_at"> }
-  | { ok: false; status: number; error: string };
+export type PostCommentResult = Result<{
+  comment: Pick<Tables<"comments">, "id" | "parent_id" | "body" | "created_at">;
+}>;
 
 export type PostCommentDb = PublishedComponentDb & {
   from(table: "comments"): {
@@ -80,17 +82,8 @@ export async function postComment(
   return { ok: true, comment };
 }
 
-export type DeleteCommentResult = { ok: true } | { ok: false; status: number; error: string };
-
-export type DeleteCommentDb = {
-  from(table: "comments"): {
-    delete(): {
-      eq(column: string, value: string): {
-        eq(column: string, value: string): PromiseLike<{ error: { message: string } | null }>;
-      };
-    };
-  };
-};
+export type DeleteCommentResult = Result;
+export type DeleteCommentDb = ScopedDeleteDb<"comments">;
 
 // Delete your own comment. `comments.parent_id` references comments(id)
 // ON DELETE CASCADE, so deleting a top-level comment also removes its

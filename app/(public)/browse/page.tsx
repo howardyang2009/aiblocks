@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
-import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
-import type { ComponentSummary } from "@/types/database";
+import { listPublishedComponents, type ListComponentsDb } from "@/lib/browse";
+import { narrowDb } from "@/lib/db-port";
 
 // Reads real published components. Dynamic because results depend on the
 // query string and change as people publish.
@@ -25,36 +25,11 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const sort = resolvedSearchParams.sort || "newest";
   const tag = resolvedSearchParams.tag?.trim().toLowerCase() || undefined;
 
-  const supabase = createServiceClient();
-
-  // Resolve tag -> component ids first (if filtering by tag).
-  let tagComponentIds: string[] | null = null;
-  if (tag) {
-    const { data: tagRow } = await supabase.from("tags").select("id").eq("name", tag).maybeSingle();
-    if (tagRow) {
-      const { data: ct } = await supabase
-        .from("component_tags").select("component_id").eq("tag_id", tagRow.id);
-      tagComponentIds = (ct ?? []).map(r => r.component_id);
-    } else {
-      tagComponentIds = []; // unknown tag -> no matches
-    }
-  }
-
-  let query = supabase
-    .from("components")
-    .select(COMPONENT_SUMMARY_COLS)
-    .eq("status", "published");
-
-  if (q) query = query.textSearch("search_tsv", q, { type: "websearch" });
-  if (tagComponentIds) {
-    query = query.in("id", tagComponentIds.length ? tagComponentIds : ["00000000-0000-0000-0000-000000000000"]);
-  }
-
-  const orderCol = sort === "downloads" ? "download_count" : sort === "stars" ? "star_count" : "created_at";
-  query = query.order(orderCol, { ascending: false }).limit(48);
-
-  const { data } = await query;
-  const components = (data ?? []) as ComponentSummary[];
+  const { components } = await listPublishedComponents(narrowDb<ListComponentsDb>(createServiceClient()), {
+    q,
+    sort,
+    tag,
+  });
 
   const sorts: [string, string][] = [
     ["newest", "Newest"],

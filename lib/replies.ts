@@ -1,9 +1,11 @@
 import type { Tables } from "@/types/database";
 import { validateBody } from "@/lib/validation";
+import type { Result } from "@/lib/result";
+import type { ScopedDeleteDb } from "@/lib/db-port";
 
-export type PostReplyResult =
-  | { ok: true; reply: Pick<Tables<"review_replies">, "id" | "body" | "created_at" | "updated_at"> }
-  | { ok: false; status: number; error: string };
+export type PostReplyResult = Result<{
+  reply: Pick<Tables<"review_replies">, "id" | "body" | "created_at" | "updated_at">;
+}>;
 
 export type PostReplyDb = {
   from(table: "reviews"): {
@@ -82,17 +84,8 @@ export async function postReply(
   return { ok: true, reply };
 }
 
-export type DeleteReplyResult = { ok: true } | { ok: false; status: number; error: string };
-
-export type DeleteReplyDb = {
-  from(table: "review_replies"): {
-    delete(): {
-      eq(column: string, value: string): {
-        eq(column: string, value: string): PromiseLike<{ error: { message: string } | null }>;
-      };
-    };
-  };
-};
+export type DeleteReplyResult = Result;
+export type DeleteReplyDb = ScopedDeleteDb<"review_replies">;
 
 // Scoped to the caller's own reply — matches the RLS delete policy.
 export async function deleteReply(

@@ -1,6 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
-import { parsePublishInput, verifyUploadedZip, publishComponent } from "@/lib/publish";
-import type { createServiceClient } from "@/lib/supabase/server";
+import {
+  parsePublishInput,
+  verifyUploadedZip,
+  publishComponent,
+  createUploadUrl,
+  type VerifyUploadedZipStorage,
+  type PublishComponentDb,
+  type CreateUploadUrlStorage,
+} from "@/lib/publish";
 
 const validBody = {
   name: "Email Triage Agent",
@@ -66,6 +73,35 @@ describe("parsePublishInput", () => {
   });
 });
 
+function fakeUploadUrlDb(opts: { result?: { data: { token: string } | null; error: { message: string } | null } }) {
+  return {
+    storage: {
+      from: () => ({
+        createSignedUploadUrl: async () => opts.result ?? { data: { token: "signed-token" }, error: null },
+      }),
+    },
+  } as unknown as CreateUploadUrlStorage;
+}
+
+describe("createUploadUrl", () => {
+  it("mints a path namespaced under the seller and returns the signed token", async () => {
+    const db = fakeUploadUrlDb({});
+    const result = await createUploadUrl(db, "component-zips", "seller1");
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.path.startsWith("seller1/")).toBe(true);
+    expect(result.ok && result.path.endsWith(".zip")).toBe(true);
+    expect(result.ok && result.token).toBe("signed-token");
+  });
+
+  it("500s when Supabase fails to mint the URL", async () => {
+    const db = fakeUploadUrlDb({ result: { data: null, error: { message: "storage down" } } });
+    const result = await createUploadUrl(db, "component-zips", "seller1");
+
+    expect(result).toEqual({ ok: false, status: 500, error: "Could not create upload URL." });
+  });
+});
+
 function fakeStorageDb(opts: {
   listed?: { name: string; metadata?: { size?: number } }[] | null;
   removeError?: { message: string } | null;
@@ -79,7 +115,7 @@ function fakeStorageDb(opts: {
       }),
     },
     _remove: remove,
-  } as unknown as ReturnType<typeof createServiceClient> & { _remove: typeof remove };
+  } as unknown as VerifyUploadedZipStorage & { _remove: typeof remove };
 }
 
 describe("verifyUploadedZip", () => {
@@ -131,7 +167,7 @@ function fakePublishDb(opts: {
       }
       throw new Error(`unexpected table ${table}`);
     },
-  } as unknown as ReturnType<typeof createServiceClient>;
+  } as unknown as PublishComponentDb;
 }
 
 const publishArgs = {

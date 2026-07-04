@@ -1,8 +1,7 @@
 import { MAX_BODY_LENGTH } from "@/lib/constants";
+import type { Result } from "@/lib/result";
 
-export type BodyValidation =
-  | { ok: true; value: string }
-  | { ok: false; status: number; error: string };
+export type BodyValidation = Result<{ value: string }>;
 
 // Trim + length-check a user-generated text body (comment, review, seller
 // reply). `required: false` allows an empty string through (reviews: the

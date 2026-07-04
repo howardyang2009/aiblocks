@@ -1,4 +1,5 @@
-import type { createServiceClient } from "@/lib/supabase/server";
+import { randomUUID } from "crypto";
+import type { Tables, TablesInsert } from "@/types/database";
 import { slugify, parseList } from "@/lib/utils";
 import { exceedsZipSizeLimit } from "@/lib/constants";
 
@@ -65,16 +66,61 @@ export function parsePublishInput(
   };
 }
 
+export type CreateUploadUrlResult =
+  | { ok: true; path: string; token: string }
+  | { ok: false; status: number; error: string };
+
+// The narrow slice of the Supabase client createUploadUrl touches.
+export type CreateUploadUrlStorage = {
+  storage: {
+    from(bucket: string): {
+      createSignedUploadUrl(
+        path: string
+      ): Promise<{ data: { token: string } | null; error: { message: string } | null }>;
+    };
+  };
+};
+
+// Mint a one-time signed upload URL so the browser can upload the zip
+// DIRECTLY to Supabase Storage (good for 10MB — never flows through the
+// API route). The object path is namespaced under the seller's profile id,
+// which parsePublishInput later verifies to prevent path hijacking.
+export async function createUploadUrl(
+  supabase: CreateUploadUrlStorage,
+  bucket: string,
+  sellerId: string
+): Promise<CreateUploadUrlResult> {
+  const path = `${sellerId}/${randomUUID()}.zip`;
+  const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(path);
+  if (error || !data) {
+    return { ok: false, status: 500, error: "Could not create upload URL." };
+  }
+  return { ok: true, path, token: data.token };
+}
+
 export type VerifyUploadResult =
   | { ok: true; sizeBytes: number | null }
   | { ok: false; status: number; error: string };
+
+// The narrow slice of the Supabase client verifyUploadedZip touches.
+export type VerifyUploadedZipStorage = {
+  storage: {
+    from(bucket: string): {
+      list(
+        folder: string,
+        opts: { search: string }
+      ): PromiseLike<{ data: { name: string; metadata?: { size?: number } }[] | null }>;
+      remove(paths: string[]): PromiseLike<{ error: { message: string } | null }>;
+    };
+  };
+};
 
 // Confirms the signed upload actually landed in storage, and enforces the
 // size cap against the REAL uploaded size — not just what the client
 // claimed when the upload URL was minted. Cleans up an oversized object so
 // it doesn't linger.
 export async function verifyUploadedZip(
-  supabase: ReturnType<typeof createServiceClient>,
+  supabase: VerifyUploadedZipStorage,
   bucket: string,
   zipPath: string
 ): Promise<VerifyUploadResult> {
@@ -100,6 +146,31 @@ export type PublishResult =
   | { ok: true; id: string; slug: string }
   | { ok: false; status: number; error: string };
 
+// The narrow slice of the Supabase client publishComponent touches.
+export type PublishComponentDb = {
+  from(table: "components"): {
+    insert(row: TablesInsert<"components">): {
+      select(columns: string): {
+        single(): PromiseLike<{ data: Pick<Tables<"components">, "id"> | null; error: { message: string } | null }>;
+      };
+    };
+  };
+  from(table: "tags"): {
+    upsert(
+      rows: { name: string }[],
+      opts: { onConflict: string }
+    ): {
+      select(columns: string): PromiseLike<{
+        data: Pick<Tables<"tags">, "id" | "name">[] | null;
+        error: { message: string } | null;
+      }>;
+    };
+  };
+  from(table: "component_tags"): {
+    insert(rows: { component_id: string; tag_id: string }[]): PromiseLike<{ error: { message: string } | null }>;
+  };
+};
+
 // Inserts the component row and links its tags. Tag-linking used to be
 // silently swallowed — the insert error wasn't even destructured, so a
 // failed link left a published component with zero tags and nothing
@@ -108,7 +179,7 @@ export type PublishResult =
 // back without a transaction — better a visible partial failure than an
 // invisible one.
 export async function publishComponent(
-  supabase: ReturnType<typeof createServiceClient>,
+  supabase: PublishComponentDb,
   args: PublishInput & { sellerId: string; sizeBytes: number | null }
 ): Promise<PublishResult> {
   const slug = `${slugify(args.name)}-${Math.random().toString(36).slice(2, 6)}`;

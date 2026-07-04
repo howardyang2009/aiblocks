@@ -1,9 +1,9 @@
 import type { Tables } from "@/types/database";
 import { getPublishedComponent, type PublishedComponentDb } from "@/lib/components";
+import type { Result } from "@/lib/result";
+import type { DeleteChain } from "@/lib/db-port";
 
-export type ToggleStarResult =
-  | { ok: true; starred: boolean }
-  | { ok: false; status: number; error: string };
+export type ToggleStarResult = Result<{ starred: boolean }>;
 
 export type ToggleStarDb = PublishedComponentDb & {
   from(table: "stars"): {
@@ -14,11 +14,7 @@ export type ToggleStarDb = PublishedComponentDb & {
         };
       };
     };
-    delete(): {
-      eq(column: string, value: string): {
-        eq(column: string, value: string): PromiseLike<{ error: { message: string } | null }>;
-      };
-    };
+    delete(): DeleteChain;
     insert(row: { user_id: string; component_id: string }): PromiseLike<{
       error: { message: string } | null;
     }>;
