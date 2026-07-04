@@ -1,6 +1,8 @@
 import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
-import { getEntitlement, toDownloadLookupDb } from "@/lib/entitlements";
+import { getEntitlement, type DownloadLookupDb } from "@/lib/entitlements";
+import { getPublishedComponent, type PublishedComponentDb } from "@/lib/components";
+import { narrowDb } from "@/lib/db-port";
 import { toPublicProfile } from "@/lib/public-profile";
 import type { Review } from "@/components/reviews-section";
 import type { CommentNode } from "@/components/comments-section";
@@ -13,13 +15,8 @@ export async function fetchComponentRows(
   id: string,
   viewerProfile: Tables<"profiles"> | null
 ) {
-  // Q1 — gate: everything depends on the component existing.
-  const { data: component } = await supabase
-    .from("components")
-    .select("*")
-    .eq("id", id)
-    .eq("status", "published")
-    .maybeSingle();
+  // Q1 — gate: everything depends on the component existing and being published.
+  const component = await getPublishedComponent(narrowDb<PublishedComponentDb>(supabase), id);
 
   if (!component) return null;
 
@@ -49,7 +46,7 @@ export async function fetchComponentRows(
   // TypeScript's structural comparison past its recursion limit ("Type
   // instantiation is excessively deep").
   const ownedPromise: PromiseLike<boolean> = viewerProfile
-    ? getEntitlement(toDownloadLookupDb(supabase), viewerProfile.id, component.id)
+    ? getEntitlement(narrowDb<DownloadLookupDb>(supabase), viewerProfile.id, component.id)
     : Promise.resolve(false);
 
   // Tier 3 — five queries, each depends on one tier-2 result, none on each other.

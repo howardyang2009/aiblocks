@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { withAuth } from "@/lib/auth";
 import { parseBody } from "@/lib/request";
-import { createCheckout, toCreateCheckoutDb } from "@/lib/purchases";
+import { createCheckout, type CreateCheckoutDb } from "@/lib/purchases";
+import { narrowDb } from "@/lib/db-port";
 
 // Create a Stripe Checkout session for a paid component.
 // Money flows buyer -> seller via Stripe Connect (0% platform fee for now).
@@ -12,7 +13,7 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
   const componentId = String(body.componentId ?? "");
   if (!componentId) return NextResponse.json({ error: "Missing component." }, { status: 400 });
 
-  const result = await createCheckout(getStripe(), toCreateCheckoutDb(supabase), {
+  const result = await createCheckout(getStripe(), narrowDb<CreateCheckoutDb>(supabase), {
     buyer,
     componentId,
     withdrawalWaived: body.withdrawalWaived === true,

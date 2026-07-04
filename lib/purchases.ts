@@ -1,5 +1,4 @@
 import type Stripe from "stripe";
-import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables, TablesInsert } from "@/types/database";
 import { APP_URL } from "@/lib/constants";
 import { getEntitlement, grantEntitlement, type DownloadLookupDb, type DownloadGrantDb } from "@/lib/entitlements";
@@ -8,10 +7,6 @@ import { isFreeComponent } from "@/lib/utils";
 export type CheckoutResult =
   | { ok: true; url: string }
   | { ok: false; status: number; error: string };
-
-// See lib/entitlements.ts for why these `to*Db` factories exist: casting
-// the real client to a narrow port once, here, instead of at every caller.
-type RealDb = ReturnType<typeof createServiceClient>;
 
 // The narrow slice of the Supabase client createCheckout touches — a test
 // fake only needs these four tiny methods, not the full query-builder API.
@@ -43,10 +38,6 @@ export type CreateCheckoutDb = DownloadLookupDb & {
     };
   };
 };
-
-export function toCreateCheckoutDb(supabase: RealDb): CreateCheckoutDb {
-  return supabase as unknown as CreateCheckoutDb;
-}
 
 // The narrow slice of the Stripe client createCheckout touches.
 export type CheckoutStripe = {
@@ -182,10 +173,6 @@ export type FulfillPurchaseDb = DownloadGrantDb & {
     };
   };
 };
-
-export function toFulfillPurchaseDb(supabase: RealDb): FulfillPurchaseDb {
-  return supabase as unknown as FulfillPurchaseDb;
-}
 
 // The other side of the same transaction createCheckout() starts: called
 // from the Stripe webhook once payment succeeds. Marks the purchase

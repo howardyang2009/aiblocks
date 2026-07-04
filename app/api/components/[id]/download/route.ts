@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
-import { getEntitlement, grantEntitlement, toDownloadLookupDb, toDownloadGrantDb } from "@/lib/entitlements";
+import { getEntitlement, grantEntitlement, type DownloadLookupDb, type DownloadGrantDb } from "@/lib/entitlements";
+import { getPublishedComponent, type PublishedComponentDb } from "@/lib/components";
+import { narrowDb } from "@/lib/db-port";
 import { isFreeComponent } from "@/lib/utils";
 
 // ============================================================
@@ -12,24 +14,20 @@ import { isFreeComponent } from "@/lib/utils";
 // Never returns zip_path directly; the bucket stays private.
 // ============================================================
 export const POST = withAuth(async (_req, { params, profile, supabase }) => {
-  const { data: component } = await supabase
-    .from("components")
-    .select("id, price_cents, zip_path, status")
-    .eq("id", params.id)
-    .maybeSingle();
+  const component = await getPublishedComponent(narrowDb<PublishedComponentDb>(supabase), params.id);
 
-  if (!component || component.status !== "published" || !component.zip_path) {
+  if (!component || !component.zip_path) {
     return NextResponse.json({ error: "Not available." }, { status: 404 });
   }
 
   if (!isFreeComponent(component.price_cents)) {
     // Paid: require an existing entitlement.
-    if (!(await getEntitlement(toDownloadLookupDb(supabase), profile.id, component.id))) {
+    if (!(await getEntitlement(narrowDb<DownloadLookupDb>(supabase), profile.id, component.id))) {
       return NextResponse.json({ error: "Purchase required." }, { status: 402 });
     }
   } else {
     // Free: ensure a library entry (idempotent; trigger bumps download_count).
-    await grantEntitlement(toDownloadGrantDb(supabase), { userId: profile.id, componentId: component.id });
+    await grantEntitlement(narrowDb<DownloadGrantDb>(supabase), { userId: profile.id, componentId: component.id });
   }
 
   const bucket = ACTIVE_ZIP_BUCKET;

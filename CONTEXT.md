@@ -39,3 +39,21 @@ _Avoid_: Order, transaction, sale
 **Withdrawal waiver**:
 The EU/EEA consumer-rights waiver a Buyer must give before paying for digital content, giving up their 14-day right of withdrawal in exchange for immediate access. Enforced three times over: the checkout UI, the API, and Stripe's own consent step.
 _Avoid_: Refund policy, consent
+
+### Engagement
+
+**Comment**:
+Open discussion on a Component — any signed-in Viewer may post one, not just Buyers. One level of threading only: a reply's parent must itself be a top-level Comment on the same Component.
+_Avoid_: Message, post
+
+**Review**:
+A verified-buyer rating (1-5) plus optional text on a Component. "Verified" means an Entitlement exists for that Buyer and Component — the same fact the download paywall checks. One Review per Buyer per Component.
+_Avoid_: Rating, feedback
+
+**Seller reply**:
+A Seller's public response to a Review of their own Component. One Seller reply per Review.
+_Avoid_: Response, comment
+
+**Star**:
+A Viewer's bookmark on a Component — a simple toggle, not gated by Entitlement.
+_Avoid_: Favorite, like
