@@ -250,6 +250,7 @@ export function ReviewsSection({
             maxLength={MAX_BODY_LENGTH}
             rows={3}
             placeholder="What worked, what didn't, how you used it (optional)"
+            data-testid="review-body"
             className="mt-3 w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
           />
           {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
@@ -257,6 +258,7 @@ export function ReviewsSection({
             <button
               onClick={submit}
               disabled={busy}
+              data-testid="review-submit"
               className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50"
             >
               {busy ? "Saving…" : mine ? "Save changes" : "Publish review"}

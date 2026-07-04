@@ -31,9 +31,15 @@ Explicitly out of scope for this pass:
 
 ## Auth strategy
 
-One dedicated Clerk test-mode user (email + password strategy — avoids automating
-email OTP/magic links), created once, by hand, in the Clerk dashboard. Credentials
-live in `.env.test.local` as `CLERK_TEST_USER_EMAIL` / `CLERK_TEST_USER_PASSWORD`.
+One dedicated Clerk test-mode user, created once, by hand, in the Clerk dashboard.
+Email lives in `.env.test.local` as `CLERK_TEST_USER_EMAIL`.
+
+**Revised during implementation:** password-strategy sign-in (the original plan)
+returned `needs_client_trust` — a device-trust check on password auth from an
+unrecognized client that the bot-detection testing token doesn't cover. Switched to
+`@clerk/testing`'s email-based helper (`clerk.signIn({ page, emailAddress })`), which
+mints a sign-in ticket via Clerk's Backend API instead of driving a first-factor flow —
+sidesteps the issue entirely and needs no password.
 
 A Playwright **setup project** (`e2e/auth.setup.ts`) drives the real sign-in page,
 asserts the app lands in an authenticated state, and saves the session to

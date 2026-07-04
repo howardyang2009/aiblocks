@@ -108,6 +108,7 @@ export function DownloadButton({
         <button
           onClick={handle}
           disabled={busy || (needsConsent && !withdrawalWaived)}
+          data-testid="download-button"
           aria-describedby={
             needsConsent && !withdrawalWaived ? "withdrawal-consent-tooltip" : undefined
           }
