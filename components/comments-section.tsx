@@ -172,6 +172,7 @@ export function CommentsSection({
             maxLength={MAX_BODY_LENGTH}
             rows={3}
             placeholder="Ask a question or share a tip"
+            data-testid="comment-input"
             className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
           />
           {error && !replyingTo && <p className="mt-2 text-xs text-red-600">{error}</p>}
@@ -179,6 +180,7 @@ export function CommentsSection({
             <button
               onClick={() => post(null)}
               disabled={busy}
+              data-testid="comment-submit"
               className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50"
             >
               {busy && !replyingTo ? "Posting…" : "Post comment"}

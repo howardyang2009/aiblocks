@@ -17,6 +17,29 @@ export type PublishInputResult =
   | { ok: true; data: PublishInput }
   | { ok: false; status: number; error: string };
 
+// Field-level rules shared with the client-side publish form
+// (lib/publish-form.ts) so the two can't silently drift the way they did
+// before: the form used to skip the price check entirely, letting a
+// negative price through until this server-side round-trip caught it.
+export function validatePublishName(name: string): string | null {
+  return name.trim().length < 3 ? "Name must be at least 3 characters." : null;
+}
+
+export function validatePublishDescription(description: string): string | null {
+  return description.trim().length < 10 ? "Add a short description (10+ characters)." : null;
+}
+
+export type ParsedPublishPrice = { ok: true; cents: number } | { ok: false; error: string };
+
+// Accept dollars, store integer cents.
+export function parsePublishPrice(raw: string): ParsedPublishPrice {
+  const dollars = parseFloat(raw);
+  if (Number.isNaN(dollars) || dollars < 0) {
+    return { ok: false, error: "Price must be 0 or a positive number." };
+  }
+  return { ok: true, cents: Math.round(dollars * 100) };
+}
+
 // Validates and shapes the raw publish request body — pure, no I/O, no
 // Supabase, so it's testable with plain object literals.
 export function parsePublishInput(
@@ -32,12 +55,12 @@ export function parsePublishInput(
   const readme = String(body.readme ?? "");
   const zipPath = String(body.zipPath ?? "");
 
-  if (name.length < 3) {
-    return { ok: false, status: 400, error: "Name must be at least 3 characters." };
-  }
-  if (description.length < 10) {
-    return { ok: false, status: 400, error: "Add a short description (10+ characters)." };
-  }
+  const nameError = validatePublishName(name);
+  if (nameError) return { ok: false, status: 400, error: nameError };
+
+  const descriptionError = validatePublishDescription(description);
+  if (descriptionError) return { ok: false, status: 400, error: descriptionError };
+
   if (!zipPath) {
     return { ok: false, status: 400, error: "Upload a zip before publishing." };
   }
@@ -46,11 +69,8 @@ export function parsePublishInput(
     return { ok: false, status: 403, error: "Upload path mismatch." };
   }
 
-  // Price: accept dollars, store integer cents.
-  const dollars = parseFloat(String(body.price ?? "0"));
-  if (Number.isNaN(dollars) || dollars < 0) {
-    return { ok: false, status: 400, error: "Price must be 0 or a positive number." };
-  }
+  const price = parsePublishPrice(String(body.price ?? "0"));
+  if (!price.ok) return { ok: false, status: 400, error: price.error };
 
   return {
     ok: true,
@@ -59,7 +79,7 @@ export function parsePublishInput(
       description,
       readme,
       zipPath,
-      priceCents: Math.round(dollars * 100),
+      priceCents: price.cents,
       ecosystems: parseList(body.ecosystems),
       tagNames: parseList(body.tags),
     },

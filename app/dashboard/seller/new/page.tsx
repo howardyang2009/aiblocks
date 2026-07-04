@@ -4,9 +4,38 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-import { exceedsZipSizeLimit } from "@/lib/constants";
+import { runPublishFlow, type PublishFlowDeps } from "@/lib/publish-form";
 
 type Status = "idle" | "uploading" | "saving" | "done" | "error";
+
+const deps: Omit<PublishFlowDeps, "onStage"> = {
+  async requestUploadUrl(sizeBytes) {
+    const res = await fetch("/api/components/upload-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ size: sizeBytes }),
+    });
+    const json = await res.json();
+    if (!res.ok) return { ok: false, error: json.error ?? "Could not start upload." };
+    return { ok: true, path: json.path, token: json.token, bucket: json.bucket };
+  },
+  async uploadZip(bucket, path, token, file) {
+    const supabase = createBrowserClient();
+    const { error } = await supabase.storage.from(bucket).uploadToSignedUrl(path, token, file);
+    if (error) return { ok: false, error: "Upload failed. Please try again." };
+    return { ok: true };
+  },
+  async createComponent(payload) {
+    const res = await fetch("/api/components", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (!res.ok) return { ok: false, error: json.error ?? "Could not publish." };
+    return { ok: true, id: json.id };
+  },
+};
 
 export default function PublishPage() {
   const router = useRouter();
@@ -28,53 +57,19 @@ export default function PublishPage() {
   async function handlePublish() {
     setError(null);
 
-    if (name.trim().length < 3) return setError("Name must be at least 3 characters.");
-    if (description.trim().length < 10) return setError("Add a short description (10+ characters).");
-    if (!file) return setError("Choose a zip file to upload.");
-    if (exceedsZipSizeLimit(file.size)) return setError("Zip exceeds the 10MB limit.");
+    const result = await runPublishFlow(
+      { ...deps, onStage: setStatus },
+      { name, description, readme, ecosystems, tags, price, file }
+    );
 
-    try {
-      // 1. Ask the server for a one-time signed upload URL.
-      setStatus("uploading");
-      const urlRes = await fetch("/api/components/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ size: file.size }),
-      });
-      const urlJson = await urlRes.json();
-      if (!urlRes.ok) throw new Error(urlJson.error ?? "Could not start upload.");
-
-      // 2. Upload the zip DIRECTLY to Supabase Storage.
-      const supabase = createBrowserClient();
-      const { error: upErr } = await supabase.storage
-        .from(urlJson.bucket)
-        .uploadToSignedUrl(urlJson.path, urlJson.token, file);
-      if (upErr) throw new Error("Upload failed. Please try again.");
-
-      // 3. Create the component record (metadata + the uploaded zip path).
-      setStatus("saving");
-      const createRes = await fetch("/api/components", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          description,
-          readme,
-          ecosystems: ecosystems.split(",").map((s) => s.trim()).filter(Boolean),
-          tags: tags.split(",").map((s) => s.trim()).filter(Boolean),
-          price,
-          zipPath: urlJson.path,
-        }),
-      });
-      const createJson = await createRes.json();
-      if (!createRes.ok) throw new Error(createJson.error ?? "Could not publish.");
-
-      setPublishedId(createJson.id);
-      setStatus("done");
-    } catch (e: any) {
+    if (result.status === "error") {
       setStatus("error");
-      setError(e?.message ?? "Something went wrong.");
+      setError(result.error);
+      return;
     }
+
+    setPublishedId(result.id);
+    setStatus("done");
   }
 
   if (status === "done" && publishedId) {

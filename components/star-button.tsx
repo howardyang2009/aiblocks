@@ -36,6 +36,7 @@ export function StarButton({
     <button
       onClick={toggle}
       disabled={pending}
+      data-testid="star-button"
       className={`inline-flex items-center gap-1.5 rounded-block border px-3 py-1.5 text-sm transition-colors ${
         starred ? "border-accent text-accent" : "text-muted hover:border-accent"
       }`}
