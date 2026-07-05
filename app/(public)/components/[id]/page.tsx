@@ -35,6 +35,17 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
             <Link href={`/sellers/${seller.username}`} className="text-accent hover:underline">
               @{seller.username}
             </Link>
+            {isSeller && (
+              <>
+                {" · "}
+                <Link
+                  href={`/dashboard/seller/${component.id}/edit`}
+                  className="text-accent hover:underline"
+                >
+                  Edit
+                </Link>
+              </>
+            )}
           </p>
         )}
 
