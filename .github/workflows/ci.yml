@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+  e2e-tests:
+    name: E2E tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Docker is already running on the ubuntu-latest runner, so this
+      # behaves the same as running it on a local machine.
+      - name: Start local Supabase
+        run: supabase start
+
+      # Applies migrations + seed.sql fresh, same as the local workflow in
+      # e2e/README.md — seed.sql grants the anon/authenticated/service_role
+      # table privileges that a bare `supabase start` doesn't set up.
+      - name: Reset database
+        run: supabase db reset
+
+      # Playwright config loads .env.test.local directly (never .env.local),
+      # so generate it here instead of committing real/dummy credentials.
+      # Clerk values are real test-mode keys and come from repo secrets;
+      # Supabase values are printed fresh by this run's local stack.
+      - name: Write .env.test.local
+        env:
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.E2E_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.E2E_CLERK_SECRET_KEY }}
+          CLERK_TEST_USER_EMAIL: ${{ secrets.E2E_CLERK_TEST_USER_EMAIL }}
+        run: |
+          STATUS=$(supabase status -o json)
+          SUPABASE_URL=$(echo "$STATUS" | jq -r '.API_URL')
+          SUPABASE_ANON_KEY=$(echo "$STATUS" | jq -r '.ANON_KEY')
+          SUPABASE_SERVICE_ROLE_KEY=$(echo "$STATUS" | jq -r '.SERVICE_ROLE_KEY')
+
+          cat > .env.test.local <<EOF
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$CLERK_PUBLISHABLE_KEY
+          CLERK_SECRET_KEY=$CLERK_SECRET_KEY
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+          CLERK_TEST_USER_EMAIL=$CLERK_TEST_USER_EMAIL
+
+          NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+          SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY
+          SUPABASE_ZIP_BUCKET=component-zips
+
+          STRIPE_SECRET_KEY=sk_test_dummy_not_used_by_e2e
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_dummy_not_used_by_e2e
+          STRIPE_WEBHOOK_SECRET=whsec_dummy_not_used_by_e2e
+
+          NEXT_PUBLIC_APP_URL=http://localhost:3000
+          EOF
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop

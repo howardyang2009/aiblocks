@@ -25,7 +25,21 @@ Chromium browser against the app running with `NODE_ENV=test` (so it loads
   localhost. Separate follow-up.
 - Leaving an actual verified review as a *different* buyer — needs a second Clerk
   test identity. Also a follow-up.
-- CI. This suite is local-only for now.
+
+## CI
+
+Runs on every push/PR to `main` via `.github/workflows/ci.yml`. The job spins up a
+throwaway local Supabase stack with the Supabase CLI (`supabase start` +
+`supabase db reset` — same migrations/seed as local dev, Docker is already available
+on the runner) and writes a `.env.test.local` from repo secrets plus that run's
+freshly-printed Supabase keys. Requires these repo secrets to be set once
+(Settings → Secrets and variables → Actions):
+- `E2E_CLERK_PUBLISHABLE_KEY`
+- `E2E_CLERK_SECRET_KEY`
+- `E2E_CLERK_TEST_USER_EMAIL`
+
+(the same test-mode Clerk keys and test user email used locally — see Prerequisites
+above).
 
 See `docs/superpowers/specs/2026-07-04-e2e-testing-design.md` for the full design.
 
