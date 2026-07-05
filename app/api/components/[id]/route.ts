@@ -5,13 +5,11 @@ import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { narrowDb } from "@/lib/db-port";
 import {
   verifyUploadedZip,
-  type VerifyUploadedZipStorage,
-} from "@/lib/publish";
-import {
   parseEditInput,
   updateComponent,
+  type VerifyUploadedZipStorage,
   type UpdateComponentDb,
-} from "@/lib/edit";
+} from "@/lib/components-write";
 
 // PATCH /api/components/[id] — edit an existing listing. Body mirrors POST
 // /api/components with one relaxation: zipPath is OPTIONAL. When present

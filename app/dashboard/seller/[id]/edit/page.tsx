@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/viewer";
-import { EditComponentForm } from "./edit-form";
+import { EditForm } from "@/components/component-form";
 
 // Server component: resolves who's editing, loads the component (with its
 // tags), and 404s a stranger before renderin the client form. Ownership
@@ -48,12 +48,12 @@ export default async function EditComponentPage({ params }: { params: Promise<{ 
       <p className="text-muted text-sm mt-2">
         Update details in place. Uploading a new zip is optional —{" "}
         <Link href={`/components/${component.id}`} className="text-accent hover:underline">
-          view your listing
+          view your component
         </Link>
         .
       </p>
 
-      <EditComponentForm
+      <EditForm
         componentId={component.id}
         initial={{
           name: component.name,

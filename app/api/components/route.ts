@@ -9,7 +9,7 @@ import {
   publishComponent,
   type VerifyUploadedZipStorage,
   type PublishComponentDb,
-} from "@/lib/publish";
+} from "@/lib/components-write";
 import { listPublishedComponents, type ListComponentsDb } from "@/lib/browse";
 import { narrowDb } from "@/lib/db-port";
 

@@ -84,4 +84,15 @@ test.describe.serial("publish, download, and engage", () => {
       page.getByText("Sellers can't review their own components")
     ).toBeVisible();
   });
+
+  test("edits the component — the edit form saves and redirects to the live listing", async ({ page }) => {
+    const editedName = `${componentName} (edited)`;
+    await page.goto(`/dashboard/seller/${componentId}/edit`);
+
+    await page.getByLabel("Name").fill(editedName);
+    await page.getByRole("button", { name: "Save changes" }).click();
+
+    await expect(page).toHaveURL(`/components/${componentId}`);
+    await expect(page.getByRole("heading", { name: editedName })).toBeVisible();
+  });
 });
