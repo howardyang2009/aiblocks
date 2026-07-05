@@ -4,7 +4,16 @@ import { useState } from "react";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { toPublicProfile, type PublicProfile } from "@/lib/public-profile";
+import type { PublicProfile } from "@/lib/public-profile";
+import {
+  buildCommentNode,
+  insertComment,
+  removeComment,
+  requiresDeleteConfirmation,
+  type CommentNode,
+} from "@/lib/comments-section-state";
+
+export type { CommentNode } from "@/lib/comments-section-state";
 
 // Open comments section (V2), rendered on the component detail page
 // below the reviews. Unlike reviews, comments are ungated: any
@@ -14,16 +23,6 @@ import { toPublicProfile, type PublicProfile } from "@/lib/public-profile";
 // Threading is one level: replies attach to top-level comments only
 // (enforced server-side in /api/components/[id]/comments).
 // This component is the UX layer — the API re-checks every rule.
-
-export type CommentNode = {
-  id: string;
-  body: string;
-  created_at: string;
-  author: PublicProfile;
-  isSeller: boolean;
-  mine: boolean;
-  replies: CommentNode[];
-};
 
 
 function AuthorLine({ c }: { c: CommentNode }) {
@@ -93,23 +92,12 @@ export function CommentsSection({
         setError(data.error ?? "Could not post the comment. Try again.");
         return;
       }
-      const node: CommentNode = {
-        id: data.comment.id,
-        body: data.comment.body,
-        created_at: data.comment.created_at,
-        author: toPublicProfile(viewer, "you", "You"),
-        isSeller,
-        mine: true,
-        replies: [],
-      };
+      const node = buildCommentNode(data.comment, { viewer, isSeller });
+      setComments((prev) => insertComment(prev, node, parentId));
       if (parentId) {
-        setComments((prev) =>
-          prev.map((c) => (c.id === parentId ? { ...c, replies: [...c.replies, node] } : c))
-        );
         setReplyingTo(null);
         setReplyBody("");
       } else {
-        setComments((prev) => [...prev, node]); // conversation order: oldest first
         setBody("");
       }
     } catch {
@@ -119,9 +107,10 @@ export function CommentsSection({
     }
   }
 
-  async function remove(commentId: string, replyCount: number) {
+  async function remove(comment: CommentNode) {
+    const replyCount = comment.replies.length;
     if (
-      replyCount > 0 &&
+      requiresDeleteConfirmation(comment) &&
       !window.confirm(
         `Deleting this comment also deletes its ${replyCount} ${replyCount === 1 ? "reply" : "replies"}. Continue?`
       )
@@ -131,17 +120,13 @@ export function CommentsSection({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
+      const res = await fetch(`/api/comments/${comment.id}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Could not delete the comment. Try again.");
         return;
       }
-      setComments((prev) =>
-        prev
-          .filter((c) => c.id !== commentId)
-          .map((c) => ({ ...c, replies: c.replies.filter((r) => r.id !== commentId) }))
-      );
+      setComments((prev) => removeComment(prev, comment.id));
     } catch {
       setError("Network error — the comment was not deleted.");
     } finally {
@@ -221,7 +206,7 @@ export function CommentsSection({
                     )}
                     {c.mine && (
                       <button
-                        onClick={() => remove(c.id, c.replies.length)}
+                        onClick={() => remove(c)}
                         disabled={busy}
                         className="font-mono text-[11px] text-subtle hover:text-red-600"
                       >
@@ -242,7 +227,7 @@ export function CommentsSection({
                               <p className="mt-1 text-sm text-muted whitespace-pre-wrap">{r.body}</p>
                               {r.mine && (
                                 <button
-                                  onClick={() => remove(r.id, 0)}
+                                  onClick={() => remove(r)}
                                   disabled={busy}
                                   className="mt-1 font-mono text-[11px] text-subtle hover:text-red-600"
                                 >

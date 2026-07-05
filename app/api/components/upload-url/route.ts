@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/auth";
 import { exceedsZipSizeLimit } from "@/lib/constants";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { parseBody } from "@/lib/request";
-import { createUploadUrl, type CreateUploadUrlStorage } from "@/lib/publish";
+import { createUploadUrl, type CreateUploadUrlStorage } from "@/lib/components-write";
 import { narrowDb } from "@/lib/db-port";
 
 export const POST = withAuth(async (req, { profile, supabase }) => {

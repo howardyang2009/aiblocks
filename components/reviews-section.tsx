@@ -4,7 +4,9 @@ import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
-import { toPublicProfile, type PublicProfile } from "@/lib/public-profile";
+import { buildReview, upsertReview, removeMyReview, type Review } from "@/lib/reviews-section-state";
+
+export type { Review } from "@/lib/reviews-section-state";
 
 // Verified-buyer reviews section (V2), rendered on the component
 // detail page below the README.
@@ -16,19 +18,6 @@ import { toPublicProfile, type PublicProfile } from "@/lib/public-profile";
 //   * create / update (upsert) via POST /api/components/[id]/reviews
 //   * delete own review via DELETE on the same route
 // The API re-checks every rule server-side — this is UX, not security.
-
-export type Review = {
-  id: string;
-  rating: number;
-  body: string | null;
-  created_at: string;
-  reviewer: PublicProfile;
-  mine: boolean;
-  reply: {
-    body: string;
-    created_at: string;
-  } | null;
-};
 
 function Stars({ value, size = "text-sm" }: { value: number; size?: string }) {
   return (
@@ -181,16 +170,11 @@ export function ReviewsSection({
         setError(data.error ?? "Could not save the review. Try again.");
         return;
       }
-      const saved: Review = {
-        id: data.review.id,
-        rating: data.review.rating,
-        body: data.review.body,
-        created_at: data.review.created_at,
-        reviewer: toPublicProfile(mine?.reviewer, "you", "You"),
-        mine: true,
+      const saved = buildReview(data.review, {
+        reviewer: mine?.reviewer ?? null,
         reply: mine?.reply ?? null,
-      };
-      setReviews((prev) => [saved, ...prev.filter((r) => !r.mine)]);
+      });
+      setReviews((prev) => upsertReview(prev, saved));
       setEditing(false);
     } catch {
       setError("Network error — the review was not saved.");
@@ -209,7 +193,7 @@ export function ReviewsSection({
         setError(data.error ?? "Could not delete the review. Try again.");
         return;
       }
-      setReviews((prev) => prev.filter((r) => !r.mine));
+      setReviews((prev) => removeMyReview(prev));
       setRating(0);
       setBody("");
       setEditing(false);
