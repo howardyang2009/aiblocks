@@ -35,17 +35,6 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
             <Link href={`/sellers/${seller.username}`} className="text-accent hover:underline">
               @{seller.username}
             </Link>
-            {isSeller && (
-              <>
-                {" · "}
-                <Link
-                  href={`/dashboard/seller/${component.id}/edit`}
-                  className="text-accent hover:underline"
-                >
-                  Edit
-                </Link>
-              </>
-            )}
           </p>
         )}
 
@@ -102,6 +91,16 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
         <div className="mt-4">
           <StarButton componentId={component.id} initialCount={component.star_count} initialStarred={starred} />
         </div>
+        {isSeller && (
+          <div className="mt-4">
+            <Link
+              href={`/dashboard/seller/${component.id}/edit`}
+              className="inline-flex items-center gap-1.5 rounded-block border px-3 py-1.5 text-sm text-muted hover:border-accent hover:text-accent transition-colors"
+            >
+              <span aria-hidden>✎</span> Edit component
+            </Link>
+          </div>
+        )}
         <dl className="mt-6 space-y-2 font-mono text-xs text-subtle">
           <div className="flex justify-between"><dt>downloads</dt><dd>{component.download_count}</dd></div>
           <div className="flex justify-between"><dt>stars</dt><dd>{component.star_count}</dd></div>

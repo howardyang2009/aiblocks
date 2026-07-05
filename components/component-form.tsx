@@ -11,6 +11,12 @@ import {
   type EditFlowDeps,
   type FormFlowStage,
 } from "@/lib/component-form-flow";
+import {
+  requestUploadUrl,
+  uploadZip,
+  createComponentEffect,
+  updateComponentEffect,
+} from "@/lib/component-form-effects";
 
 // PublishForm and EditForm — the two things a Seller does to submit a
 // Component — share one interactive form (IntakeForm) and one upload
@@ -43,51 +49,19 @@ const BLANK_INITIAL: ComponentFormInitial = {
   currentZipPath: null,
 };
 
-const uploadDeps = {
-  async requestUploadUrl(sizeBytes: number) {
-    const res = await fetch("/api/components/upload-url", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ size: sizeBytes }),
-    });
-    const json = await res.json();
-    if (!res.ok) return { ok: false as const, error: json.error ?? "Could not start upload." };
-    return { ok: true as const, path: json.path, token: json.token, bucket: json.bucket };
-  },
-  async uploadZip(bucket: string, path: string, token: string, file: File) {
-    const supabase = createBrowserClient();
-    const { error } = await supabase.storage.from(bucket).uploadToSignedUrl(path, token, file);
-    if (error) return { ok: false as const, error: "Upload failed. Please try again." };
-    return { ok: true as const };
-  },
-};
-
+// Real wiring: injects the true `fetch`/browser Supabase client into the
+// tested effect functions, rather than each flow's deps constructing them
+// internally — see lib/component-form-effects.ts.
 const publishDeps: Omit<PublishFlowDeps, "onStage"> = {
-  ...uploadDeps,
-  async createComponent(payload) {
-    const res = await fetch("/api/components", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const json = await res.json();
-    if (!res.ok) return { ok: false, error: json.error ?? "Could not publish." };
-    return { ok: true, id: json.id };
-  },
+  requestUploadUrl: (sizeBytes) => requestUploadUrl(fetch, sizeBytes),
+  uploadZip: (bucket, path, token, file) => uploadZip(createBrowserClient(), bucket, path, token, file),
+  createComponent: (payload) => createComponentEffect(fetch, payload),
 };
 
 const editDeps: Omit<EditFlowDeps, "onStage"> = {
-  ...uploadDeps,
-  async updateComponent(id, payload) {
-    const res = await fetch(`/api/components/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const json = await res.json();
-    if (!res.ok) return { ok: false, error: json.error ?? "Could not save changes." };
-    return { ok: true, id: json.id };
-  },
+  requestUploadUrl: (sizeBytes) => requestUploadUrl(fetch, sizeBytes),
+  uploadZip: (bucket, path, token, file) => uploadZip(createBrowserClient(), bucket, path, token, file),
+  updateComponent: (id, payload) => updateComponentEffect(fetch, id, payload),
 };
 
 function IntakeForm({

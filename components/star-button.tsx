@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { applyOptimisticToggle, resolveToggle, type StarState } from "@/lib/star-button-state";
 
 // Optimistic star toggle. POSTs to /api/components/[id]/star.
 export function StarButton({
@@ -12,21 +13,19 @@ export function StarButton({
   initialCount: number;
   initialStarred?: boolean;
 }) {
-  const [starred, setStarred] = useState(initialStarred);
-  const [count, setCount] = useState(initialCount);
+  const [state, setState] = useState<StarState>({ starred: initialStarred, count: initialCount });
   const [pending, setPending] = useState(false);
 
   async function toggle() {
     setPending(true);
-    setStarred((s) => !s);
-    setCount((n) => (starred ? n - 1 : n + 1));
+    const previous = state;
+    const optimistic = applyOptimisticToggle(previous);
+    setState(optimistic);
     try {
       const res = await fetch(`/api/components/${componentId}/star`, { method: "POST" });
-      if (!res.ok) throw new Error("star toggle failed");
+      setState(resolveToggle(previous, optimistic, res.ok));
     } catch {
-      // revert on failure
-      setStarred((s) => !s);
-      setCount((n) => (starred ? n + 1 : n - 1));
+      setState(resolveToggle(previous, optimistic, false));
     } finally {
       setPending(false);
     }
@@ -38,11 +37,11 @@ export function StarButton({
       disabled={pending}
       data-testid="star-button"
       className={`inline-flex items-center gap-1.5 rounded-block border px-3 py-1.5 text-sm transition-colors ${
-        starred ? "border-accent text-accent" : "text-muted hover:border-accent"
+        state.starred ? "border-accent text-accent" : "text-muted hover:border-accent"
       }`}
     >
       <span>★</span>
-      <span className="font-mono text-xs">{count}</span>
+      <span className="font-mono text-xs">{state.count}</span>
     </button>
   );
 }

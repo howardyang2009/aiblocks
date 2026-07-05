@@ -7,7 +7,14 @@ test.describe("browse & search", () => {
   let seeded: { id: string; name: string; slug: string | null };
 
   test.beforeAll(async () => {
-    seeded = await seedPublishedComponent({ name: `Browse Spec Widget ${Date.now()}` });
+    // `fullyParallel: true` can run this beforeAll in more than one worker
+    // for the same test run — a bare Date.now() suffix collides when two
+    // workers seed within the same millisecond (two components would get
+    // the identical name, breaking the exact-name search/click below), so
+    // this needs the same random-suffix treatment as the fixture's slug.
+    seeded = await seedPublishedComponent({
+      name: `Browse Spec Widget ${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    });
   });
 
   test("home links into the browse catalog", async ({ page }) => {
