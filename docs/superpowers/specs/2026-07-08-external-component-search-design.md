@@ -183,18 +183,30 @@ documents them (optional/raises-rate-limit vs. required-to-enable):
 
 ```
 # --- External component search ---
+# Optional — raises GitHub API rate limit (works without it)
 GITHUB_TOKEN=
+# Optional — raises SkillsMP rate limit (works without it)
 SKILLSMP_API_KEY=
+# Required to enable the Smithery adapter
 SMITHERY_API_KEY=
+# All three required to enable the Google Agent Search fallback
 GOOGLE_SEARCH_API_KEY=
 GOOGLE_SEARCH_PROJECT_ID=
 GOOGLE_SEARCH_ENGINE_ID=
+# Required to enable the Brave adapter
 BRAVE_SEARCH_API_KEY=
+# Optional — raises Hugging Face rate limit (works without it)
 HUGGINGFACE_API_TOKEN=
-SKILLS_SH_API_KEY=
 ```
 
-None of these are required for the feature to work end-to-end: GitHub and
+`SKILLS_SH_API_KEY` is intentionally **not** added here. The `skills-sh` adapter's
+config already falls back to `process.env.VERCEL_OIDC_TOKEN` (`lib/external-search/config.ts`,
+ported unchanged from afk-1), which Vercel generates automatically for deployments
+with OIDC Federation enabled — no manual key needed there. Locally (`vercel dev`
+or plain `next dev`), the adapter simply reports `disabled` until one of the two
+env vars is present, same as any other adapter without its key.
+
+None of the above are required for the feature to work end-to-end: GitHub and
 Hugging Face function keyless (lower rate limit only), and every other adapter
 reports `disabled` gracefully via the existing orchestrator status when its key
 is absent.
