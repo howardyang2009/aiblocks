@@ -26,13 +26,9 @@ export default async function HomePage() {
     <div className="mx-auto max-w-shell px-5">
       {/* Search hero */}
       <section className="py-20 lg:py-28 text-center">
-        <p className="eyebrow">Search everywhere</p>
         <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl mt-3">
-          Find the AI component you need.
+          Find the AI component around the web
         </h1>
-        <p className="mt-3 text-muted">
-          Skills, agents, prompts, MCP servers, and models — from AiBlocks and around the web.
-        </p>
         <div className="mt-8 max-w-2xl mx-auto">
           <ExternalSearchForm />
         </div>
@@ -43,7 +39,7 @@ export default async function HomePage() {
         <div>
           <p className="eyebrow">Open marketplace · multi-ecosystem</p>
           <h2 className="font-display font-bold tracking-tight text-3xl sm:text-4xl lg:text-5xl mt-4 leading-[1.05]">
-            Reusable AI components,<br />ready to snap in.
+            Reusable AI components<br />ready to snap in
           </h2>
           <p className="mt-5 text-muted max-w-md">
             Publish and download AI building blocks — prompts, skills, agents, MCP
