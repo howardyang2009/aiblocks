@@ -3,10 +3,11 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
 import { AssemblyGrid } from "@/components/brand/assembly-grid";
+import { ExternalSearchForm } from "@/components/external-search/ExternalSearchForm";
 import type { ComponentSummary } from "@/types/database";
 
-// Home. The hero opens with the most characteristic thing in this product's
-// world: components snapping into an assembly. The grid IS the brand.
+// Home. A Google-style search is the first thing a visitor sees; the
+// assembly-grid hero (the brand signature) follows right below it.
 export const dynamic = "force-dynamic";
 
 const Pimary_TAGS = ["mcp-server", "claude-md", "agent", "hook", "prompt", "skill"];
@@ -23,13 +24,27 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto max-w-shell px-5">
+      {/* Search hero */}
+      <section className="py-20 lg:py-28 text-center">
+        <p className="eyebrow">Search everywhere</p>
+        <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl mt-3">
+          Find the AI component you need.
+        </h1>
+        <p className="mt-3 text-muted">
+          Skills, agents, prompts, MCP servers, and models — from AiBlocks and around the web.
+        </p>
+        <div className="mt-8 max-w-2xl mx-auto">
+          <ExternalSearchForm />
+        </div>
+      </section>
+
       {/* Hero */}
-      <section className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center py-16 lg:py-24">
+      <section className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center py-16 lg:py-24 border-t">
         <div>
           <p className="eyebrow">Open marketplace · multi-ecosystem</p>
-          <h1 className="font-display font-bold tracking-tight text-4xl sm:text-5xl lg:text-6xl mt-4 leading-[1.05]">
+          <h2 className="font-display font-bold tracking-tight text-3xl sm:text-4xl lg:text-5xl mt-4 leading-[1.05]">
             Reusable AI components,<br />ready to snap in.
-          </h1>
+          </h2>
           <p className="mt-5 text-muted max-w-md">
             Publish and download AI building blocks — prompts, skills, agents, MCP
             servers, CLAUDE.md configs, hooks — for Claude, GPT, Gemini, and more.
