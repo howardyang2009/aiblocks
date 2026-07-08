@@ -15,6 +15,15 @@ describe('createGoogleAdapter', () => {
     expect(createGoogleAdapter(deps).isEnabled()).toBe(true);
   });
 
+  it('sends a composed query combining type and the search text', async () => {
+    const fetchFn = mockFetch({ results: [] });
+    const adapter = createGoogleAdapter({ ...deps, fetchFn });
+    await adapter.search('hello world', 'prompt');
+    const [, init] = (fetchFn as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(body).toEqual({ query: 'ai prompt for hello world' });
+  });
+
   it('maps results and marks github links', async () => {
     const fetchFn = mockFetch({
       results: [

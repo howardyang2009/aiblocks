@@ -1,5 +1,5 @@
 import { githubUrlOf } from './github-url';
-import type { FetchLike, SearchAdapter, SearchResult } from './types';
+import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
 interface DerivedStructData {
   title?: string;
@@ -15,7 +15,8 @@ export function createGoogleAdapter(
     id: 'google',
     supports: () => true,
     isEnabled: () => Boolean(deps.apiKey && deps.projectId && deps.engineId),
-    async search(query: string): Promise<SearchResult[]> {
+    async search(query: string, type: ComponentType): Promise<SearchResult[]> {
+      const q = `ai ${type} for ${query}`;
       const url =
         `https://discoveryengine.googleapis.com/v1/projects/${deps.projectId}/locations/global/` +
         `collections/default_collection/engines/${deps.engineId}/servingConfigs/default_search:searchLite` +
@@ -23,7 +24,7 @@ export function createGoogleAdapter(
       const res = await fetchFn(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query: q }),
       });
       if (!res.ok) {
         let detail = '';
