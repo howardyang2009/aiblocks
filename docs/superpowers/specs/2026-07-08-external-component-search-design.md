@@ -137,20 +137,27 @@ Two sections, aiblocks catalog first:
 
 - **"From AiBlocks"** — `listPublishedComponents` + the existing `ComponentCard`
   grid (visually identical to the home page's "Latest components" section). Text
-  search uses `q`. Additionally, where the selected `type` maps cleanly onto
-  aiblocks' existing tag taxonomy, the catalog query is also filtered by that tag:
+  search uses `q`. Additionally, the catalog query is filtered by the aiblocks
+  tag corresponding to the selected `type`:
 
-  | `type`      | aiblocks tag  |
-  | ----------- | ------------- |
-  | `skill`     | `skill`       |
-  | `subagent`  | `agent`       |
-  | `hook`      | `hook`        |
-  | `prompt`    | `prompt`      |
-  | `mcp`       | `mcp-server`  |
-  | `claude-md` | `claude-md`   |
+  | `type`           | aiblocks tag     |
+  | ---------------- | ---------------- |
+  | `skill`          | `skill`          |
+  | `subagent`       | `agent`          |
+  | `hook`           | `hook`           |
+  | `prompt`         | `prompt`         |
+  | `mcp`            | `mcp-server`     |
+  | `claude-md`      | `claude-md`      |
+  | `model`          | `model`          |
+  | `claude-plugin`  | `claude-plugin`  |
+  | `slash-command`  | `slash-command`  |
 
-  `model`, `claude-plugin`, and `slash-command` have no aiblocks tag equivalent,
-  so those three just use the text search with no tag filter. This mapping is
+  All 9 types map to an aiblocks tag now. `model`, `claude-plugin`, and
+  `slash-command` aren't in current catalog data (no published component uses
+  those tags yet), but the filter is wired up regardless — once sellers start
+  tagging components that way, matches surface automatically with no further
+  code change. Until then those three just return zero catalog results, which
+  the existing empty-state handling already covers. This mapping is
   aiblocks-specific glue and lives in `app/(public)/search/page.tsx` (or a small
   colocated helper), **not** inside `lib/external-search` — that module stays
   ignorant of aiblocks' own data model so it can be re-ported cleanly later.
