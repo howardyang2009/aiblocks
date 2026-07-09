@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { Spinner } from "@/components/ui/spinner";
 import type { PublicProfile } from "@/lib/identity/public-profile";
 import { requiresDeleteConfirmation, type CommentNode } from "@/lib/engagement/comments-section-state";
 import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/engagement/comments-flow";
@@ -144,8 +145,9 @@ export function CommentsSection({
               onClick={() => post(null)}
               disabled={busy}
               data-testid="comment-submit"
-              className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50"
+              className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
             >
+              {busy && !replyingTo && <Spinner className="h-3.5 w-3.5" />}
               {busy && !replyingTo ? "Posting…" : "Post comment"}
             </button>
           </div>
@@ -235,8 +237,9 @@ export function CommentsSection({
                         <button
                           onClick={() => post(c.id)}
                           disabled={busy}
-                          className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50"
+                          className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
                         >
+                          {busy && <Spinner className="h-3.5 w-3.5" />}
                           {busy ? "Posting…" : "Post reply"}
                         </button>
                         <button

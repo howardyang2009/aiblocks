@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow";
 import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
+import { Spinner } from "@/components/ui/spinner";
 
 // Handles the three states of acquiring a component:
 //   free            -> POST /download, follow the signed URL
@@ -98,8 +99,9 @@ export function DownloadButton({
           aria-describedby={
             needsConsent && !withdrawalWaived ? "withdrawal-consent-tooltip" : undefined
           }
-          className="w-full rounded-block bg-ink text-paper py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-block bg-ink text-paper py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5"
         >
+          {busy && <Spinner className="h-4 w-4" />}
           {busy ? "Working…" : label}
         </button>
       </div>

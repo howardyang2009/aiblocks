@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { Spinner } from "@/components/ui/spinner";
 import {
   runPublishFlow,
   runEditFlow,
@@ -170,7 +171,8 @@ function IntakeForm({
 
         <div className="flex gap-3">
           <button onClick={handleSubmit} disabled={busy}
-            className="rounded-block bg-ink text-paper px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50">
+            className="rounded-block bg-ink text-paper px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 inline-flex items-center gap-1.5">
+            {busy && <Spinner className="h-4 w-4" />}
             {buttonLabel}
           </button>
           {onCancel && (

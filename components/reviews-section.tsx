@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { Spinner } from "@/components/ui/spinner";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import type { Review } from "@/lib/engagement/reviews-section-state";
 import {
@@ -217,8 +218,9 @@ export function ReviewsSection({
               onClick={submit}
               disabled={busy}
               data-testid="review-submit"
-              className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50"
+              className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
             >
+              {busy && <Spinner className="h-3.5 w-3.5" />}
               {busy ? "Saving…" : mine ? "Save changes" : "Publish review"}
             </button>
             {editing && (
@@ -348,8 +350,9 @@ export function ReviewsSection({
                     <button
                       onClick={() => saveReply(r.id)}
                       disabled={replyBusy}
-                      className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50"
+                      className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
                     >
+                      {replyBusy && <Spinner className="h-3.5 w-3.5" />}
                       {replyBusy ? "Saving…" : r.reply ? "Save changes" : "Publish response"}
                     </button>
                     <button

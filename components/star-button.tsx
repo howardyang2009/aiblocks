@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { applyOptimisticToggle, resolveToggle, type StarState } from "@/lib/engagement/star-button-state";
+import { Spinner } from "@/components/ui/spinner";
 
 // Optimistic star toggle. POSTs to /api/components/[id]/star.
 export function StarButton({
@@ -40,7 +41,7 @@ export function StarButton({
         state.starred ? "border-accent text-accent" : "text-muted hover:border-accent"
       }`}
     >
-      <span>★</span>
+      {pending ? <Spinner className="h-3.5 w-3.5" /> : <span>★</span>}
       <span className="font-mono text-xs">{state.count}</span>
     </button>
   );
