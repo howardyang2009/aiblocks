@@ -369,6 +369,15 @@ export async function publishComponent(
 
 export type OwnedComponent = Pick<Tables<"components">, "id" | "seller_id" | "zip_path">;
 
+// The one rule for "does this seller own this component" — shared by
+// updateComponent's own check below and by the edit page's pre-render check
+// (app/dashboard/seller/[id]/edit/page.tsx), which return different things
+// on a mismatch (403 here, a 404 there, deliberately — see that page) but
+// must never disagree about what ownership means.
+export function isOwnedBySeller(component: Pick<Tables<"components">, "seller_id">, sellerId: string): boolean {
+  return component.seller_id === sellerId;
+}
+
 // The narrow slice of the Supabase client updateComponent touches.
 export type UpdateComponentDb = RelinkTagsDb & {
   from(table: "components"): {
@@ -412,7 +421,7 @@ export async function updateComponent(
     .maybeSingle();
 
   if (!existing) return { ok: false, status: 404, error: "Component not found." };
-  if (existing.seller_id !== args.sellerId) {
+  if (!isOwnedBySeller(existing, args.sellerId)) {
     return { ok: false, status: 403, error: "You can only edit your own components." };
   }
 

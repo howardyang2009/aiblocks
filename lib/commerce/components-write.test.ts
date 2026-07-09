@@ -6,6 +6,7 @@ import {
   publishComponent,
   updateComponent,
   createUploadUrl,
+  isOwnedBySeller,
   type VerifyUploadedZipStorage,
   type PublishComponentDb,
   type UpdateComponentDb,
@@ -452,5 +453,15 @@ describe("updateComponent", () => {
       status: 500,
       error: "Component updated, but linking tags failed.",
     });
+  });
+});
+
+describe("isOwnedBySeller", () => {
+  it("is true when the component's seller_id matches", () => {
+    expect(isOwnedBySeller({ seller_id: "seller1" }, "seller1")).toBe(true);
+  });
+
+  it("is false when the component's seller_id belongs to someone else", () => {
+    expect(isOwnedBySeller({ seller_id: "someone-else" }, "seller1")).toBe(false);
   });
 });

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/identity/viewer";
+import { isOwnedBySeller } from "@/lib/commerce/components-write";
 import { EditForm } from "@/components/component-form";
 
 // Server component: resolves who's editing, loads the component (with its
@@ -26,7 +27,7 @@ export default async function EditComponentPage({ params }: { params: Promise<{ 
   if (!component) notFound();
   // A "not yours" attempt looks the same as "doesn't exist" — no leak of
   // which listing ids exist.
-  if (component.seller_id !== profile.id) notFound();
+  if (!isOwnedBySeller(component, profile.id)) notFound();
 
   // Load the current tag names so the form can show them pre-filled.
   const { data: ctRows } = await supabase
