@@ -10,7 +10,7 @@ import { resolveComponentType, tagForComponentType } from "@/lib/external-search
 import { createAdapters, selectAdapters } from "@/lib/external-search/adapters";
 import { getConfig } from "@/lib/external-search/config";
 import { runSearch } from "@/lib/external-search/search/orchestrator";
-import type { AdapterId } from "@/lib/external-search/types";
+import { selectExternalResults } from "@/lib/external-search/search/by-source";
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +31,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   ]);
 
   const activeSource = resolved.source;
-  const externalResults = activeSource
-    ? external.results.filter((r) => (r.sources ?? [r.source]).includes(activeSource as AdapterId))
-    : external.results;
-
-  const availableSources = external.sources.filter((s) => s.status === "ok" && s.count > 0);
+  const { results: externalResults, availableSources } = selectExternalResults(external, activeSource);
   const hasAnyResults = catalogMatches.length > 0 || externalResults.length > 0;
 
   function sourceHref(source?: string) {
