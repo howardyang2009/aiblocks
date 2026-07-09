@@ -6,6 +6,9 @@ import {
   removeReplyEffect,
 } from "@/lib/engagement/reviews-effects";
 
+// Only each wrapper's own logic is tested here — see comments-effects.test.ts
+// for why the failure paths aren't re-tested per wrapper.
+
 function fakeFetch(response: { ok: boolean; body?: unknown }): typeof fetch {
   return vi.fn(async () => ({
     ok: response.ok,
@@ -32,14 +35,6 @@ describe("submitReviewEffect", () => {
       review: { id: "r1", rating: 5, body: "great", created_at: "2026-01-01T00:00:00Z" },
     });
   });
-
-  it("falls back to a generic error when the server sends none", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: {} });
-
-    const result = await submitReviewEffect(fetchImpl, "comp1", 5, "great");
-
-    expect(result).toEqual({ ok: false, error: "Could not save the review. Try again." });
-  });
 });
 
 describe("removeReviewEffect", () => {
@@ -50,14 +45,6 @@ describe("removeReviewEffect", () => {
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/components/comp1/reviews", { method: "DELETE" });
     expect(result).toEqual({ ok: true });
-  });
-
-  it("falls back to a generic error when the server sends none", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: {} });
-
-    const result = await removeReviewEffect(fetchImpl, "comp1");
-
-    expect(result).toEqual({ ok: false, error: "Could not delete the review. Try again." });
   });
 });
 
@@ -74,14 +61,6 @@ describe("saveReplyEffect", () => {
     });
     expect(result).toEqual({ ok: true, reply: { body: "thanks!", created_at: "2026-01-02T00:00:00Z" } });
   });
-
-  it("falls back to a generic error when the server sends none", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: {} });
-
-    const result = await saveReplyEffect(fetchImpl, "r1", "thanks!");
-
-    expect(result).toEqual({ ok: false, error: "Could not save the reply. Try again." });
-  });
 });
 
 describe("removeReplyEffect", () => {
@@ -92,13 +71,5 @@ describe("removeReplyEffect", () => {
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/reviews/r1/reply", { method: "DELETE" });
     expect(result).toEqual({ ok: true });
-  });
-
-  it("falls back to a generic error when the server sends none", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: {} });
-
-    const result = await removeReplyEffect(fetchImpl, "r1");
-
-    expect(result).toEqual({ ok: false, error: "Could not delete the reply. Try again." });
   });
 });

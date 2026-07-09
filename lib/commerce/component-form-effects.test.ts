@@ -7,17 +7,21 @@ import {
   type UploadZipStorage,
 } from "@/lib/commerce/component-form-effects";
 
+// requestUploadUrl/createComponentEffect/updateComponentEffect are only
+// tested for their own logic here — which URL/method/body they send, and
+// how they shape a successful response. The failure paths (server error
+// message, fallback, network exception) are runClientAction's behavior,
+// already exhaustively covered in lib/client-action.test.ts; each of these
+// wrappers forwards that result unchanged on failure. uploadZip is
+// different — it doesn't go through runClientAction at all, so both of its
+// tests (including its own fixed error message) stay as genuinely new
+// coverage.
+
 function fakeFetch(response: { ok: boolean; body: unknown }): typeof fetch {
   return vi.fn(async () => ({
     ok: response.ok,
     json: async () => response.body,
   })) as unknown as typeof fetch;
-}
-
-function throwingFetch(): typeof fetch {
-  return vi.fn(async () => {
-    throw new Error("network down");
-  }) as unknown as typeof fetch;
 }
 
 describe("requestUploadUrl", () => {
@@ -32,28 +36,6 @@ describe("requestUploadUrl", () => {
       body: JSON.stringify({ size: 2048 }),
     });
     expect(result).toEqual({ ok: true, path: "seller1/x.zip", token: "tok", bucket: "component-zips" });
-  });
-
-  it("surfaces the server's error message on failure", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: { error: "Zip exceeds the 10MB limit." } });
-
-    const result = await requestUploadUrl(fetchImpl, 99_000_000);
-
-    expect(result).toEqual({ ok: false, error: "Zip exceeds the 10MB limit." });
-  });
-
-  it("falls back to a generic error when the server sends none", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: {} });
-
-    const result = await requestUploadUrl(fetchImpl, 2048);
-
-    expect(result).toEqual({ ok: false, error: "Could not start upload." });
-  });
-
-  it("returns a network error message when fetchImpl throws", async () => {
-    const result = await requestUploadUrl(throwingFetch(), 2048);
-
-    expect(result).toEqual({ ok: false, error: "Network error — the upload could not be started." });
   });
 });
 
@@ -112,28 +94,6 @@ describe("createComponentEffect", () => {
     });
     expect(result).toEqual({ ok: true, id: "comp1" });
   });
-
-  it("surfaces the server's error message on failure", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: { error: "Name must be at least 3 characters." } });
-
-    const result = await createComponentEffect(fetchImpl, publishPayload);
-
-    expect(result).toEqual({ ok: false, error: "Name must be at least 3 characters." });
-  });
-
-  it("falls back to a generic error when the server sends none", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: {} });
-
-    const result = await createComponentEffect(fetchImpl, publishPayload);
-
-    expect(result).toEqual({ ok: false, error: "Could not publish." });
-  });
-
-  it("returns a network error message when fetchImpl throws", async () => {
-    const result = await createComponentEffect(throwingFetch(), publishPayload);
-
-    expect(result).toEqual({ ok: false, error: "Network error — the component was not published." });
-  });
 });
 
 const editPayload = {
@@ -157,27 +117,5 @@ describe("updateComponentEffect", () => {
       body: JSON.stringify(editPayload),
     });
     expect(result).toEqual({ ok: true, id: "comp1" });
-  });
-
-  it("surfaces the server's error message on failure", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: { error: "You can only edit your own components." } });
-
-    const result = await updateComponentEffect(fetchImpl, "comp1", editPayload);
-
-    expect(result).toEqual({ ok: false, error: "You can only edit your own components." });
-  });
-
-  it("falls back to a generic error when the server sends none", async () => {
-    const fetchImpl = fakeFetch({ ok: false, body: {} });
-
-    const result = await updateComponentEffect(fetchImpl, "comp1", editPayload);
-
-    expect(result).toEqual({ ok: false, error: "Could not save changes." });
-  });
-
-  it("returns a network error message when fetchImpl throws", async () => {
-    const result = await updateComponentEffect(throwingFetch(), "comp1", editPayload);
-
-    expect(result).toEqual({ ok: false, error: "Network error — the changes were not saved." });
   });
 });
