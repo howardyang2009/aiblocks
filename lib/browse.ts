@@ -81,3 +81,61 @@ export async function listPublishedComponents(
   const { data, error } = await query;
   return { components: data ?? [], error: error?.message ?? null };
 }
+
+// The N newest published components — the home page's "Latest components" strip.
+export async function listLatestPublished(
+  supabase: ListComponentsDb,
+  limit: number
+): Promise<ListPublishedComponentsResult> {
+  const { data, error } = await supabase
+    .from("components")
+    .select(COMPONENT_SUMMARY_COLS)
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return { components: data ?? [], error: error?.message ?? null };
+}
+
+// A seller's published catalog, newest first — the seller profile page.
+export async function listPublishedBySeller(
+  supabase: ListComponentsDb,
+  sellerId: string
+): Promise<ListPublishedComponentsResult> {
+  const { data, error } = await supabase
+    .from("components")
+    .select(COMPONENT_SUMMARY_COLS)
+    .eq("status", "published")
+    .eq("seller_id", sellerId)
+    .order("created_at", { ascending: false });
+  return { components: data ?? [], error: error?.message ?? null };
+}
+
+export type ListByIdsDb = {
+  from(table: "components"): {
+    select(columns: string): {
+      in(
+        column: string,
+        values: string[]
+      ): PromiseLike<{ data: ComponentSummary[] | null; error: { message: string } | null }>;
+    };
+  };
+};
+
+// Components a buyer has acquired, looked up by lib/entitlements.ts's
+// downloads list — a Buyer's library. Deliberately NOT filtered by status:
+// an Entitlement, once granted, doesn't depend on the seller's component
+// still being published. Returns results in the same order the ids were
+// given (the caller's acquisition order), not query order.
+export async function listComponentsByIds(
+  supabase: ListByIdsDb,
+  ids: string[]
+): Promise<ListPublishedComponentsResult> {
+  if (!ids.length) return { components: [], error: null };
+
+  const { data, error } = await supabase.from("components").select(COMPONENT_SUMMARY_COLS).in("id", ids);
+  if (error) return { components: [], error: error.message };
+
+  const rank = new Map(ids.map((id, i) => [id, i]));
+  const components = (data ?? []).slice().sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
+  return { components, error: null };
+}

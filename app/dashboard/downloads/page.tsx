@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
-import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { ComponentCard } from "@/components/component-card";
 import { listEntitlements, type DownloadListDb } from "@/lib/entitlements";
+import { listComponentsByIds, type ListByIdsDb } from "@/lib/browse";
 import { narrowDb } from "@/lib/db-port";
 import { getViewer } from "@/lib/viewer";
 import type { ComponentSummary } from "@/types/database";
@@ -21,20 +21,8 @@ export default async function MyDownloadsPage() {
   if (profile) {
     // Library entries, newest first.
     const dl = await listEntitlements(narrowDb<DownloadListDb>(supabase), profile.id);
-
-    const ids = dl.map(r => r.component_id);
-    if (ids.length) {
-      const { data: comps } = await supabase
-        .from("components")
-        .select(COMPONENT_SUMMARY_COLS)
-        .in("id", ids);
-
-      // Preserve the acquired-at ordering from the downloads query.
-      const rank = new Map(ids.map((id: string, i: number) => [id, i]));
-      components = ((comps ?? []) as ComponentSummary[]).sort(
-        (a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)
-      );
-    }
+    const ids = dl.map((r) => r.component_id);
+    ({ components } = await listComponentsByIds(narrowDb<ListByIdsDb>(supabase), ids));
   }
 
   return (

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
-import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
+import { listLatestPublished, type ListComponentsDb } from "@/lib/browse";
+import { narrowDb } from "@/lib/db-port";
 import { ComponentCard } from "@/components/component-card";
 import { AssemblyGrid } from "@/components/brand/assembly-grid";
 import { ExternalSearchForm } from "@/components/external-search/ExternalSearchForm";
-import type { ComponentSummary } from "@/types/database";
 
 // Home. A Google-style search is the first thing a visitor sees; the
 // assembly-grid hero (the brand signature) follows right below it.
@@ -13,14 +13,10 @@ export const dynamic = "force-dynamic";
 const Pimary_TAGS = ["mcp-server", "claude-md", "subagent", "hook", "prompt", "skill"];
 
 export default async function HomePage() {
-  const supabase = createServiceClient();
-  const { data } = await supabase
-    .from("components")
-    .select(COMPONENT_SUMMARY_COLS)
-    .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .limit(6);
-  const latest = (data ?? []) as ComponentSummary[];
+  const { components: latest } = await listLatestPublished(
+    narrowDb<ListComponentsDb>(createServiceClient()),
+    6
+  );
 
   return (
     <div className="mx-auto max-w-shell px-5">
