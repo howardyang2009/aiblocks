@@ -7,6 +7,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import type { PublicProfile } from "@/lib/identity/public-profile";
 import { requiresDeleteConfirmation, type CommentNode } from "@/lib/engagement/comments-section-state";
 import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/engagement/comments-flow";
+import { postCommentEffect, removeCommentEffect } from "@/lib/engagement/comments-effects";
 
 export type { CommentNode } from "@/lib/engagement/comments-section-state";
 
@@ -72,22 +73,7 @@ export function CommentsSection({
     setBusy(true);
     setError(null);
     const result = await runPostCommentFlow(
-      {
-        postComment: async (text, parentId) => {
-          try {
-            const res = await fetch(`/api/components/${componentId}/comments`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ body: text, parentId }),
-            });
-            const data = await res.json();
-            if (!res.ok) return { ok: false, error: data.error ?? "Could not post the comment. Try again." };
-            return { ok: true, comment: data.comment };
-          } catch {
-            return { ok: false, error: "Network error — the comment was not posted." };
-          }
-        },
-      },
+      { postComment: (text, parentId) => postCommentEffect(fetch, componentId, text, parentId) },
       { comments, body: parentId ? replyBody : body, parentId, viewer, isSeller }
     );
     setBusy(false);
@@ -115,20 +101,7 @@ export function CommentsSection({
     setBusy(true);
     setError(null);
     const result = await runRemoveCommentFlow(
-      {
-        removeComment: async () => {
-          try {
-            const res = await fetch(`/api/comments/${comment.id}`, { method: "DELETE" });
-            if (!res.ok) {
-              const data = await res.json().catch(() => ({}));
-              return { ok: false, error: data.error ?? "Could not delete the comment. Try again." };
-            }
-            return { ok: true };
-          } catch {
-            return { ok: false, error: "Network error — the comment was not deleted." };
-          }
-        },
-      },
+      { removeComment: () => removeCommentEffect(fetch, comment.id) },
       { comments, comment, confirmed: true }
     );
     setBusy(false);

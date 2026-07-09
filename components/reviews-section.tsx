@@ -11,6 +11,12 @@ import {
   runSaveReplyFlow,
   runRemoveReplyFlow,
 } from "@/lib/engagement/reviews-flow";
+import {
+  submitReviewEffect,
+  removeReviewEffect,
+  saveReplyEffect,
+  removeReplyEffect,
+} from "@/lib/engagement/reviews-effects";
 
 export type { Review } from "@/lib/engagement/reviews-section-state";
 
@@ -104,22 +110,7 @@ export function ReviewsSection({
     setReplyBusy(true);
     setReplyError(null);
     const result = await runSaveReplyFlow(
-      {
-        saveReply: async (id, body) => {
-          try {
-            const res = await fetch(`/api/reviews/${id}/reply`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ body }),
-            });
-            const data = await res.json();
-            if (!res.ok) return { ok: false, error: data.error ?? "Could not save the reply. Try again." };
-            return { ok: true, reply: data.reply };
-          } catch {
-            return { ok: false, error: "Network error — the reply was not saved." };
-          }
-        },
-      },
+      { saveReply: (id, body) => saveReplyEffect(fetch, id, body) },
       { reviews, reviewId, body: replyBody }
     );
     setReplyBusy(false);
@@ -136,20 +127,7 @@ export function ReviewsSection({
     setReplyBusy(true);
     setReplyError(null);
     const result = await runRemoveReplyFlow(
-      {
-        removeReply: async (id) => {
-          try {
-            const res = await fetch(`/api/reviews/${id}/reply`, { method: "DELETE" });
-            if (!res.ok) {
-              const data = await res.json().catch(() => ({}));
-              return { ok: false, error: data.error ?? "Could not delete the reply. Try again." };
-            }
-            return { ok: true };
-          } catch {
-            return { ok: false, error: "Network error — the reply was not deleted." };
-          }
-        },
-      },
+      { removeReply: (id) => removeReplyEffect(fetch, id) },
       { reviews, reviewId }
     );
     setReplyBusy(false);
@@ -170,22 +148,7 @@ export function ReviewsSection({
     setBusy(true);
     setError(null);
     const result = await runSubmitReviewFlow(
-      {
-        submitReview: async (r, b) => {
-          try {
-            const res = await fetch(`/api/components/${componentId}/reviews`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ rating: r, body: b }),
-            });
-            const data = await res.json();
-            if (!res.ok) return { ok: false, error: data.error ?? "Could not save the review. Try again." };
-            return { ok: true, review: data.review };
-          } catch {
-            return { ok: false, error: "Network error — the review was not saved." };
-          }
-        },
-      },
+      { submitReview: (r, b) => submitReviewEffect(fetch, componentId, r, b) },
       { reviews, rating, body, mine }
     );
     setBusy(false);
@@ -201,20 +164,7 @@ export function ReviewsSection({
     setBusy(true);
     setError(null);
     const result = await runRemoveReviewFlow(
-      {
-        removeReview: async () => {
-          try {
-            const res = await fetch(`/api/components/${componentId}/reviews`, { method: "DELETE" });
-            if (!res.ok) {
-              const data = await res.json().catch(() => ({}));
-              return { ok: false, error: data.error ?? "Could not delete the review. Try again." };
-            }
-            return { ok: true };
-          } catch {
-            return { ok: false, error: "Network error — the review was not deleted." };
-          }
-        },
-      },
+      { removeReview: () => removeReviewEffect(fetch, componentId) },
       { reviews }
     );
     setBusy(false);

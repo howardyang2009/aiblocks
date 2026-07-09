@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow";
+import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
 
 // Handles the three states of acquiring a component:
 //   free            -> POST /download, follow the signed URL
@@ -38,30 +39,8 @@ export function DownloadButton({
     setMsg(null);
     const result = await runDownloadFlow(
       {
-        requestDownload: async () => {
-          try {
-            const res = await fetch(`/api/components/${componentId}/download`, { method: "POST" });
-            const json = await res.json();
-            if (!res.ok) return { ok: false, error: json.error ?? "Could not prepare download." };
-            return { ok: true, url: json.url };
-          } catch {
-            return { ok: false, error: "Network error — the download could not be prepared." };
-          }
-        },
-        requestCheckout: async (waived) => {
-          try {
-            const res = await fetch("/api/checkout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ componentId, withdrawalWaived: waived }),
-            });
-            const json = await res.json();
-            if (!res.ok) return { ok: false, error: json.error ?? "Could not start checkout." };
-            return { ok: true, url: json.url };
-          } catch {
-            return { ok: false, error: "Network error — checkout could not be started." };
-          }
-        },
+        requestDownload: () => requestDownloadEffect(fetch, componentId),
+        requestCheckout: (waived) => requestCheckoutEffect(fetch, componentId, waived),
       },
       { signedIn, priceCents, owned, withdrawalWaived }
     );
