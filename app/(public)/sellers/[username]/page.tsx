@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
-import { shouldShowStripeNudge } from "@/lib/seller";
+import { shouldShowStripeNudge, type NudgeDb } from "@/lib/seller";
+import { narrowDb } from "@/lib/db-port";
 import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
 import { StripeNudge } from "@/components/stripe-nudge";
 import { ComponentCard } from "@/components/component-card";
@@ -33,7 +34,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
   // and only if they have paid components but payouts aren't connected yet.
   const { userId } = await auth();
   const isOwner = !!userId && profile.clerk_user_id === userId;
-  const showNudge = isOwner && await shouldShowStripeNudge(profile, getStripe(), supabase);
+  const showNudge = isOwner && await shouldShowStripeNudge(getStripe(), narrowDb<NudgeDb>(supabase), profile);
 
   return (
     <>

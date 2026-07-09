@@ -1,8 +1,27 @@
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import type { Tables } from "@/types/database";
-import type { createServiceClient } from "@/lib/supabase/server";
+import { APP_URL } from "@/lib/constants";
 
 export type PayoutStatus = "ready" | "incomplete" | "none";
+
+// The narrow slice of the Stripe client getSellerPayoutStatus touches.
+export type PayoutStatusStripe = {
+  accounts: {
+    retrieve(id: string): Promise<{
+      details_submitted?: boolean;
+      capabilities?: { transfers?: string };
+    }>;
+  };
+};
+
+// The narrow slice of the Supabase client getSellerPayoutStatus touches.
+export type PayoutStatusDb = {
+  from(table: "profiles"): {
+    update(row: { stripe_onboarding_done: boolean }): {
+      eq(column: string, value: string): PromiseLike<{ error: { message: string } | null }>;
+    };
+  };
+};
 
 // Determine whether a seller can actually receive payments.
 //
@@ -15,9 +34,9 @@ export type PayoutStatus = "ready" | "incomplete" | "none";
 //   "incomplete" -> account exists but can't receive transfers yet
 //   "ready"      -> good to go (cached after first confirmation)
 export async function getSellerPayoutStatus(
-  profile: Tables<"profiles">,
-  stripe: Stripe,
-  supabase: ReturnType<typeof createServiceClient>
+  stripe: PayoutStatusStripe,
+  supabase: PayoutStatusDb,
+  profile: Tables<"profiles">
 ): Promise<PayoutStatus> {
   if (!profile?.stripe_account_id) return "none";
   if (profile.stripe_onboarding_done) return "ready"; // cached — no Stripe call
@@ -42,6 +61,22 @@ export async function getSellerPayoutStatus(
   }
 }
 
+// The narrow slice of the Supabase client shouldShowStripeNudge touches, on
+// top of everything getSellerPayoutStatus already needs.
+export type NudgeDb = PayoutStatusDb & {
+  from(table: "components"): {
+    select(columns: string): {
+      eq(column: string, value: string): {
+        eq(column: string, value: string): {
+          gt(column: string, value: number): {
+            limit(n: number): PromiseLike<{ data: { id: string }[] | null }>;
+          };
+        };
+      };
+    };
+  };
+};
+
 // True when the seller has paid components but payouts aren't connected yet.
 // Used by dashboard layout and seller profile page to decide whether to show
 // the Stripe onboarding nudge. Owns the "has a published paid component"
@@ -53,9 +88,9 @@ export async function getSellerPayoutStatus(
 // components list in memory is not worth avoiding at the cost of a second
 // definition of the same rule.
 export async function shouldShowStripeNudge(
-  profile: Tables<"profiles">,
-  stripe: Stripe,
-  supabase: ReturnType<typeof createServiceClient>
+  stripe: PayoutStatusStripe,
+  supabase: NudgeDb,
+  profile: Tables<"profiles">
 ): Promise<boolean> {
   const { data: paid } = await supabase
     .from("components")
@@ -65,5 +100,77 @@ export async function shouldShowStripeNudge(
     .gt("price_cents", 0)
     .limit(1);
   if (!paid?.length) return false;
-  return (await getSellerPayoutStatus(profile, stripe, supabase)) !== "ready";
+  return (await getSellerPayoutStatus(stripe, supabase, profile)) !== "ready";
+}
+
+export type StartOnboardingResult =
+  | { ok: true; url: string }
+  | { ok: false; status: number; error: string };
+
+// The narrow slice of the Stripe client startOnboarding touches.
+export type OnboardingStripe = {
+  accounts: {
+    retrieve(id: string): Promise<unknown>;
+    create(params: Stripe.AccountCreateParams): Promise<{ id: string }>;
+  };
+  accountLinks: {
+    create(params: Stripe.AccountLinkCreateParams): Promise<{ url: string }>;
+  };
+};
+
+// The narrow slice of the Supabase client startOnboarding touches.
+export type OnboardingDb = {
+  from(table: "profiles"): {
+    update(row: { stripe_account_id: string; stripe_onboarding_done: boolean }): {
+      eq(column: string, value: string): PromiseLike<{ error: { message: string } | null }>;
+    };
+  };
+};
+
+// Start (or resume) Stripe Connect onboarding for a seller and return the
+// hosted onboarding link.
+export async function startOnboarding(
+  stripe: OnboardingStripe,
+  supabase: OnboardingDb,
+  profile: Tables<"profiles">
+): Promise<StartOnboardingResult> {
+  let accountId: string | null = profile.stripe_account_id ?? null;
+
+  // A stored account id can be STALE after switching Stripe modes: an account
+  // created in test mode does not exist under live keys (and vice-versa).
+  // Verify it still exists under the CURRENT keys; if not, drop it and recreate.
+  if (accountId) {
+    try {
+      await stripe.accounts.retrieve(accountId);
+    } catch {
+      accountId = null; // wrong mode / deleted -> recreate below
+    }
+  }
+
+  if (!accountId) {
+    const account = await stripe.accounts.create({
+      type: "express",
+      // Explicitly request the transfers capability — required for the
+      // destination charges your checkout route uses.
+      capabilities: { transfers: { requested: true } },
+    });
+    accountId = account.id;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ stripe_account_id: accountId, stripe_onboarding_done: false })
+      .eq("id", profile.id);
+    if (error) {
+      return { ok: false, status: 500, error: "Could not save your Stripe account. Please try again." };
+    }
+  }
+
+  const link = await stripe.accountLinks.create({
+    account: accountId,
+    refresh_url: `${APP_URL}/dashboard/seller/stripe`,
+    return_url: `${APP_URL}/dashboard/seller/stripe?done=1`,
+    type: "account_onboarding",
+  });
+
+  return { ok: true, url: link.url };
 }

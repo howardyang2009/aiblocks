@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
-import { shouldShowStripeNudge } from "@/lib/seller";
+import { shouldShowStripeNudge, type NudgeDb } from "@/lib/seller";
+import { narrowDb } from "@/lib/db-port";
 import { getViewer } from "@/lib/viewer";
 import { StripeNudge } from "@/components/stripe-nudge";
 
@@ -14,7 +15,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   let showNudge = false;
 
   if (profile) {
-    showNudge = await shouldShowStripeNudge(profile, getStripe(), supabase);
+    showNudge = await shouldShowStripeNudge(getStripe(), narrowDb<NudgeDb>(supabase), profile);
   }
 
   return (
