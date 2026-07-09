@@ -9,6 +9,13 @@ import type { PublicProfile } from "@/lib/identity/public-profile";
 import { requiresDeleteConfirmation, type CommentNode } from "@/lib/engagement/comments-section-state";
 import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/engagement/comments-flow";
 import { postCommentEffect, removeCommentEffect } from "@/lib/engagement/comments-effects";
+import { useRowMutation } from "@/lib/use-row-mutation";
+
+const COMPOSE = "compose";
+// A top-level comment's own id doubles as its delete action's row key; its
+// reply composer gets a separate, namespaced key so replying to a comment
+// and deleting that same comment never share a busy/error slot.
+const replyKey = (parentId: string) => `reply:${parentId}`;
 
 export type { CommentNode } from "@/lib/engagement/comments-section-state";
 
@@ -65,23 +72,19 @@ export function CommentsSection({
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
 
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { run, isBusy, errorFor, clear } = useRowMutation();
 
   const count = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
 
   async function post(parentId: string | null) {
-    setBusy(true);
-    setError(null);
-    const result = await runPostCommentFlow(
-      { postComment: (text, parentId) => postCommentEffect(fetch, componentId, text, parentId) },
-      { comments, body: parentId ? replyBody : body, parentId, viewer, isSeller }
+    const key = parentId ? replyKey(parentId) : COMPOSE;
+    const result = await run(key, () =>
+      runPostCommentFlow(
+        { postComment: (text, parentId) => postCommentEffect(fetch, componentId, text, parentId) },
+        { comments, body: parentId ? replyBody : body, parentId, viewer, isSeller }
+      )
     );
-    setBusy(false);
-    if (result.status === "error") {
-      setError(result.error);
-      return;
-    }
+    if (result.status === "error") return;
     setComments(result.comments);
     if (parentId) {
       setReplyingTo(null);
@@ -99,17 +102,12 @@ export function CommentsSection({
       );
       if (!confirmed) return;
     }
-    setBusy(true);
-    setError(null);
-    const result = await runRemoveCommentFlow(
-      { removeComment: () => removeCommentEffect(fetch, comment.id) },
-      { comments, comment, confirmed: true }
+    const result = await run(comment.id, () =>
+      runRemoveCommentFlow(
+        { removeComment: () => removeCommentEffect(fetch, comment.id) },
+        { comments, comment, confirmed: true }
+      )
     );
-    setBusy(false);
-    if (result.status === "error") {
-      setError(result.error);
-      return;
-    }
     if (result.status === "removed") setComments(result.comments);
   }
 
@@ -139,16 +137,16 @@ export function CommentsSection({
             data-testid="comment-input"
             className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
           />
-          {error && !replyingTo && <p className="mt-2 text-xs text-red-600">{error}</p>}
+          {errorFor(COMPOSE) && <p className="mt-2 text-xs text-red-600">{errorFor(COMPOSE)}</p>}
           <div className="mt-3">
             <button
               onClick={() => post(null)}
-              disabled={busy}
+              disabled={isBusy(COMPOSE)}
               data-testid="comment-submit"
               className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
             >
-              {busy && !replyingTo && <Spinner className="h-3.5 w-3.5" />}
-              {busy && !replyingTo ? "Posting…" : "Post comment"}
+              {isBusy(COMPOSE) && <Spinner className="h-3.5 w-3.5" />}
+              {isBusy(COMPOSE) ? "Posting…" : "Post comment"}
             </button>
           </div>
         </div>
@@ -177,7 +175,7 @@ export function CommentsSection({
                         onClick={() => {
                           setReplyingTo(replyingTo === c.id ? null : c.id);
                           setReplyBody("");
-                          setError(null);
+                          clear(replyKey(c.id));
                         }}
                         className="font-mono text-[11px] text-subtle hover:text-accent"
                       >
@@ -187,7 +185,7 @@ export function CommentsSection({
                     {c.mine && (
                       <button
                         onClick={() => remove(c)}
-                        disabled={busy}
+                        disabled={isBusy(c.id)}
                         className="font-mono text-[11px] text-subtle hover:text-red-600"
                       >
                         delete
@@ -208,7 +206,7 @@ export function CommentsSection({
                               {r.mine && (
                                 <button
                                   onClick={() => remove(r)}
-                                  disabled={busy}
+                                  disabled={isBusy(r.id)}
                                   className="mt-1 font-mono text-[11px] text-subtle hover:text-red-600"
                                 >
                                   delete
@@ -232,20 +230,22 @@ export function CommentsSection({
                         placeholder={`Reply to ${c.author.display_name ?? `@${c.author.username}`}`}
                         className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
                       />
-                      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+                      {errorFor(replyKey(c.id)) && (
+                        <p className="mt-2 text-xs text-red-600">{errorFor(replyKey(c.id))}</p>
+                      )}
                       <div className="mt-2 flex items-center gap-3">
                         <button
                           onClick={() => post(c.id)}
-                          disabled={busy}
+                          disabled={isBusy(replyKey(c.id))}
                           className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
                         >
-                          {busy && <Spinner className="h-3.5 w-3.5" />}
-                          {busy ? "Posting…" : "Post reply"}
+                          {isBusy(replyKey(c.id)) && <Spinner className="h-3.5 w-3.5" />}
+                          {isBusy(replyKey(c.id)) ? "Posting…" : "Post reply"}
                         </button>
                         <button
                           onClick={() => {
                             setReplyingTo(null);
-                            setError(null);
+                            clear(replyKey(c.id));
                           }}
                           className="text-sm text-subtle hover:text-muted"
                         >
