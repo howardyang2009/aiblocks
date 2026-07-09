@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
 interface SmitheryServer {
@@ -18,12 +19,12 @@ export function createSmitheryAdapter(
     isEnabled: () => Boolean(deps.apiKey),
     async search(query: string): Promise<SearchResult[]> {
       const q = encodeURIComponent(query);
-      const res = await fetchFn(
+      const body = await fetchJson<{ servers?: SmitheryServer[] }>(
+        fetchFn,
         `https://registry.smithery.ai/servers?q=${q}&pageSize=10`,
-        { headers: { Accept: 'application/json', Authorization: `Bearer ${deps.apiKey}` } },
+        { Accept: 'application/json', Authorization: `Bearer ${deps.apiKey}` },
+        'Smithery'
       );
-      if (!res.ok) throw new Error(`Smithery search failed: ${res.status}`);
-      const body = (await res.json()) as { servers?: SmitheryServer[] };
       return (body.servers ?? []).map((server) => ({
         title: server.displayName ?? server.qualifiedName,
         url: server.homepage ?? `https://smithery.ai/server/${server.qualifiedName}`,

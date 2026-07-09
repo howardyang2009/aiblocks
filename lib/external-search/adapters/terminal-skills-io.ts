@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
 interface TerminalSkillsIoSkill {
@@ -17,12 +18,12 @@ export function createTerminalSkillsIoAdapter(
     isEnabled: () => true,
     async search(query: string): Promise<SearchResult[]> {
       const q = encodeURIComponent(query);
-      const res = await fetchFn(
+      const body = await fetchJson<{ data?: TerminalSkillsIoSkill[] }>(
+        fetchFn,
         `https://terminalskills.io/api/v1/skills?q=${q}&limit=10`,
-        { headers: { Accept: 'application/json' } },
+        { Accept: 'application/json' },
+        'terminalskills.io'
       );
-      if (!res.ok) throw new Error(`terminalskills.io search failed: ${res.status}`);
-      const body = (await res.json()) as { data?: TerminalSkillsIoSkill[] };
       // No GitHub repo field is exposed by this API — skills are installed via
       // the terminal-skills CLI, so link to the catalog's own detail page instead.
       return (body.data ?? [])

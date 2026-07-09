@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import { githubUrlOf } from './github-url';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
@@ -31,12 +32,12 @@ export function createClaudeSkillsInfoAdapter(
       if (!apiType) return [];
 
       const q = encodeURIComponent(query);
-      const res = await fetchFn(
+      const body = await fetchJson<{ results?: ClaudeSkillsInfoItem[] }>(
+        fetchFn,
         `https://claudeskills.info/api/v1/search?q=${q}&type=${apiType}&limit=10&sort=stars`,
-        { headers: { Accept: 'application/json' } },
+        { Accept: 'application/json' },
+        'claudeskills.info'
       );
-      if (!res.ok) throw new Error(`claudeskills.info search failed: ${res.status}`);
-      const body = (await res.json()) as { results?: ClaudeSkillsInfoItem[] };
       return (body.results ?? [])
         .filter(
           (item): item is ClaudeSkillsInfoItem & { name: string; source: { url: string } } =>

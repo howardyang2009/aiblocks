@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
 interface GithubRepo {
@@ -19,12 +20,12 @@ export function createGithubAdapter(
       const q = encodeURIComponent(`ai ${type} for ${query}`);
       const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
       if (deps.token) headers.Authorization = `Bearer ${deps.token}`;
-      const res = await fetchFn(
+      const body = await fetchJson<{ items?: GithubRepo[] }>(
+        fetchFn,
         `https://api.github.com/search/repositories?q=${q}&sort=stars&per_page=10`,
-        { headers },
+        headers,
+        'GitHub'
       );
-      if (!res.ok) throw new Error(`GitHub search failed: ${res.status}`);
-      const body = (await res.json()) as { items?: GithubRepo[] };
       return (body.items ?? []).map((item) => ({
         title: item.full_name,
         url: item.html_url,

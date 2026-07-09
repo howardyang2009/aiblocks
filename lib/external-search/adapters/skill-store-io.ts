@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import { githubUrlOf } from './github-url';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
@@ -19,12 +20,12 @@ export function createSkillStoreIoAdapter(
     isEnabled: () => true,
     async search(query: string): Promise<SearchResult[]> {
       const q = encodeURIComponent(query);
-      const res = await fetchFn(
+      const body = await fetchJson<{ data?: SkillStoreIoSkill[] }>(
+        fetchFn,
         `https://skillstore.io/api/skills?q=${q}&limit=10`,
-        { headers: { Accept: 'application/json' } },
+        { Accept: 'application/json' },
+        'skillstore.io'
       );
-      if (!res.ok) throw new Error(`skillstore.io search failed: ${res.status}`);
-      const body = (await res.json()) as { data?: SkillStoreIoSkill[] };
       return (body.data ?? [])
         .filter((skill): skill is SkillStoreIoSkill => Boolean(skill?.displayName && skill?.repo))
         .map((skill) => ({

@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
 interface SkillsmpSkill {
@@ -21,12 +22,12 @@ export function createSkillsmpAdapter(
       const q = encodeURIComponent(query);
       const headers: Record<string, string> = { Accept: 'application/json' };
       if (deps.apiKey) headers.Authorization = `Bearer ${deps.apiKey}`;
-      const res = await fetchFn(
+      const body = await fetchJson<{ data?: { skills?: SkillsmpSkill[] } }>(
+        fetchFn,
         `https://skillsmp.com/api/v1/skills/search?q=${q}&limit=10`,
-        { headers },
+        headers,
+        'SkillsMP'
       );
-      if (!res.ok) throw new Error(`SkillsMP search failed: ${res.status}`);
-      const body = (await res.json()) as { data?: { skills?: SkillsmpSkill[] } };
       return (body.data?.skills ?? []).map((skill) => ({
         title: skill.name,
         url: skill.skillUrl,

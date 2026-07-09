@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import { githubUrlOf } from './github-url';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
@@ -17,17 +18,12 @@ export function createBraveAdapter(
     isEnabled: () => Boolean(deps.apiKey),
     async search(query: string, type: ComponentType): Promise<SearchResult[]> {
       const q = encodeURIComponent(`ai ${type} for ${query}`);
-      const res = await fetchFn(
+      const body = await fetchJson<{ web?: { results?: BraveWebResult[] } }>(
+        fetchFn,
         `https://api.search.brave.com/res/v1/web/search?q=${q}&count=10`,
-        {
-          headers: {
-            Accept: 'application/json',
-            'X-Subscription-Token': deps.apiKey ?? '',
-          },
-        },
+        { Accept: 'application/json', 'X-Subscription-Token': deps.apiKey ?? '' },
+        'Brave'
       );
-      if (!res.ok) throw new Error(`Brave search failed: ${res.status}`);
-      const body = (await res.json()) as { web?: { results?: BraveWebResult[] } };
       return (body.web?.results ?? [])
         .filter((result): result is BraveWebResult & { title: string; url: string } =>
           Boolean(result?.title && result?.url),

@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import { githubUrlOf } from './github-url';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
@@ -19,12 +20,12 @@ export function createSkillsPubAdapter(
     isEnabled: () => true,
     async search(query: string): Promise<SearchResult[]> {
       const q = encodeURIComponent(query);
-      const res = await fetchFn(
+      const body = await fetchJson<{ data?: { skills?: SkillsPubSkill[] } }>(
+        fetchFn,
         `https://skills.pub/api/skills?q=${q}&page=1&pageSize=10`,
-        { headers: { Accept: 'application/json' } },
+        { Accept: 'application/json' },
+        'skills.pub'
       );
-      if (!res.ok) throw new Error(`skills.pub search failed: ${res.status}`);
-      const body = (await res.json()) as { data?: { skills?: SkillsPubSkill[] } };
       return (body.data?.skills ?? [])
         .filter((skill): skill is SkillsPubSkill => Boolean(skill?.skillName && skill?.repositoryUrl))
         .map((skill) => ({

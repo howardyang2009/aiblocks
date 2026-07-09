@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import { githubUrlOf } from './github-url';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
@@ -23,17 +24,12 @@ export function createSkillsShAdapter(
     isEnabled: () => Boolean(deps.token),
     async search(query: string): Promise<SearchResult[]> {
       const q = encodeURIComponent(query);
-      const res = await fetchFn(
+      const body = await fetchJson<{ data?: V1Skill[] }>(
+        fetchFn,
         `https://skills.sh/api/v1/skills/search?q=${q}&limit=10`,
-        {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${deps.token ?? ''}`,
-          },
-        },
+        { Accept: 'application/json', Authorization: `Bearer ${deps.token ?? ''}` },
+        'skills.sh'
       );
-      if (!res.ok) throw new Error(`skills.sh search failed: ${res.status}`);
-      const body = (await res.json()) as { data?: V1Skill[] };
       return (body.data ?? [])
         .filter((skill): skill is V1Skill & { name: string } => Boolean(skill?.name))
         .map((skill) => {

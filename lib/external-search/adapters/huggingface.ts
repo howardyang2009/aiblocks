@@ -1,3 +1,4 @@
+import { fetchJson } from './fetch-json';
 import type { ComponentType, FetchLike, SearchAdapter, SearchResult } from './types';
 
 interface HuggingfaceModel {
@@ -18,12 +19,12 @@ export function createHuggingfaceAdapter(
       const q = encodeURIComponent(query);
       const headers: Record<string, string> = { Accept: 'application/json' };
       if (deps.token) headers.Authorization = `Bearer ${deps.token}`;
-      const res = await fetchFn(
+      const body = await fetchJson<unknown>(
+        fetchFn,
         `https://huggingface.co/api/models?search=${q}&limit=10&sort=likes&direction=-1`,
-        { headers },
+        headers,
+        'Hugging Face'
       );
-      if (!res.ok) throw new Error(`Hugging Face search failed: ${res.status}`);
-      const body = (await res.json()) as unknown;
       if (!Array.isArray(body)) return [];
       return (body as HuggingfaceModel[])
         .filter((model): model is HuggingfaceModel & { id: string } => Boolean(model?.id))
