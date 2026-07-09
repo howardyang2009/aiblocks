@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ComponentCard } from "@/components/component-card";
-import { listEntitlements, type DownloadListDb } from "@/lib/commerce/entitlements";
+import { listEntitlements, type EntitlementListDb } from "@/lib/commerce/entitlements";
 import { listComponentsByIds, type ListByIdsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
 import { getViewer } from "@/lib/identity/viewer";
@@ -20,7 +20,7 @@ export default async function MyDownloadsPage() {
 
   if (profile) {
     // Library entries, newest first.
-    const dl = await listEntitlements(narrowDb<DownloadListDb>(supabase), profile.id);
+    const dl = await listEntitlements(narrowDb<EntitlementListDb>(supabase), profile.id);
     const ids = dl.map((r) => r.component_id);
     ({ components } = await listComponentsByIds(narrowDb<ListByIdsDb>(supabase), ids));
   }

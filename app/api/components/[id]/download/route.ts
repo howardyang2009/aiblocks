@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/identity/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
-import { getEntitlement, grantEntitlement, type DownloadLookupDb, type DownloadGrantDb } from "@/lib/commerce/entitlements";
+import { getEntitlement, grantEntitlement, type EntitlementLookupDb, type EntitlementGrantDb } from "@/lib/commerce/entitlements";
 import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce/components";
 import { narrowDb } from "@/lib/db-port";
 import { isFreeComponent } from "@/lib/utils";
@@ -22,12 +22,12 @@ export const POST = withAuth(async (_req, { params, profile, supabase }) => {
 
   if (!isFreeComponent(component.price_cents)) {
     // Paid: require an existing entitlement.
-    if (!(await getEntitlement(narrowDb<DownloadLookupDb>(supabase), profile.id, component.id))) {
+    if (!(await getEntitlement(narrowDb<EntitlementLookupDb>(supabase), profile.id, component.id))) {
       return NextResponse.json({ error: "Purchase required." }, { status: 402 });
     }
   } else {
     // Free: ensure a library entry (idempotent; trigger bumps download_count).
-    await grantEntitlement(narrowDb<DownloadGrantDb>(supabase), { userId: profile.id, componentId: component.id });
+    await grantEntitlement(narrowDb<EntitlementGrantDb>(supabase), { userId: profile.id, componentId: component.id });
   }
 
   const bucket = ACTIVE_ZIP_BUCKET;

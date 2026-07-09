@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 import type { Tables, TablesInsert } from "@/types/database";
 import { APP_URL } from "@/lib/constants";
-import { getEntitlement, grantEntitlement, type DownloadLookupDb, type DownloadGrantDb } from "@/lib/commerce/entitlements";
+import { getEntitlement, grantEntitlement, type EntitlementLookupDb, type EntitlementGrantDb } from "@/lib/commerce/entitlements";
 import { isFreeComponent } from "@/lib/utils";
 
 export type CheckoutResult =
@@ -10,7 +10,7 @@ export type CheckoutResult =
 
 // The narrow slice of the Supabase client createCheckout touches — a test
 // fake only needs these four tiny methods, not the full query-builder API.
-export type CreateCheckoutDb = DownloadLookupDb & {
+export type CreateCheckoutDb = EntitlementLookupDb & {
   from(table: "components"): {
     select(columns: string): {
       eq(column: string, value: string): {
@@ -166,7 +166,7 @@ export async function createCheckout(
 export type FulfillResult = { ok: true } | { ok: false; status: number; error: string };
 
 // The narrow slice of the Supabase client fulfillPurchase touches.
-export type FulfillPurchaseDb = DownloadGrantDb & {
+export type FulfillPurchaseDb = EntitlementGrantDb & {
   from(table: "purchases"): {
     update(row: { status: string; stripe_checkout_session_id: string }): {
       eq(column: string, value: string): PromiseLike<{ error: { message: string } | null }>;

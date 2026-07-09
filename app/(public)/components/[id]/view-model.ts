@@ -1,6 +1,6 @@
 import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
-import { getEntitlement, type DownloadLookupDb } from "@/lib/commerce/entitlements";
+import { getEntitlement, type EntitlementLookupDb } from "@/lib/commerce/entitlements";
 import { getPublishedComponent, getComponentTagNames, type PublishedComponentDb, type ComponentTagsDb } from "@/lib/commerce/components";
 import { narrowDb } from "@/lib/db-port";
 import { toPublicProfile } from "@/lib/identity/public-profile";
@@ -43,7 +43,7 @@ export async function fetchComponentRows(
   // TypeScript's structural comparison past its recursion limit ("Type
   // instantiation is excessively deep").
   const ownedPromise: PromiseLike<boolean> = viewerProfile
-    ? getEntitlement(narrowDb<DownloadLookupDb>(supabase), viewerProfile.id, component.id)
+    ? getEntitlement(narrowDb<EntitlementLookupDb>(supabase), viewerProfile.id, component.id)
     : Promise.resolve(false);
 
   // Dispatched here for the same reason as ownedPromise: it doesn't depend

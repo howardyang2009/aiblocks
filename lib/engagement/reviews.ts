@@ -1,7 +1,7 @@
 import type { Tables } from "@/types/database";
 import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce/components";
 import { validateBody } from "@/lib/validation";
-import { getEntitlement, type DownloadLookupDb } from "@/lib/commerce/entitlements";
+import { getEntitlement, type EntitlementLookupDb } from "@/lib/commerce/entitlements";
 import type { Result } from "@/lib/result";
 import type { ScopedDeleteDb } from "@/lib/db-port";
 
@@ -10,7 +10,7 @@ export type PostReviewResult = Result<{
 }>;
 
 export type PostReviewDb = PublishedComponentDb &
-  DownloadLookupDb & {
+  EntitlementLookupDb & {
     from(table: "reviews"): {
       upsert(
         row: { component_id: string; buyer_id: string; rating: number; body: string | null },

@@ -3,14 +3,14 @@ import {
   getEntitlement,
   listEntitlements,
   grantEntitlement,
-  type DownloadLookupDb,
-  type DownloadListDb,
-  type DownloadGrantDb,
+  type EntitlementLookupDb,
+  type EntitlementListDb,
+  type EntitlementGrantDb,
 } from "@/lib/commerce/entitlements";
 
 describe("getEntitlement", () => {
   it("is true when a downloads row exists", async () => {
-    const db: DownloadLookupDb = {
+    const db: EntitlementLookupDb = {
       from: () => ({
         select: () => ({
           eq: () => ({
@@ -25,7 +25,7 @@ describe("getEntitlement", () => {
   });
 
   it("is false when no downloads row exists", async () => {
-    const db: DownloadLookupDb = {
+    const db: EntitlementLookupDb = {
       from: () => ({
         select: () => ({
           eq: () => ({
@@ -46,7 +46,7 @@ describe("listEntitlements", () => {
       { component_id: "c2", acquired_at: "2026-02-01" },
       { component_id: "c1", acquired_at: "2026-01-01" },
     ];
-    const db: DownloadListDb = {
+    const db: EntitlementListDb = {
       from: () => ({
         select: () => ({
           eq: () => ({
@@ -59,7 +59,7 @@ describe("listEntitlements", () => {
   });
 
   it("returns an empty array when the query has no data", async () => {
-    const db: DownloadListDb = {
+    const db: EntitlementListDb = {
       from: () => ({
         select: () => ({
           eq: () => ({
@@ -75,7 +75,7 @@ describe("listEntitlements", () => {
 describe("grantEntitlement", () => {
   it("upserts idempotently and reports no error on success", async () => {
     const calls: unknown[] = [];
-    const db: DownloadGrantDb = {
+    const db: EntitlementGrantDb = {
       from: () => ({
         upsert: async (row, opts) => {
           calls.push({ row, opts });
@@ -95,7 +95,7 @@ describe("grantEntitlement", () => {
 
   it("defaults purchase_id to null for a free download", async () => {
     let inserted: { purchase_id: string | null } | undefined;
-    const db: DownloadGrantDb = {
+    const db: EntitlementGrantDb = {
       from: () => ({
         upsert: async (row) => {
           inserted = row;
@@ -108,7 +108,7 @@ describe("grantEntitlement", () => {
   });
 
   it("surfaces the error message on failure", async () => {
-    const db: DownloadGrantDb = {
+    const db: EntitlementGrantDb = {
       from: () => ({
         upsert: async () => ({ error: { message: "constraint violation" } }),
       }),

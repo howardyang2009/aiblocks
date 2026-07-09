@@ -11,7 +11,7 @@ import type { Tables } from "@/types/database";
 // whole query-builder API. Callers narrow the real client into one of these
 // with narrowDb<T>() — see lib/db-port.ts for why the cast is needed.
 
-export type DownloadLookupDb = {
+export type EntitlementLookupDb = {
   from(table: "downloads"): {
     select(columns: string): {
       eq(column: string, value: string): {
@@ -25,7 +25,7 @@ export type DownloadLookupDb = {
 
 // Does this user own this component?
 export async function getEntitlement(
-  supabase: DownloadLookupDb,
+  supabase: EntitlementLookupDb,
   userId: string,
   componentId: string
 ): Promise<boolean> {
@@ -38,7 +38,7 @@ export async function getEntitlement(
   return !!data;
 }
 
-export type DownloadListDb = {
+export type EntitlementListDb = {
   from(table: "downloads"): {
     select(columns: string): {
       eq(column: string, value: string): {
@@ -53,7 +53,7 @@ export type DownloadListDb = {
 
 // Every component a user has acquired, newest first — the buyer's library.
 export async function listEntitlements(
-  supabase: DownloadListDb,
+  supabase: EntitlementListDb,
   userId: string
 ): Promise<Pick<Tables<"downloads">, "component_id" | "acquired_at">[]> {
   const { data } = await supabase
@@ -64,7 +64,7 @@ export async function listEntitlements(
   return data ?? [];
 }
 
-export type DownloadGrantDb = {
+export type EntitlementGrantDb = {
   from(table: "downloads"): {
     upsert(
       row: { user_id: string; component_id: string; purchase_id: string | null },
@@ -78,7 +78,7 @@ export type DownloadGrantDb = {
 // download and after a paid purchase is confirmed by the Stripe webhook;
 // `purchaseId` is omitted for free downloads.
 export async function grantEntitlement(
-  supabase: DownloadGrantDb,
+  supabase: EntitlementGrantDb,
   args: { userId: string; componentId: string; purchaseId?: string }
 ): Promise<{ error: string | null }> {
   const { error } = await supabase.from("downloads").upsert(
