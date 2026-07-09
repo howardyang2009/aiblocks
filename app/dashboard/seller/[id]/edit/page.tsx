@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/identity/viewer";
 import { isOwnedBySeller } from "@/lib/commerce/components-write";
+import { getComponentTagNames, type ComponentTagsDb } from "@/lib/commerce/components";
+import { narrowDb } from "@/lib/db-port";
 import { EditForm } from "@/components/component-form";
 
 // Server component: resolves who's editing, loads the component (with its
@@ -30,17 +32,7 @@ export default async function EditComponentPage({ params }: { params: Promise<{ 
   if (!isOwnedBySeller(component, profile.id)) notFound();
 
   // Load the current tag names so the form can show them pre-filled.
-  const { data: ctRows } = await supabase
-    .from("component_tags")
-    .select("tag_id")
-    .eq("component_id", component.id);
-
-  const tagIds = (ctRows ?? []).map((r) => r.tag_id);
-  let tagNames: string[] = [];
-  if (tagIds.length) {
-    const { data: tagRows } = await supabase.from("tags").select("name").in("id", tagIds);
-    tagNames = (tagRows ?? []).map((t) => t.name);
-  }
+  const tagNames = await getComponentTagNames(narrowDb<ComponentTagsDb>(supabase), component.id);
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10">
