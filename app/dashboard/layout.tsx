@@ -1,8 +1,8 @@
 import { createServiceClient } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/stripe";
-import { shouldShowStripeNudge, type NudgeDb } from "@/lib/seller";
+import { getStripe } from "@/lib/commerce/stripe";
+import { shouldShowStripeNudge, type NudgeDb } from "@/lib/commerce/seller";
 import { narrowDb } from "@/lib/db-port";
-import { getViewer } from "@/lib/viewer";
+import { getViewer } from "@/lib/identity/viewer";
 import { StripeNudge } from "@/components/stripe-nudge";
 
 // Wraps every /dashboard page. Surfaces the Stripe-onboarding nudge only to

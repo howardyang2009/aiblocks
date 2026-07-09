@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth";
-import { deleteComment, type DeleteCommentDb } from "@/lib/comments";
+import { withAuth } from "@/lib/identity/auth";
+import { deleteComment, type DeleteCommentDb } from "@/lib/engagement/comments";
 import { narrowDb } from "@/lib/db-port";
 
 // Delete your own comment. [id] is the COMMENT id.

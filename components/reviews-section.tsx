@@ -4,15 +4,15 @@ import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
-import type { Review } from "@/lib/reviews-section-state";
+import type { Review } from "@/lib/engagement/reviews-section-state";
 import {
   runSubmitReviewFlow,
   runRemoveReviewFlow,
   runSaveReplyFlow,
   runRemoveReplyFlow,
-} from "@/lib/reviews-flow";
+} from "@/lib/engagement/reviews-flow";
 
-export type { Review } from "@/lib/reviews-section-state";
+export type { Review } from "@/lib/engagement/reviews-section-state";
 
 // Verified-buyer reviews section (V2), rendered on the component
 // detail page below the README.

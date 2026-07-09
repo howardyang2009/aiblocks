@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/stripe";
-import { shouldShowStripeNudge, type NudgeDb } from "@/lib/seller";
-import { listPublishedBySeller, type ListComponentsDb } from "@/lib/browse";
+import { getStripe } from "@/lib/commerce/stripe";
+import { shouldShowStripeNudge, type NudgeDb } from "@/lib/commerce/seller";
+import { listPublishedBySeller, type ListComponentsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
 import { StripeNudge } from "@/components/stripe-nudge";
 import { ComponentCard } from "@/components/component-card";

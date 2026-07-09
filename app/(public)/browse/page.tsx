@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ComponentCard } from "@/components/component-card";
-import { listPublishedComponents, type ListComponentsDb } from "@/lib/browse";
+import { listPublishedComponents, type ListComponentsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
 
 // Reads real published components. Dynamic because results depend on the

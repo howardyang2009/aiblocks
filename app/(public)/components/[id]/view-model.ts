@@ -1,9 +1,9 @@
 import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
-import { getEntitlement, type DownloadLookupDb } from "@/lib/entitlements";
-import { getPublishedComponent, type PublishedComponentDb } from "@/lib/components";
+import { getEntitlement, type DownloadLookupDb } from "@/lib/commerce/entitlements";
+import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce/components";
 import { narrowDb } from "@/lib/db-port";
-import { toPublicProfile } from "@/lib/public-profile";
+import { toPublicProfile } from "@/lib/identity/public-profile";
 import type { Review } from "@/components/reviews-section";
 import type { CommentNode } from "@/components/comments-section";
 

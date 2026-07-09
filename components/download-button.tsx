@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getDownloadState, runDownloadFlow } from "@/lib/download-flow";
+import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow";
 
 // Handles the three states of acquiring a component:
 //   free            -> POST /download, follow the signed URL
@@ -14,7 +14,7 @@ import { getDownloadState, runDownloadFlow } from "@/lib/download-flow";
 // is just the UX layer. See Terms Section 7.
 //
 // The sign-in/consent checks and the free-vs-paid-vs-checkout branching are
-// runDownloadFlow's (lib/download-flow.ts) — this component only wires the
+// runDownloadFlow's (lib/commerce/download-flow.ts) — this component only wires the
 // real fetch calls into it and follows the resulting redirect.
 export function DownloadButton({
   componentId,

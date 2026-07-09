@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/commerce/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
-import { fulfillPurchase, type FulfillPurchaseDb } from "@/lib/purchases";
+import { fulfillPurchase, type FulfillPurchaseDb } from "@/lib/commerce/purchases";
 import { narrowDb } from "@/lib/db-port";
 
 // Stripe webhook. On a completed checkout we mark the purchase succeeded

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth";
-import { toggleStar, type ToggleStarDb } from "@/lib/stars";
+import { withAuth } from "@/lib/identity/auth";
+import { toggleStar, type ToggleStarDb } from "@/lib/engagement/stars";
 import { narrowDb } from "@/lib/db-port";
 
 export const POST = withAuth(async (_req, { params, profile, supabase }) => {

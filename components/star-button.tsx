@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { applyOptimisticToggle, resolveToggle, type StarState } from "@/lib/star-button-state";
+import { applyOptimisticToggle, resolveToggle, type StarState } from "@/lib/engagement/star-button-state";
 
 // Optimistic star toggle. POSTs to /api/components/[id]/star.
 export function StarButton({

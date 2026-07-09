@@ -7,7 +7,7 @@ import { DownloadButton } from "@/components/download-button";
 import { ReviewsSection } from "@/components/reviews-section";
 import { CommentsSection } from "@/components/comments-section";
 import { formatPrice } from "@/lib/utils";
-import { getViewer } from "@/lib/viewer";
+import { getViewer } from "@/lib/identity/viewer";
 import { fetchComponentRows, buildComponentView } from "./view-model";
 
 export const dynamic = "force-dynamic";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth";
+import { withAuth } from "@/lib/identity/auth";
 import { parseBody } from "@/lib/request";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { narrowDb } from "@/lib/db-port";
@@ -9,7 +9,7 @@ import {
   updateComponent,
   type VerifyUploadedZipStorage,
   type UpdateComponentDb,
-} from "@/lib/components-write";
+} from "@/lib/commerce/components-write";
 
 // PATCH /api/components/[id] — edit an existing listing. Body mirrors POST
 // /api/components with one relaxation: zipPath is OPTIONAL. When present

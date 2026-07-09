@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth";
+import { withAuth } from "@/lib/identity/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
-import { getEntitlement, grantEntitlement, type DownloadLookupDb, type DownloadGrantDb } from "@/lib/entitlements";
-import { getPublishedComponent, type PublishedComponentDb } from "@/lib/components";
+import { getEntitlement, grantEntitlement, type DownloadLookupDb, type DownloadGrantDb } from "@/lib/commerce/entitlements";
+import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce/components";
 import { narrowDb } from "@/lib/db-port";
 import { isFreeComponent } from "@/lib/utils";
 

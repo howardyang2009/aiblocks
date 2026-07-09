@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
-import { withAuth } from "@/lib/auth";
+import { getStripe } from "@/lib/commerce/stripe";
+import { withAuth } from "@/lib/identity/auth";
 import { parseBody } from "@/lib/request";
-import { createCheckout, type CreateCheckoutDb } from "@/lib/purchases";
+import { createCheckout, type CreateCheckoutDb } from "@/lib/commerce/purchases";
 import { narrowDb } from "@/lib/db-port";
 
 // Create a Stripe Checkout session for a paid component.

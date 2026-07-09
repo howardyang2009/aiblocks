@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth";
+import { withAuth } from "@/lib/identity/auth";
 import { exceedsZipSizeLimit } from "@/lib/constants";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { parseBody } from "@/lib/request";
-import { createUploadUrl, type CreateUploadUrlStorage } from "@/lib/components-write";
+import { createUploadUrl, type CreateUploadUrlStorage } from "@/lib/commerce/components-write";
 import { narrowDb } from "@/lib/db-port";
 
 export const POST = withAuth(async (req, { profile, supabase }) => {

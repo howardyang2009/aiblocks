@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { withAuth } from "@/lib/auth";
+import { withAuth } from "@/lib/identity/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { parseBody } from "@/lib/request";
 import {
@@ -9,8 +9,8 @@ import {
   publishComponent,
   type VerifyUploadedZipStorage,
   type PublishComponentDb,
-} from "@/lib/components-write";
-import { listPublishedComponents, type ListComponentsDb } from "@/lib/browse";
+} from "@/lib/commerce/components-write";
+import { listPublishedComponents, type ListComponentsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
 
 // GET /api/components?q=&sort=&tag=  — browse + search.

@@ -56,22 +56,31 @@ app/
 components/        Reusable React UI (NOT the AI "components" — those are DB rows)
                      external-search/   search hero form, component-type radio
                                         pills, external result cards/list
-lib/               Business logic + integrations, one module per concept:
-                     entitlements.ts, purchases.ts, publish.ts    Entitlement / Purchase / publishing
-                     comments.ts, reviews.ts,                     Comment / Review / Seller reply / Star
-                       replies.ts, stars.ts
-                     components.ts, validation.ts,                shared seams: published-component gate,
-                       db-port.ts                                  body validation, narrow-port casting
-                     auth.ts, viewer.ts, clerk.ts                  identity: route auth, Server Component
-                                                                    viewer, Clerk profile bootstrap
-                     search-query.ts                               component-type <-> catalog-tag mapping
-                     external-search/                              federated web search: per-source adapters
-                                                                    (GitHub, Brave, Google, Smithery,
-                                                                    Hugging Face, SkillsMP, and more under
-                                                                    adapters/), config + orchestrator
-                     supabase/, stripe.ts,                         client factories + shared constants
-                       constants.ts, utils.ts
-                   *.test.ts sits next to the module it tests — see Testing below
+lib/               Business logic + integrations, grouped by domain — one module
+                   per concept, its *.test.ts sitting next to it (see Testing below):
+                     identity/     auth.ts, viewer.ts, clerk.ts, resolve-viewer.ts,
+                                   public-profile.ts — route auth, Server Component
+                                   viewer, Clerk profile bootstrap
+                     commerce/     entitlements.ts, purchases.ts, components.ts,
+                                   components-write.ts, browse.ts, seller.ts,
+                                   stripe.ts, component-form-flow.ts,
+                                   component-form-effects.ts, download-flow.ts —
+                                   Entitlement / Purchase / Component listing,
+                                   publishing, Stripe payouts and checkout
+                     engagement/   comments.ts, comments-section-state.ts,
+                                   comments-flow.ts, reviews.ts,
+                                   reviews-section-state.ts, reviews-flow.ts,
+                                   replies.ts, stars.ts, star-button-state.ts —
+                                   Comment / Review / Seller reply / Star
+                     external-search/  federated web search: per-source adapters
+                                   (GitHub, Brave, Google, Smithery, Hugging Face,
+                                   SkillsMP, and more under adapters/), config +
+                                   orchestrator, search-query.ts (component-type
+                                   <-> catalog-tag mapping)
+                     (root)        cross-domain infra only: db-port.ts (narrow-port
+                                   casting), validation.ts, request.ts, result.ts,
+                                   constants.ts, server-constants.ts, utils.ts,
+                                   supabase/ (client factories)
 supabase/          migrations/0001-0005_*.sql (the schema, in order) + config
 types/             database.ts (generated — regenerate after schema changes)
 docs/adr/          Architecture decisions worth preserving (the why, not just the what)

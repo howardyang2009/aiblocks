@@ -4,11 +4,11 @@ import { useState } from "react";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import type { PublicProfile } from "@/lib/public-profile";
-import { requiresDeleteConfirmation, type CommentNode } from "@/lib/comments-section-state";
-import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/comments-flow";
+import type { PublicProfile } from "@/lib/identity/public-profile";
+import { requiresDeleteConfirmation, type CommentNode } from "@/lib/engagement/comments-section-state";
+import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/engagement/comments-flow";
 
-export type { CommentNode } from "@/lib/comments-section-state";
+export type { CommentNode } from "@/lib/engagement/comments-section-state";
 
 // Open comments section (V2), rendered on the component detail page
 // below the reviews. Unlike reviews, comments are ungated: any

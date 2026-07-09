@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth";
+import { withAuth } from "@/lib/identity/auth";
 import { parseBody } from "@/lib/request";
-import { postReview, deleteReview, type PostReviewDb, type DeleteReviewDb } from "@/lib/reviews";
+import { postReview, deleteReview, type PostReviewDb, type DeleteReviewDb } from "@/lib/engagement/reviews";
 import { narrowDb } from "@/lib/db-port";
 
 export const POST = withAuth(async (req, { params, profile, supabase }) => {

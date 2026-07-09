@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
-import { withAuth } from "@/lib/auth";
-import { startOnboarding, type OnboardingDb } from "@/lib/seller";
+import { getStripe } from "@/lib/commerce/stripe";
+import { withAuth } from "@/lib/identity/auth";
+import { startOnboarding, type OnboardingDb } from "@/lib/commerce/seller";
 import { narrowDb } from "@/lib/db-port";
 
 // Start (or resume) Stripe Connect onboarding for a seller and return the

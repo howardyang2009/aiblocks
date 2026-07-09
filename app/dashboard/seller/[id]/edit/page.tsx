@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
-import { getViewer } from "@/lib/viewer";
+import { getViewer } from "@/lib/identity/viewer";
 import { EditForm } from "@/components/component-form";
 
 // Server component: resolves who's editing, loads the component (with its

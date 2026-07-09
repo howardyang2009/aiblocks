@@ -10,13 +10,13 @@ import {
   type PublishFlowDeps,
   type EditFlowDeps,
   type FormFlowStage,
-} from "@/lib/component-form-flow";
+} from "@/lib/commerce/component-form-flow";
 import {
   requestUploadUrl,
   uploadZip,
   createComponentEffect,
   updateComponentEffect,
-} from "@/lib/component-form-effects";
+} from "@/lib/commerce/component-form-effects";
 
 // PublishForm and EditForm — the two things a Seller does to submit a
 // Component — share one interactive form (IntakeForm) and one upload
@@ -51,7 +51,7 @@ const BLANK_INITIAL: ComponentFormInitial = {
 
 // Real wiring: injects the true `fetch`/browser Supabase client into the
 // tested effect functions, rather than each flow's deps constructing them
-// internally — see lib/component-form-effects.ts.
+// internally — see lib/commerce/component-form-effects.ts.
 const publishDeps: Omit<PublishFlowDeps, "onStage"> = {
   requestUploadUrl: (sizeBytes) => requestUploadUrl(fetch, sizeBytes),
   uploadZip: (bucket, path, token, file) => uploadZip(createBrowserClient(), bucket, path, token, file),

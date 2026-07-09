@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ComponentCard } from "@/components/component-card";
-import { listEntitlements, type DownloadListDb } from "@/lib/entitlements";
-import { listComponentsByIds, type ListByIdsDb } from "@/lib/browse";
+import { listEntitlements, type DownloadListDb } from "@/lib/commerce/entitlements";
+import { listComponentsByIds, type ListByIdsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
-import { getViewer } from "@/lib/viewer";
+import { getViewer } from "@/lib/identity/viewer";
 import type { ComponentSummary } from "@/types/database";
 
 // My Downloads — the buyer's library. Reads the `downloads` table (the
