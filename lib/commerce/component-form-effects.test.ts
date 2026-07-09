@@ -14,6 +14,12 @@ function fakeFetch(response: { ok: boolean; body: unknown }): typeof fetch {
   })) as unknown as typeof fetch;
 }
 
+function throwingFetch(): typeof fetch {
+  return vi.fn(async () => {
+    throw new Error("network down");
+  }) as unknown as typeof fetch;
+}
+
 describe("requestUploadUrl", () => {
   it("POSTs the size and shapes a successful response", async () => {
     const fetchImpl = fakeFetch({ ok: true, body: { path: "seller1/x.zip", token: "tok", bucket: "component-zips" } });
@@ -42,6 +48,12 @@ describe("requestUploadUrl", () => {
     const result = await requestUploadUrl(fetchImpl, 2048);
 
     expect(result).toEqual({ ok: false, error: "Could not start upload." });
+  });
+
+  it("returns a network error message when fetchImpl throws", async () => {
+    const result = await requestUploadUrl(throwingFetch(), 2048);
+
+    expect(result).toEqual({ ok: false, error: "Network error — the upload could not be started." });
   });
 });
 
@@ -116,6 +128,12 @@ describe("createComponentEffect", () => {
 
     expect(result).toEqual({ ok: false, error: "Could not publish." });
   });
+
+  it("returns a network error message when fetchImpl throws", async () => {
+    const result = await createComponentEffect(throwingFetch(), publishPayload);
+
+    expect(result).toEqual({ ok: false, error: "Network error — the component was not published." });
+  });
 });
 
 const editPayload = {
@@ -155,5 +173,11 @@ describe("updateComponentEffect", () => {
     const result = await updateComponentEffect(fetchImpl, "comp1", editPayload);
 
     expect(result).toEqual({ ok: false, error: "Could not save changes." });
+  });
+
+  it("returns a network error message when fetchImpl throws", async () => {
+    const result = await updateComponentEffect(throwingFetch(), "comp1", editPayload);
+
+    expect(result).toEqual({ ok: false, error: "Network error — the changes were not saved." });
   });
 });

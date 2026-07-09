@@ -1,3 +1,4 @@
+import { runClientAction } from "@/lib/client-action";
 import type {
   RequestUploadUrlResult,
   UploadZipResult,
@@ -11,7 +12,9 @@ import type {
 // — the actual fetch calls and Storage upload the tested flow logic calls
 // through. `fetch`/the storage client are ACCEPTED, not created internally,
 // so tests can hand these a fake directly instead of mocking a module — the
-// same rule every *Db port in lib/ already follows.
+// same rule every *Db port in lib/ already follows. The fetch-based effects
+// go through lib/client-action.ts so a dropped connection mid-publish/edit
+// surfaces as an error message instead of an unhandled rejection.
 
 // The narrow slice of the Supabase client uploadZip touches.
 export type UploadZipStorage = {
@@ -31,14 +34,14 @@ export async function requestUploadUrl(
   fetchImpl: typeof fetch,
   sizeBytes: number
 ): Promise<RequestUploadUrlResult> {
-  const res = await fetchImpl("/api/components/upload-url", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ size: sizeBytes }),
-  });
-  const json = await res.json();
-  if (!res.ok) return { ok: false, error: json.error ?? "Could not start upload." };
-  return { ok: true, path: json.path, token: json.token, bucket: json.bucket };
+  const result = await runClientAction<{ path: string; token: string; bucket: string }>(
+    fetchImpl,
+    "/api/components/upload-url",
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ size: sizeBytes }) },
+    { fallback: "Could not start upload.", network: "Network error — the upload could not be started." }
+  );
+  if (!result.ok) return result;
+  return { ok: true, path: result.data.path, token: result.data.token, bucket: result.data.bucket };
 }
 
 // Upload the zip directly to Storage using the signed URL minted above.
@@ -59,14 +62,14 @@ export async function createComponentEffect(
   fetchImpl: typeof fetch,
   payload: CreateComponentPayload
 ): Promise<CreateComponentResult> {
-  const res = await fetchImpl("/api/components", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const json = await res.json();
-  if (!res.ok) return { ok: false, error: json.error ?? "Could not publish." };
-  return { ok: true, id: json.id };
+  const result = await runClientAction<{ id: string }>(
+    fetchImpl,
+    "/api/components",
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+    { fallback: "Could not publish.", network: "Network error — the component was not published." }
+  );
+  if (!result.ok) return result;
+  return { ok: true, id: result.data.id };
 }
 
 // Save edits to an existing component.
@@ -75,12 +78,12 @@ export async function updateComponentEffect(
   id: string,
   payload: UpdateComponentPayload
 ): Promise<UpdateComponentClientResult> {
-  const res = await fetchImpl(`/api/components/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const json = await res.json();
-  if (!res.ok) return { ok: false, error: json.error ?? "Could not save changes." };
-  return { ok: true, id: json.id };
+  const result = await runClientAction<{ id: string }>(
+    fetchImpl,
+    `/api/components/${id}`,
+    { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+    { fallback: "Could not save changes.", network: "Network error — the changes were not saved." }
+  );
+  if (!result.ok) return result;
+  return { ok: true, id: result.data.id };
 }
