@@ -24,9 +24,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const type = resolveComponentType(resolved.type);
   const tag = tagForComponentType(type);
 
+  const configPromise = getConfig();
   const [{ components: catalogMatches }, external] = await Promise.all([
     listPublishedComponents(narrowDb<ListComponentsDb>(createServiceClient()), { q, tag }),
-    runSearch(selectAdapters(createAdapters(getConfig()), type), q, type),
+    configPromise.then((config) => runSearch(selectAdapters(createAdapters(config), type), q, type)),
   ]);
 
   const activeSource = resolved.source;
