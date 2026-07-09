@@ -19,7 +19,7 @@ describe('createSkillsShAdapter', () => {
     expect(adapter.supports('slash-command')).toBe(false);
     expect(adapter.supports('hook')).toBe(false);
     expect(adapter.supports('mcp')).toBe(false);
-    expect(adapter.supports('model')).toBe(false);
+    expect(adapter.supports('llm')).toBe(false);
   });
 
   it('sends the query and bearer token to the search endpoint', async () => {

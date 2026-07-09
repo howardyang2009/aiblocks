@@ -9,7 +9,7 @@ export const COMPONENT_TYPES: ComponentType[] = [
   "slash-command",
   "claude-plugin",
   "claude-md",
-  "model",
+  "llm",
 ];
 
 export const DEFAULT_COMPONENT_TYPE: ComponentType = "skill";
@@ -32,7 +32,7 @@ const TYPE_TO_TAG: Record<ComponentType, string> = {
   "slash-command": "slash-command",
   "claude-plugin": "claude-plugin",
   "claude-md": "claude-md",
-  model: "model",
+  llm: "llm",
 };
 
 export function tagForComponentType(type: ComponentType): string {

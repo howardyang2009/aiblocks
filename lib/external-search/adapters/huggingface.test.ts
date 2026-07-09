@@ -10,9 +10,9 @@ describe('createHuggingfaceAdapter', () => {
     expect(createHuggingfaceAdapter().isEnabled()).toBe(true);
   });
 
-  it('only supports the model component type', () => {
+  it('only supports the llm component type', () => {
     const adapter = createHuggingfaceAdapter();
-    expect(adapter.supports('model')).toBe(true);
+    expect(adapter.supports('llm')).toBe(true);
     expect(adapter.supports('skill')).toBe(false);
     expect(adapter.supports('subagent')).toBe(false);
     expect(adapter.supports('prompt')).toBe(false);
@@ -22,7 +22,7 @@ describe('createHuggingfaceAdapter', () => {
   it('queries the models endpoint with the search term', async () => {
     const fetchFn = mockFetch([]);
     const adapter = createHuggingfaceAdapter({ fetchFn });
-    await adapter.search('llama 3', 'model');
+    await adapter.search('llama 3', 'llm');
     const [url, init] = (fetchFn as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toContain('https://huggingface.co/api/models');
     expect(url).toContain('search=llama%203');
@@ -31,9 +31,9 @@ describe('createHuggingfaceAdapter', () => {
 
   it('sends an Authorization header only when a token is set', async () => {
     const withToken = mockFetch([]);
-    await createHuggingfaceAdapter({ fetchFn: withToken, token: 'hf_secret' }).search('x', 'model');
+    await createHuggingfaceAdapter({ fetchFn: withToken, token: 'hf_secret' }).search('x', 'llm');
     const withoutToken = mockFetch([]);
-    await createHuggingfaceAdapter({ fetchFn: withoutToken }).search('x', 'model');
+    await createHuggingfaceAdapter({ fetchFn: withoutToken }).search('x', 'llm');
 
     const authed = (withToken as unknown as ReturnType<typeof vi.fn>).mock.calls[0][1] as RequestInit;
     const anon = (withoutToken as unknown as ReturnType<typeof vi.fn>).mock.calls[0][1] as RequestInit;
@@ -47,7 +47,7 @@ describe('createHuggingfaceAdapter', () => {
       { id: 'google-bert/bert-base-uncased', likes: 50 },
     ]);
     const adapter = createHuggingfaceAdapter({ fetchFn });
-    const results = await adapter.search('llm', 'model');
+    const results = await adapter.search('llm', 'llm');
     expect(results[0]).toEqual({
       title: 'meta-llama/Llama-3-8B',
       url: 'https://huggingface.co/meta-llama/Llama-3-8B',
@@ -67,7 +67,7 @@ describe('createHuggingfaceAdapter', () => {
   it('filters out entries missing an id', async () => {
     const fetchFn = mockFetch([{ likes: 10 }, { id: 'ok/model' }]);
     const adapter = createHuggingfaceAdapter({ fetchFn });
-    const results = await adapter.search('x', 'model');
+    const results = await adapter.search('x', 'llm');
     expect(results).toEqual([
       { title: 'ok/model', url: 'https://huggingface.co/ok/model', description: undefined, source: 'huggingface', stars: undefined },
     ]);
@@ -75,11 +75,11 @@ describe('createHuggingfaceAdapter', () => {
 
   it('returns an empty array when the body is not an array', async () => {
     const adapter = createHuggingfaceAdapter({ fetchFn: mockFetch({}) });
-    expect(await adapter.search('x', 'model')).toEqual([]);
+    expect(await adapter.search('x', 'llm')).toEqual([]);
   });
 
   it('throws with the status when the request fails', async () => {
     const adapter = createHuggingfaceAdapter({ fetchFn: mockFetch({}, false, 503) });
-    await expect(adapter.search('x', 'model')).rejects.toThrow('Hugging Face search failed: 503');
+    await expect(adapter.search('x', 'llm')).rejects.toThrow('Hugging Face search failed: 503');
   });
 });

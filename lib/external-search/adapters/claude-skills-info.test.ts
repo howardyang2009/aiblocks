@@ -20,7 +20,7 @@ describe('createClaudeSkillsInfoAdapter', () => {
     expect(adapter.supports('claude-md')).toBe(true);
     expect(adapter.supports('prompt')).toBe(false);
     expect(adapter.supports('mcp')).toBe(false);
-    expect(adapter.supports('model')).toBe(false);
+    expect(adapter.supports('llm')).toBe(false);
   });
 
   it('maps each ComponentType to the API\'s type param', async () => {

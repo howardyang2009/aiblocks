@@ -19,7 +19,7 @@ describe('createClaudePluginHubAdapter', () => {
     expect(adapter.supports('hook')).toBe(true);
     expect(adapter.supports('mcp')).toBe(true);
     expect(adapter.supports('prompt')).toBe(false);
-    expect(adapter.supports('model')).toBe(false);
+    expect(adapter.supports('llm')).toBe(false);
   });
 
   it('queries the plugins endpoint (no q) for claude-plugin', async () => {

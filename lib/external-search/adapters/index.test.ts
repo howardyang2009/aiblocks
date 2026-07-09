@@ -42,8 +42,8 @@ describe('adapter registry', () => {
     expect(ids).toEqual(['brave', 'claude-skills-info', 'github', 'google']);
   });
 
-  it('routes model to huggingface + github + google + brave', () => {
-    const ids = selectAdapters(createAdapters({}), 'model').map((a) => a.id).sort();
+  it('routes llm to huggingface + github + google + brave', () => {
+    const ids = selectAdapters(createAdapters({}), 'llm').map((a) => a.id).sort();
     expect(ids).toEqual(['brave', 'github', 'google', 'huggingface']);
   });
 

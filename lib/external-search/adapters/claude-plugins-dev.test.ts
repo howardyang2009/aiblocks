@@ -17,7 +17,7 @@ describe('createClaudePluginsDevAdapter', () => {
     expect(adapter.supports('mcp')).toBe(false);
     expect(adapter.supports('subagent')).toBe(false);
     expect(adapter.supports('prompt')).toBe(false);
-    expect(adapter.supports('model')).toBe(false);
+    expect(adapter.supports('llm')).toBe(false);
   });
 
   it('queries the plugins endpoint for claude-plugin', async () => {

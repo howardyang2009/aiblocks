@@ -3,7 +3,7 @@ export type ComponentType =
   | 'subagent'
   | 'prompt'
   | 'mcp'
-  | 'model'
+  | 'llm'
   | 'claude-plugin'
   | 'hook'
   | 'slash-command'

@@ -27,7 +27,7 @@ describe("tagForComponentType", () => {
       "slash-command": "slash-command",
       "claude-plugin": "claude-plugin",
       "claude-md": "claude-md",
-      model: "model",
+      llm: "llm",
     };
     for (const type of COMPONENT_TYPES) {
       expect(tagForComponentType(type)).toBe(expected[type]);

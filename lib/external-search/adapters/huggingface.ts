@@ -13,7 +13,7 @@ export function createHuggingfaceAdapter(
   const fetchFn = deps.fetchFn ?? fetch;
   return {
     id: 'huggingface',
-    supports: (type: ComponentType) => type === 'model',
+    supports: (type: ComponentType) => type === 'llm',
     isEnabled: () => true,
     async search(query: string): Promise<SearchResult[]> {
       const q = encodeURIComponent(query);
