@@ -6,10 +6,10 @@ const TYPE_OPTIONS: { value: ComponentType; label: string }[] = [
   { value: "prompt", label: "Prompt" },
   { value: "mcp", label: "MCP server" },
   { value: "hook", label: "Hook" },
-  { value: "slash-command", label: "Slash command" },
+  { value: "slash-command", label: "/command" },
   { value: "claude-plugin", label: "Claude plugin" },
   { value: "claude-md", label: "CLAUDE.md" },
-  { value: "model", label: "Model" },
+  { value: "model", label: "LLM" },
 ];
 
 // A real HTML radio group styled as pills — no client JS. Each hidden

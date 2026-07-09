@@ -20,7 +20,7 @@ describe("tagForComponentType", () => {
   it("maps every component type to its aiblocks catalog tag", () => {
     const expected: Record<string, string> = {
       skill: "skill",
-      subagent: "agent",
+      subagent: "subagent",
       prompt: "prompt",
       mcp: "mcp-server",
       hook: "hook",

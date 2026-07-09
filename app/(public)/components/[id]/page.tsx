@@ -97,7 +97,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
               href={`/dashboard/seller/${component.id}/edit`}
               className="inline-flex items-center gap-1.5 rounded-block border px-3 py-1.5 text-sm text-muted hover:border-accent hover:text-accent transition-colors"
             >
-              <span aria-hidden>✎</span> Edit component
+              <span aria-hidden>✎</span> Edit this component
             </Link>
           </div>
         )}

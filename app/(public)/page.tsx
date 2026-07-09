@@ -10,7 +10,7 @@ import type { ComponentSummary } from "@/types/database";
 // assembly-grid hero (the brand signature) follows right below it.
 export const dynamic = "force-dynamic";
 
-const Pimary_TAGS = ["mcp-server", "claude-md", "agent", "hook", "prompt", "skill"];
+const Pimary_TAGS = ["mcp-server", "claude-md", "subagent", "hook", "prompt", "skill"];
 
 export default async function HomePage() {
   const supabase = createServiceClient();
@@ -27,7 +27,7 @@ export default async function HomePage() {
       {/* Search hero */}
       <section className="py-20 lg:py-28 text-center">
         <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl mt-3">
-          Find the AI component around the web
+          Find AI component around the web
         </h1>
         <div className="mt-8 max-w-2xl mx-auto">
           <ExternalSearchForm />
@@ -42,8 +42,8 @@ export default async function HomePage() {
             Reusable AI components<br />ready to snap in
           </h2>
           <p className="mt-5 text-muted max-w-md">
-            Publish and download AI building blocks — prompts, skills, agents, MCP
-            servers, CLAUDE.md configs, hooks — for Claude, GPT, Gemini, and more.
+            Publish and download AI building blocks — prompts, skills, subagents, MCP
+            servers, CLAUDE.md configs, hooks — for Claude, ChatGPT, Gemini, and more.
             Free or paid, your price, your payout.
           </p>
           <div className="mt-8 flex gap-3">

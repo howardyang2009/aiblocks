@@ -25,7 +25,7 @@ export function resolveComponentType(raw: string | undefined): ComponentType {
 
 const TYPE_TO_TAG: Record<ComponentType, string> = {
   skill: "skill",
-  subagent: "agent",
+  subagent: "subagent",
   prompt: "prompt",
   mcp: "mcp-server",
   hook: "hook",
