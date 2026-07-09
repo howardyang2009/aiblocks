@@ -4,7 +4,13 @@ import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
-import { buildReview, upsertReview, removeMyReview, type Review } from "@/lib/reviews-section-state";
+import type { Review } from "@/lib/reviews-section-state";
+import {
+  runSubmitReviewFlow,
+  runRemoveReviewFlow,
+  runSaveReplyFlow,
+  runRemoveReplyFlow,
+} from "@/lib/reviews-flow";
 
 export type { Review } from "@/lib/reviews-section-state";
 
@@ -95,56 +101,64 @@ export function ReviewsSection({
   }
 
   async function saveReply(reviewId: string) {
-    if (!replyBody.trim()) {
-      setReplyError("Reply text is required.");
-      return;
-    }
     setReplyBusy(true);
     setReplyError(null);
-    try {
-      const res = await fetch(`/api/reviews/${reviewId}/reply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: replyBody }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setReplyError(data.error ?? "Could not save the reply. Try again.");
-        return;
-      }
-      setReviews((prev) =>
-        prev.map((r) =>
-          r.id === reviewId
-            ? { ...r, reply: { body: data.reply.body, created_at: data.reply.created_at } }
-            : r
-        )
-      );
-      setReplyingTo(null);
-      setReplyBody("");
-    } catch {
-      setReplyError("Network error — the reply was not saved.");
-    } finally {
-      setReplyBusy(false);
+    const result = await runSaveReplyFlow(
+      {
+        saveReply: async (id, body) => {
+          try {
+            const res = await fetch(`/api/reviews/${id}/reply`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ body }),
+            });
+            const data = await res.json();
+            if (!res.ok) return { ok: false, error: data.error ?? "Could not save the reply. Try again." };
+            return { ok: true, reply: data.reply };
+          } catch {
+            return { ok: false, error: "Network error — the reply was not saved." };
+          }
+        },
+      },
+      { reviews, reviewId, body: replyBody }
+    );
+    setReplyBusy(false);
+    if (result.status === "error") {
+      setReplyError(result.error);
+      return;
     }
+    setReviews(result.reviews);
+    setReplyingTo(null);
+    setReplyBody("");
   }
 
   async function removeReply(reviewId: string) {
     setReplyBusy(true);
     setReplyError(null);
-    try {
-      const res = await fetch(`/api/reviews/${reviewId}/reply`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setReplyError(data.error ?? "Could not delete the reply. Try again.");
-        return;
-      }
-      setReviews((prev) => prev.map((r) => (r.id === reviewId ? { ...r, reply: null } : r)));
-      setReplyingTo(null);
-    } catch {
-      setReplyError("Network error — the reply was not deleted.");
-    } finally {
-      setReplyBusy(false);
+    const result = await runRemoveReplyFlow(
+      {
+        removeReply: async (id) => {
+          try {
+            const res = await fetch(`/api/reviews/${id}/reply`, { method: "DELETE" });
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              return { ok: false, error: data.error ?? "Could not delete the reply. Try again." };
+            }
+            return { ok: true };
+          } catch {
+            return { ok: false, error: "Network error — the reply was not deleted." };
+          }
+        },
+      },
+      { reviews, reviewId }
+    );
+    setReplyBusy(false);
+    if (result.status === "error") {
+      setReplyError(result.error);
+      return;
     }
+    setReviews(result.reviews);
+    setReplyingTo(null);
   }
 
   const count = reviews.length;
@@ -153,55 +167,65 @@ export function ReviewsSection({
   const showForm = canReview && (!mine || editing);
 
   async function submit() {
-    if (!rating) {
-      setError("Pick a star rating first.");
-      return;
-    }
     setBusy(true);
     setError(null);
-    try {
-      const res = await fetch(`/api/components/${componentId}/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating, body }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Could not save the review. Try again.");
-        return;
-      }
-      const saved = buildReview(data.review, {
-        reviewer: mine?.reviewer ?? null,
-        reply: mine?.reply ?? null,
-      });
-      setReviews((prev) => upsertReview(prev, saved));
-      setEditing(false);
-    } catch {
-      setError("Network error — the review was not saved.");
-    } finally {
-      setBusy(false);
+    const result = await runSubmitReviewFlow(
+      {
+        submitReview: async (r, b) => {
+          try {
+            const res = await fetch(`/api/components/${componentId}/reviews`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ rating: r, body: b }),
+            });
+            const data = await res.json();
+            if (!res.ok) return { ok: false, error: data.error ?? "Could not save the review. Try again." };
+            return { ok: true, review: data.review };
+          } catch {
+            return { ok: false, error: "Network error — the review was not saved." };
+          }
+        },
+      },
+      { reviews, rating, body, mine }
+    );
+    setBusy(false);
+    if (result.status === "error") {
+      setError(result.error);
+      return;
     }
+    setReviews(result.reviews);
+    setEditing(false);
   }
 
   async function remove() {
     setBusy(true);
     setError(null);
-    try {
-      const res = await fetch(`/api/components/${componentId}/reviews`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Could not delete the review. Try again.");
-        return;
-      }
-      setReviews((prev) => removeMyReview(prev));
-      setRating(0);
-      setBody("");
-      setEditing(false);
-    } catch {
-      setError("Network error — the review was not deleted.");
-    } finally {
-      setBusy(false);
+    const result = await runRemoveReviewFlow(
+      {
+        removeReview: async () => {
+          try {
+            const res = await fetch(`/api/components/${componentId}/reviews`, { method: "DELETE" });
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              return { ok: false, error: data.error ?? "Could not delete the review. Try again." };
+            }
+            return { ok: true };
+          } catch {
+            return { ok: false, error: "Network error — the review was not deleted." };
+          }
+        },
+      },
+      { reviews }
+    );
+    setBusy(false);
+    if (result.status === "error") {
+      setError(result.error);
+      return;
     }
+    setReviews(result.reviews);
+    setRating(0);
+    setBody("");
+    setEditing(false);
   }
 
   return (

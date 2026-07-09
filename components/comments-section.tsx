@@ -5,13 +5,8 @@ import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import type { PublicProfile } from "@/lib/public-profile";
-import {
-  buildCommentNode,
-  insertComment,
-  removeComment,
-  requiresDeleteConfirmation,
-  type CommentNode,
-} from "@/lib/comments-section-state";
+import { requiresDeleteConfirmation, type CommentNode } from "@/lib/comments-section-state";
+import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/comments-flow";
 
 export type { CommentNode } from "@/lib/comments-section-state";
 
@@ -74,64 +69,74 @@ export function CommentsSection({
   const count = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
 
   async function post(parentId: string | null) {
-    const text = (parentId ? replyBody : body).trim();
-    if (!text) {
-      setError("Comment text is required.");
-      return;
-    }
     setBusy(true);
     setError(null);
-    try {
-      const res = await fetch(`/api/components/${componentId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: text, parentId }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Could not post the comment. Try again.");
-        return;
-      }
-      const node = buildCommentNode(data.comment, { viewer, isSeller });
-      setComments((prev) => insertComment(prev, node, parentId));
-      if (parentId) {
-        setReplyingTo(null);
-        setReplyBody("");
-      } else {
-        setBody("");
-      }
-    } catch {
-      setError("Network error — the comment was not posted.");
-    } finally {
-      setBusy(false);
+    const result = await runPostCommentFlow(
+      {
+        postComment: async (text, parentId) => {
+          try {
+            const res = await fetch(`/api/components/${componentId}/comments`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ body: text, parentId }),
+            });
+            const data = await res.json();
+            if (!res.ok) return { ok: false, error: data.error ?? "Could not post the comment. Try again." };
+            return { ok: true, comment: data.comment };
+          } catch {
+            return { ok: false, error: "Network error — the comment was not posted." };
+          }
+        },
+      },
+      { comments, body: parentId ? replyBody : body, parentId, viewer, isSeller }
+    );
+    setBusy(false);
+    if (result.status === "error") {
+      setError(result.error);
+      return;
+    }
+    setComments(result.comments);
+    if (parentId) {
+      setReplyingTo(null);
+      setReplyBody("");
+    } else {
+      setBody("");
     }
   }
 
   async function remove(comment: CommentNode) {
-    const replyCount = comment.replies.length;
-    if (
-      requiresDeleteConfirmation(comment) &&
-      !window.confirm(
+    if (requiresDeleteConfirmation(comment)) {
+      const replyCount = comment.replies.length;
+      const confirmed = window.confirm(
         `Deleting this comment also deletes its ${replyCount} ${replyCount === 1 ? "reply" : "replies"}. Continue?`
-      )
-    ) {
-      return;
+      );
+      if (!confirmed) return;
     }
     setBusy(true);
     setError(null);
-    try {
-      const res = await fetch(`/api/comments/${comment.id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Could not delete the comment. Try again.");
-        return;
-      }
-      setComments((prev) => removeComment(prev, comment.id));
-    } catch {
-      setError("Network error — the comment was not deleted.");
-    } finally {
-      setBusy(false);
+    const result = await runRemoveCommentFlow(
+      {
+        removeComment: async () => {
+          try {
+            const res = await fetch(`/api/comments/${comment.id}`, { method: "DELETE" });
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              return { ok: false, error: data.error ?? "Could not delete the comment. Try again." };
+            }
+            return { ok: true };
+          } catch {
+            return { ok: false, error: "Network error — the comment was not deleted." };
+          }
+        },
+      },
+      { comments, comment, confirmed: true }
+    );
+    setBusy(false);
+    if (result.status === "error") {
+      setError(result.error);
+      return;
     }
+    if (result.status === "removed") setComments(result.comments);
   }
 
   return (
