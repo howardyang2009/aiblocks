@@ -10,7 +10,16 @@ import { ExternalSearchForm } from "@/components/external-search/ExternalSearchF
 // assembly-grid hero (the brand signature) follows right below it.
 export const dynamic = "force-dynamic";
 
-const Pimary_TAGS = ["mcp-server", "claude-md", "subagent", "hook", "prompt", "skill"];
+const Pimary_TAGS = [
+  "mcp-server",
+  "claude-md",
+  "subagent",
+  "hook",
+  "prompt",
+  "skill",
+  "claude-plugin",
+  "slash-command",
+];
 
 export default async function HomePage() {
   const { components: latest } = await listLatestPublished(
