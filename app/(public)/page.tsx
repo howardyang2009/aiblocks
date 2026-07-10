@@ -1,38 +1,54 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
-import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
+import { listLatestPublished, type ListComponentsDb } from "@/lib/commerce/browse";
+import { narrowDb } from "@/lib/db-port";
 import { ComponentCard } from "@/components/component-card";
 import { AssemblyGrid } from "@/components/brand/assembly-grid";
-import type { ComponentSummary } from "@/types/database";
+import { ExternalSearchForm } from "@/components/external-search/ExternalSearchForm";
 
-// Home. The hero opens with the most characteristic thing in this product's
-// world: components snapping into an assembly. The grid IS the brand.
+// Home. A Google-style search is the first thing a visitor sees; the
+// assembly-grid hero (the brand signature) follows right below it.
 export const dynamic = "force-dynamic";
 
-const Pimary_TAGS = ["mcp-server", "claude-md", "agent", "hook", "prompt", "skill"];
+const Pimary_TAGS = [
+  "mcp-server",
+  "claude-md",
+  "subagent",
+  "hook",
+  "prompt",
+  "skill",
+  "claude-plugin",
+  "slash-command",
+];
 
 export default async function HomePage() {
-  const supabase = createServiceClient();
-  const { data } = await supabase
-    .from("components")
-    .select(COMPONENT_SUMMARY_COLS)
-    .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .limit(6);
-  const latest = (data ?? []) as ComponentSummary[];
+  const { components: latest } = await listLatestPublished(
+    narrowDb<ListComponentsDb>(createServiceClient()),
+    6
+  );
 
   return (
     <div className="mx-auto max-w-shell px-5">
+      {/* Search hero */}
+      <section className="py-20 lg:py-28 text-center">
+        <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl mt-3">
+          Find AI component around the web
+        </h1>
+        <div className="mt-8 max-w-2xl mx-auto">
+          <ExternalSearchForm />
+        </div>
+      </section>
+
       {/* Hero */}
-      <section className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center py-16 lg:py-24">
+      <section className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center py-16 lg:py-24 border-t">
         <div>
           <p className="eyebrow">Open marketplace · multi-ecosystem</p>
-          <h1 className="font-display font-bold tracking-tight text-4xl sm:text-5xl lg:text-6xl mt-4 leading-[1.05]">
-            Reusable AI components,<br />ready to snap in.
-          </h1>
+          <h2 className="font-display font-bold tracking-tight text-3xl sm:text-4xl lg:text-5xl mt-4 leading-[1.05]">
+            Reusable AI components<br />ready to snap in
+          </h2>
           <p className="mt-5 text-muted max-w-md">
-            Publish and download AI building blocks — prompts, skills, agents, MCP
-            servers, CLAUDE.md configs, hooks — for Claude, GPT, Gemini, and more.
+            Publish and download AI building blocks — prompts, skills, subagents, MCP
+            servers, CLAUDE.md configs, hooks — for Claude, ChatGPT, Gemini, and more.
             Free or paid, your price, your payout.
           </p>
           <div className="mt-8 flex gap-3">

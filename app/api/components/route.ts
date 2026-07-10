@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { withAuth } from "@/lib/auth";
+import { withAuth } from "@/lib/identity/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { parseBody } from "@/lib/request";
 import {
@@ -9,9 +9,10 @@ import {
   publishComponent,
   type VerifyUploadedZipStorage,
   type PublishComponentDb,
-} from "@/lib/components-write";
-import { listPublishedComponents, type ListComponentsDb } from "@/lib/browse";
+} from "@/lib/commerce/components-write";
+import { listPublishedComponents, type ListComponentsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
+import { toResponse } from "@/lib/result";
 
 // GET /api/components?q=&sort=&tag=  — browse + search.
 export async function GET(req: NextRequest) {
@@ -40,21 +41,21 @@ export const POST = withAuth(async (req, { profile, supabase }) => {
   if (body instanceof NextResponse) return body;
 
   const parsed = parsePublishInput(body, profile.id);
-  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+  if (!parsed.ok) return toResponse(parsed);
 
   const verified = await verifyUploadedZip(
     narrowDb<VerifyUploadedZipStorage>(supabase),
     ACTIVE_ZIP_BUCKET,
     parsed.data.zipPath
   );
-  if (!verified.ok) return NextResponse.json({ error: verified.error }, { status: verified.status });
+  if (!verified.ok) return toResponse(verified);
 
   const published = await publishComponent(narrowDb<PublishComponentDb>(supabase), {
     ...parsed.data,
     sellerId: profile.id,
     sizeBytes: verified.sizeBytes,
   });
-  if (!published.ok) return NextResponse.json({ error: published.error }, { status: published.status });
+  if (!published.ok) return toResponse(published);
 
   return NextResponse.json({ id: published.id, slug: published.slug });
 });

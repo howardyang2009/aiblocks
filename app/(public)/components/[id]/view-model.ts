@@ -1,9 +1,9 @@
 import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
-import { getEntitlement, type DownloadLookupDb } from "@/lib/entitlements";
-import { getPublishedComponent, type PublishedComponentDb } from "@/lib/components";
+import { getEntitlement, type EntitlementLookupDb } from "@/lib/commerce/entitlements";
+import { getPublishedComponent, getComponentTagNames, type PublishedComponentDb, type ComponentTagsDb } from "@/lib/commerce/components";
 import { narrowDb } from "@/lib/db-port";
-import { toPublicProfile } from "@/lib/public-profile";
+import { toPublicProfile } from "@/lib/identity/public-profile";
 import type { Review } from "@/components/reviews-section";
 import type { CommentNode } from "@/components/comments-section";
 
@@ -20,21 +20,18 @@ export async function fetchComponentRows(
 
   if (!component) return null;
 
-  // Tier 2 — four queries independent of each other, all unblocked after Q1.
+  // Tier 2 — three queries independent of each other, all unblocked after Q1.
   const [
     { data: seller },
-    { data: ctRows },
     { data: reviewRows },
     { data: commentRows },
   ] = await Promise.all([
     supabase.from("profiles").select("username, display_name").eq("id", component.seller_id).maybeSingle(),
-    supabase.from("component_tags").select("tag_id").eq("component_id", component.id),
     supabase.from("reviews").select("id, buyer_id, rating, body, created_at").eq("component_id", component.id).order("created_at", { ascending: false }).limit(100),
     supabase.from("comments").select("id, user_id, parent_id, body, created_at").eq("component_id", component.id).order("created_at", { ascending: true }).limit(200),
   ]);
 
   // Query-planning inputs for tier 3 — not business logic, just IDs to fetch.
-  const tagIds       = (ctRows ?? []).map(r => r.tag_id);
   const reviewerIds  = [...new Set((reviewRows ?? []).map(r => r.buyer_id))];
   const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
 
@@ -46,20 +43,21 @@ export async function fetchComponentRows(
   // TypeScript's structural comparison past its recursion limit ("Type
   // instantiation is excessively deep").
   const ownedPromise: PromiseLike<boolean> = viewerProfile
-    ? getEntitlement(narrowDb<DownloadLookupDb>(supabase), viewerProfile.id, component.id)
+    ? getEntitlement(narrowDb<EntitlementLookupDb>(supabase), viewerProfile.id, component.id)
     : Promise.resolve(false);
 
-  // Tier 3 — five queries, each depends on one tier-2 result, none on each other.
+  // Dispatched here for the same reason as ownedPromise: it doesn't depend
+  // on (or get depended on by) anything in tier 2/3, so it just runs
+  // alongside them rather than occupying a slot in either tier.
+  const tagsPromise: Promise<string[]> = getComponentTagNames(narrowDb<ComponentTagsDb>(supabase), component.id);
+
+  // Tier 3 — four queries, each depends on one tier-2 result, none on each other.
   const [
-    { data: tagRows },
     { data: starRow },
     { data: reviewers },
     { data: replyRows },
     { data: commenters },
   ] = await Promise.all([
-    tagIds.length
-      ? supabase.from("tags").select("name").in("id", tagIds)
-      : Promise.resolve({ data: [] as { name: string }[] }),
     viewerProfile
       ? supabase.from("stars").select("user_id").eq("user_id", viewerProfile.id).eq("component_id", component.id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -74,8 +72,9 @@ export async function fetchComponentRows(
       : Promise.resolve({ data: [] as { id: string; username: string; display_name: string | null; avatar_url: string | null }[] }),
   ]);
   const owned = await ownedPromise;
+  const tags = await tagsPromise;
 
-  return { component, seller, tagRows, reviewRows, commentRows, starRow, owned, reviewers, replyRows, commenters };
+  return { component, seller, tags, reviewRows, commentRows, starRow, owned, reviewers, replyRows, commenters };
 }
 
 export type ComponentRows = NonNullable<Awaited<ReturnType<typeof fetchComponentRows>>>;
@@ -83,12 +82,11 @@ export type ComponentRows = NonNullable<Awaited<ReturnType<typeof fetchComponent
 // Everything the page needs to render, computed from already-fetched rows.
 // No Supabase, no network — test this with plain object literals.
 export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"profiles"> | null) {
-  const { component, seller, tagRows, reviewRows, commentRows, starRow, owned, reviewers, replyRows, commenters } = rows;
+  const { component, seller, tags, reviewRows, commentRows, starRow, owned, reviewers, replyRows, commenters } = rows;
 
   const viewerProfileId = viewerProfile?.id ?? null;
   const viewer = viewerProfile ? toPublicProfile(viewerProfile) : null;
 
-  const tags     = (tagRows ?? []).map(r => r.name);
   const starred  = !!starRow;
   const isSeller = viewerProfileId !== null && viewerProfileId === component.seller_id;
 

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { isFreeComponent } from "@/lib/utils";
+import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow";
+import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
+import { Spinner } from "@/components/ui/spinner";
 
 // Handles the three states of acquiring a component:
 //   free            -> POST /download, follow the signed URL
@@ -12,6 +14,10 @@ import { isFreeComponent } from "@/lib/utils";
 // checkbox below to be checked before the request is sent — the API
 // enforces this server-side too (see app/api/checkout/route.ts), this
 // is just the UX layer. See Terms Section 7.
+//
+// The sign-in/consent checks and the free-vs-paid-vs-checkout branching are
+// runDownloadFlow's (lib/commerce/download-flow.ts) — this component only wires the
+// real fetch calls into it and follows the resulting redirect.
 export function DownloadButton({
   componentId,
   priceCents,
@@ -27,43 +33,24 @@ export function DownloadButton({
   const [msg, setMsg] = useState<string | null>(null);
   const [withdrawalWaived, setWithdrawalWaived] = useState(false);
 
-  const isFree = isFreeComponent(priceCents);
-  const canDownload = isFree || owned;
-  const needsConsent = !canDownload; // only the actual purchase path
-  const label = canDownload ? "Download" : "Buy to download";
+  const { needsConsent, label } = getDownloadState(priceCents, owned);
 
   async function handle() {
-    if (!signedIn) {
-      setMsg("Sign in to continue.");
-      return;
-    }
-    if (needsConsent && !withdrawalWaived) {
-      setMsg("Please check the box above to confirm before buying.");
-      return;
-    }
     setBusy(true);
     setMsg(null);
-    try {
-      if (canDownload) {
-        const res = await fetch(`/api/components/${componentId}/download`, { method: "POST" });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? "Could not prepare download.");
-        window.location.href = json.url; // short-lived signed URL
-      } else {
-        const res = await fetch("/api/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ componentId, withdrawalWaived }),
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? "Could not start checkout.");
-        window.location.href = json.url; // Stripe Checkout
-      }
-    } catch (e: any) {
-      setMsg(e?.message ?? "Something went wrong.");
-    } finally {
-      setBusy(false);
+    const result = await runDownloadFlow(
+      {
+        requestDownload: () => requestDownloadEffect(fetch, componentId),
+        requestCheckout: (waived) => requestCheckoutEffect(fetch, componentId, waived),
+      },
+      { signedIn, priceCents, owned, withdrawalWaived }
+    );
+    setBusy(false);
+    if (result.status === "error") {
+      setMsg(result.error);
+      return;
     }
+    window.location.href = result.url; // signed download URL or Stripe Checkout
   }
 
   return (
@@ -112,8 +99,9 @@ export function DownloadButton({
           aria-describedby={
             needsConsent && !withdrawalWaived ? "withdrawal-consent-tooltip" : undefined
           }
-          className="w-full rounded-block bg-ink text-paper py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-block bg-ink text-paper py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5"
         >
+          {busy && <Spinner className="h-4 w-4" />}
           {busy ? "Working…" : label}
         </button>
       </div>

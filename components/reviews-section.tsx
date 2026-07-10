@@ -3,10 +3,33 @@
 import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { Spinner } from "@/components/ui/spinner";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
-import { buildReview, upsertReview, removeMyReview, type Review } from "@/lib/reviews-section-state";
+import type { Review } from "@/lib/engagement/reviews-section-state";
+import {
+  runSubmitReviewFlow,
+  runRemoveReviewFlow,
+  runSaveReplyFlow,
+  runRemoveReplyFlow,
+} from "@/lib/engagement/reviews-flow";
+import {
+  submitReviewEffect,
+  removeReviewEffect,
+  saveReplyEffect,
+  removeReplyEffect,
+} from "@/lib/engagement/reviews-effects";
+import { useRowMutation } from "@/lib/use-row-mutation";
 
-export type { Review } from "@/lib/reviews-section-state";
+export type { Review } from "@/lib/engagement/reviews-section-state";
+
+// Editing/deleting your own review and a seller replying to that same
+// review are two independent actions on one row — namespaced keys keep
+// them from sharing a busy/error slot (a buyer and a seller are never the
+// same viewer for a given review, but the keys shouldn't rely on that).
+const reviewKey = (reviewId: string) => `review:${reviewId}`;
+const replyKey = (reviewId: string) => `reply:${reviewId}`;
+// A brand-new review has no id yet to key off of.
+const COMPOSE = "review:compose";
 
 // Verified-buyer reviews section (V2), rendered on the component
 // detail page below the README.
@@ -79,72 +102,42 @@ export function ReviewsSection({
   const [editing, setEditing] = useState(false);
   const [rating, setRating] = useState(mine?.rating ?? 0);
   const [body, setBody] = useState(mine?.body ?? "");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // ---- Seller reply state (one open editor at a time) ----
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
-  const [replyBusy, setReplyBusy] = useState(false);
-  const [replyError, setReplyError] = useState<string | null>(null);
+
+  const { run, isBusy, errorFor, clear } = useRowMutation();
+
+  // No id exists yet for a review that hasn't been submitted.
+  const reviewFormKey = mine ? reviewKey(mine.id) : COMPOSE;
 
   function openReplyEditor(review: Review) {
     setReplyingTo(review.id);
     setReplyBody(review.reply?.body ?? "");
-    setReplyError(null);
+    clear(replyKey(review.id));
   }
 
   async function saveReply(reviewId: string) {
-    if (!replyBody.trim()) {
-      setReplyError("Reply text is required.");
-      return;
-    }
-    setReplyBusy(true);
-    setReplyError(null);
-    try {
-      const res = await fetch(`/api/reviews/${reviewId}/reply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: replyBody }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setReplyError(data.error ?? "Could not save the reply. Try again.");
-        return;
-      }
-      setReviews((prev) =>
-        prev.map((r) =>
-          r.id === reviewId
-            ? { ...r, reply: { body: data.reply.body, created_at: data.reply.created_at } }
-            : r
-        )
-      );
-      setReplyingTo(null);
-      setReplyBody("");
-    } catch {
-      setReplyError("Network error — the reply was not saved.");
-    } finally {
-      setReplyBusy(false);
-    }
+    const result = await run(replyKey(reviewId), () =>
+      runSaveReplyFlow(
+        { saveReply: (id, body) => saveReplyEffect(fetch, id, body) },
+        { reviews, reviewId, body: replyBody }
+      )
+    );
+    if (result.status === "error") return;
+    setReviews(result.reviews);
+    setReplyingTo(null);
+    setReplyBody("");
   }
 
   async function removeReply(reviewId: string) {
-    setReplyBusy(true);
-    setReplyError(null);
-    try {
-      const res = await fetch(`/api/reviews/${reviewId}/reply`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setReplyError(data.error ?? "Could not delete the reply. Try again.");
-        return;
-      }
-      setReviews((prev) => prev.map((r) => (r.id === reviewId ? { ...r, reply: null } : r)));
-      setReplyingTo(null);
-    } catch {
-      setReplyError("Network error — the reply was not deleted.");
-    } finally {
-      setReplyBusy(false);
-    }
+    const result = await run(replyKey(reviewId), () =>
+      runRemoveReplyFlow({ removeReply: (id) => removeReplyEffect(fetch, id) }, { reviews, reviewId })
+    );
+    if (result.status === "error") return;
+    setReviews(result.reviews);
+    setReplyingTo(null);
   }
 
   const count = reviews.length;
@@ -153,55 +146,26 @@ export function ReviewsSection({
   const showForm = canReview && (!mine || editing);
 
   async function submit() {
-    if (!rating) {
-      setError("Pick a star rating first.");
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/components/${componentId}/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating, body }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Could not save the review. Try again.");
-        return;
-      }
-      const saved = buildReview(data.review, {
-        reviewer: mine?.reviewer ?? null,
-        reply: mine?.reply ?? null,
-      });
-      setReviews((prev) => upsertReview(prev, saved));
-      setEditing(false);
-    } catch {
-      setError("Network error — the review was not saved.");
-    } finally {
-      setBusy(false);
-    }
+    const result = await run(reviewFormKey, () =>
+      runSubmitReviewFlow(
+        { submitReview: (r, b) => submitReviewEffect(fetch, componentId, r, b) },
+        { reviews, rating, body, mine }
+      )
+    );
+    if (result.status === "error") return;
+    setReviews(result.reviews);
+    setEditing(false);
   }
 
   async function remove() {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/components/${componentId}/reviews`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Could not delete the review. Try again.");
-        return;
-      }
-      setReviews((prev) => removeMyReview(prev));
-      setRating(0);
-      setBody("");
-      setEditing(false);
-    } catch {
-      setError("Network error — the review was not deleted.");
-    } finally {
-      setBusy(false);
-    }
+    const result = await run(reviewFormKey, () =>
+      runRemoveReviewFlow({ removeReview: () => removeReviewEffect(fetch, componentId) }, { reviews })
+    );
+    if (result.status === "error") return;
+    setReviews(result.reviews);
+    setRating(0);
+    setBody("");
+    setEditing(false);
   }
 
   return (
@@ -237,15 +201,16 @@ export function ReviewsSection({
             data-testid="review-body"
             className="mt-3 w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
           />
-          {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+          {errorFor(reviewFormKey) && <p className="mt-2 text-xs text-red-600">{errorFor(reviewFormKey)}</p>}
           <div className="mt-3 flex items-center gap-3">
             <button
               onClick={submit}
-              disabled={busy}
+              disabled={isBusy(reviewFormKey)}
               data-testid="review-submit"
-              className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50"
+              className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
             >
-              {busy ? "Saving…" : mine ? "Save changes" : "Publish review"}
+              {isBusy(reviewFormKey) && <Spinner className="h-3.5 w-3.5" />}
+              {isBusy(reviewFormKey) ? "Saving…" : mine ? "Save changes" : "Publish review"}
             </button>
             {editing && (
               <button
@@ -253,7 +218,7 @@ export function ReviewsSection({
                   setEditing(false);
                   setRating(mine?.rating ?? 0);
                   setBody(mine?.body ?? "");
-                  setError(null);
+                  clear(reviewFormKey);
                 }}
                 className="text-sm text-subtle hover:text-muted"
               >
@@ -337,7 +302,7 @@ export function ReviewsSection({
                       </button>
                       <button
                         onClick={() => removeReply(r.id)}
-                        disabled={replyBusy}
+                        disabled={isBusy(replyKey(r.id))}
                         className="font-mono text-[11px] text-subtle hover:text-red-600"
                       >
                         delete
@@ -369,19 +334,22 @@ export function ReviewsSection({
                     placeholder="Thank the reviewer, answer their question, or explain a fix"
                     className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
                   />
-                  {replyError && <p className="mt-2 text-xs text-red-600">{replyError}</p>}
+                  {errorFor(replyKey(r.id)) && (
+                    <p className="mt-2 text-xs text-red-600">{errorFor(replyKey(r.id))}</p>
+                  )}
                   <div className="mt-2 flex items-center gap-3">
                     <button
                       onClick={() => saveReply(r.id)}
-                      disabled={replyBusy}
-                      className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50"
+                      disabled={isBusy(replyKey(r.id))}
+                      className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
                     >
-                      {replyBusy ? "Saving…" : r.reply ? "Save changes" : "Publish response"}
+                      {isBusy(replyKey(r.id)) && <Spinner className="h-3.5 w-3.5" />}
+                      {isBusy(replyKey(r.id)) ? "Saving…" : r.reply ? "Save changes" : "Publish response"}
                     </button>
                     <button
                       onClick={() => {
                         setReplyingTo(null);
-                        setReplyError(null);
+                        clear(replyKey(r.id));
                       }}
                       className="text-sm text-subtle hover:text-muted"
                     >
@@ -405,7 +373,7 @@ export function ReviewsSection({
                   </button>
                   <button
                     onClick={remove}
-                    disabled={busy}
+                    disabled={isBusy(reviewFormKey)}
                     className="font-mono text-[11px] text-subtle hover:text-red-600"
                   >
                     delete

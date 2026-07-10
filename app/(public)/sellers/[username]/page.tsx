@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/stripe";
-import { shouldShowStripeNudge } from "@/lib/seller";
-import { COMPONENT_SUMMARY_COLS } from "@/lib/constants";
+import { getStripe } from "@/lib/commerce/stripe";
+import { shouldShowStripeNudge, type NudgeDb } from "@/lib/commerce/seller";
+import { listPublishedBySeller, type ListComponentsDb } from "@/lib/commerce/browse";
+import { narrowDb } from "@/lib/db-port";
 import { StripeNudge } from "@/components/stripe-nudge";
 import { ComponentCard } from "@/components/component-card";
-import type { ComponentSummary } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -18,13 +18,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
     .from("profiles").select("*").eq("username", username).maybeSingle();
   if (!profile) notFound();
 
-  const { data: comps } = await supabase
-    .from("components")
-    .select(COMPONENT_SUMMARY_COLS)
-    .eq("seller_id", profile.id)
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
-  const components = (comps ?? []) as ComponentSummary[];
+  const { components } = await listPublishedBySeller(narrowDb<ListComponentsDb>(supabase), profile.id);
 
   const totalDownloads = components.reduce((a, c) => a + (c.download_count ?? 0), 0);
   const totalStars = components.reduce((a, c) => a + (c.star_count ?? 0), 0);
@@ -33,7 +27,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
   // and only if they have paid components but payouts aren't connected yet.
   const { userId } = await auth();
   const isOwner = !!userId && profile.clerk_user_id === userId;
-  const showNudge = isOwner && await shouldShowStripeNudge(profile, getStripe(), supabase);
+  const showNudge = isOwner && await shouldShowStripeNudge(getStripe(), narrowDb<NudgeDb>(supabase), profile);
 
   return (
     <>

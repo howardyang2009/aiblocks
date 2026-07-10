@@ -48,7 +48,7 @@ function rows(overrides: Partial<ComponentRows> = {}): ComponentRows {
   return {
     component: component(),
     seller: { username: "seller", display_name: "Seller" },
-    tagRows: [],
+    tags: [],
     reviewRows: [],
     commentRows: [],
     starRow: null,
@@ -61,8 +61,8 @@ function rows(overrides: Partial<ComponentRows> = {}): ComponentRows {
 }
 
 describe("buildComponentView", () => {
-  it("maps tag rows to plain tag names", () => {
-    const view = buildComponentView(rows({ tagRows: [{ name: "agent" }, { name: "email" }] }), null);
+  it("passes tags through unchanged", () => {
+    const view = buildComponentView(rows({ tags: ["agent", "email"] }), null);
     expect(view.tags).toEqual(["agent", "email"]);
   });
 

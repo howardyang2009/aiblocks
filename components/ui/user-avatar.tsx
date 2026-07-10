@@ -1,4 +1,4 @@
-import type { PublicProfile } from "@/lib/public-profile";
+import type { PublicProfile } from "@/lib/identity/public-profile";
 
 type Props = {
   user: PublicProfile;

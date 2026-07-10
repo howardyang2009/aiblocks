@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth";
+import { withAuth } from "@/lib/identity/auth";
 import { parseBody } from "@/lib/request";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { narrowDb } from "@/lib/db-port";
+import { toResponse } from "@/lib/result";
 import {
   verifyUploadedZip,
   parseEditInput,
   updateComponent,
   type VerifyUploadedZipStorage,
   type UpdateComponentDb,
-} from "@/lib/components-write";
+} from "@/lib/commerce/components-write";
 
 // PATCH /api/components/[id] — edit an existing listing. Body mirrors POST
 // /api/components with one relaxation: zipPath is OPTIONAL. When present
@@ -24,7 +25,7 @@ export const PATCH = withAuth(async (req, { params, profile, supabase }) => {
   if (body instanceof NextResponse) return body;
 
   const parsed = parseEditInput(body, profile.id);
-  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: parsed.status });
+  if (!parsed.ok) return toResponse(parsed);
 
   // Only verify the uploaded zip when the seller actually replaced it.
   // Same size cap + missing-file check as on publish.
@@ -35,7 +36,7 @@ export const PATCH = withAuth(async (req, { params, profile, supabase }) => {
       ACTIVE_ZIP_BUCKET,
       parsed.data.zipPath
     );
-    if (!verified.ok) return NextResponse.json({ error: verified.error }, { status: verified.status });
+    if (!verified.ok) return toResponse(verified);
     sizeBytes = verified.sizeBytes;
   }
 
@@ -45,7 +46,7 @@ export const PATCH = withAuth(async (req, { params, profile, supabase }) => {
     sellerId: profile.id,
     sizeBytes,
   });
-  if (!updated.ok) return NextResponse.json({ error: updated.error }, { status: updated.status });
+  if (!updated.ok) return toResponse(updated);
 
   // Best-effort cleanup: if the seller replaced the zip, delete the old
   // storage object so it doesn't linger. A failure here doesn't fail the
