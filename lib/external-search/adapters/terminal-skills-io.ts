@@ -8,6 +8,10 @@ interface TerminalSkillsIoSkill {
   stars?: number;
 }
 
+interface TerminalSkillsIoResponse {
+  skills?: TerminalSkillsIoSkill[];
+}
+
 export function createTerminalSkillsIoAdapter(
   deps: { fetchFn?: FetchLike } = {},
 ): SearchAdapter {
@@ -18,15 +22,15 @@ export function createTerminalSkillsIoAdapter(
     isEnabled: () => true,
     async search(query: string): Promise<SearchResult[]> {
       const q = encodeURIComponent(query);
-      const body = await fetchJson<{ data?: TerminalSkillsIoSkill[] }>(
+      const body = await fetchJson<TerminalSkillsIoResponse>(
         fetchFn,
-        `https://terminalskills.io/api/v1/skills?q=${q}&limit=10`,
+        `https://api.terminalskills.io/api/skills?q=${q}&limit=10`,
         { Accept: 'application/json' },
         'terminalskills.io'
       );
       // No GitHub repo field is exposed by this API — skills are installed via
       // the terminal-skills CLI, so link to the catalog's own detail page instead.
-      return (body.data ?? [])
+      return (body.skills ?? [])
         .filter((skill): skill is TerminalSkillsIoSkill => Boolean(skill?.slug && skill?.name))
         .map((skill) => ({
           title: skill.name,

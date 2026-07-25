@@ -32,7 +32,7 @@ export default async function HomePage() {
       {/* Search hero */}
       <section className="py-20 lg:py-28 text-center">
         <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl mt-3">
-          Find AI component around the web
+          Find AI components on the web
         </h1>
         <div className="mt-8 max-w-2xl mx-auto">
           <ExternalSearchForm />
