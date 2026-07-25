@@ -19,18 +19,17 @@ describe('createTerminalSkillsIoAdapter', () => {
   });
 
   it('queries the search endpoint with q and limit', async () => {
-    const fetchFn = mockFetch({ success: true, data: [], pagination: { total: 0, page: 1, limit: 10, hasMore: false } });
+    const fetchFn = mockFetch({ skills: [] });
     const adapter = createTerminalSkillsIoAdapter({ fetchFn });
     await adapter.search('pdf', 'skill');
     const [url, init] = (fetchFn as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(url).toBe('https://terminalskills.io/api/v1/skills?q=pdf&limit=10');
+    expect(url).toBe('https://api.terminalskills.io/api/skills?q=pdf&limit=10');
     expect((init as RequestInit).headers).toMatchObject({ Accept: 'application/json' });
   });
 
   it('maps skills to SearchResult using the catalog detail page (no repo field exists)', async () => {
     const fetchFn = mockFetch({
-      success: true,
-      data: [
+      skills: [
         {
           slug: 'doc-parser',
           name: 'doc-parser',
@@ -42,7 +41,6 @@ describe('createTerminalSkillsIoAdapter', () => {
           tags: ['parsing', 'docling'],
         },
       ],
-      pagination: { total: 19, page: 1, limit: 2, hasMore: true },
     });
     const adapter = createTerminalSkillsIoAdapter({ fetchFn });
     const results = await adapter.search('pdf', 'skill');
@@ -59,7 +57,7 @@ describe('createTerminalSkillsIoAdapter', () => {
 
   it('filters out entries missing a slug or name', async () => {
     const fetchFn = mockFetch({
-      data: [{ slug: 'a' }, { name: 'no-slug' }, { slug: 'b', name: 'has-both' }],
+      skills: [{ slug: 'a' }, { name: 'no-slug' }, { slug: 'b', name: 'has-both' }],
     });
     const adapter = createTerminalSkillsIoAdapter({ fetchFn });
     const results = await adapter.search('x', 'skill');
