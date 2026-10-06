@@ -136,3 +136,7 @@ Human-Led items from the delegation plan.
 
 Next.js 16 · Tailwind CSS · Clerk · Supabase · Stripe Connect · react-markdown ·
 Vitest · Playwright · Vercel
+
+## License
+
+MIT. See [LICENSE](LICENSE).
