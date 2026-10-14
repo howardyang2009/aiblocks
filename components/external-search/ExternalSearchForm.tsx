@@ -35,7 +35,7 @@ export function ExternalSearchForm({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-block bg-ink text-paper px-6 py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+          className="rounded-block bg-accent text-accent-ink px-6 py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
         >
           {submitting && <Spinner className="h-4 w-4" />}
           {submitting ? "Searching…" : "Search"}

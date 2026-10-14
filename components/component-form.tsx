@@ -171,7 +171,7 @@ function IntakeForm({
 
         <div className="flex gap-3">
           <button onClick={handleSubmit} disabled={busy}
-            className="rounded-block bg-ink text-paper px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 inline-flex items-center gap-1.5">
+            className="rounded-block bg-accent text-accent-ink px-5 py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors disabled:opacity-50 inline-flex items-center gap-1.5">
             {busy && <Spinner className="h-4 w-4" />}
             {buttonLabel}
           </button>
@@ -226,7 +226,7 @@ export function PublishForm() {
         <div className="mt-8 flex gap-3 justify-center">
           <button
             onClick={() => router.push(`/components/${published.id}`)}
-            className="rounded-block bg-ink text-paper px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors"
+            className="rounded-block bg-accent text-accent-ink px-5 py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors"
           >
             View component
           </button>

@@ -99,7 +99,7 @@ export function DownloadButton({
           aria-describedby={
             needsConsent && !withdrawalWaived ? "withdrawal-consent-tooltip" : undefined
           }
-          className="w-full rounded-block bg-ink text-paper py-2.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5"
+          className="w-full rounded-block bg-accent text-accent-ink py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5"
         >
           {busy && <Spinner className="h-4 w-4" />}
           {busy ? "Working…" : label}

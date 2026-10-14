@@ -73,7 +73,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         </div>
         {tag && (
           <span className="font-mono text-xs flex items-center gap-2">
-            <span className="rounded-[3px] bg-ink text-paper px-2 py-1">#{tag}</span>
+            <span className="rounded-[3px] bg-accent text-accent-ink px-2 py-1">#{tag}</span>
             <Link href={qs({ q, sort })} className="text-subtle hover:text-ink">clear</Link>
           </span>
         )}

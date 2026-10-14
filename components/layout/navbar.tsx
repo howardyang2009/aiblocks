@@ -6,12 +6,10 @@ export function Navbar() {
     <header className="border-b bg-surface">
       <div className="mx-auto max-w-shell px-5 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="grid grid-cols-2 gap-0.5" aria-hidden>
-            <i className="block w-2 h-2 rounded-[2px] bg-ink" />
-            <i className="block w-2 h-2 rounded-[2px] bg-accent" />
-            <i className="block w-2 h-2 rounded-[2px] bg-accent" />
-            <i className="block w-2 h-2 rounded-[2px] bg-ink" />
-          </span>
+          <svg aria-hidden className="h-7 w-7" viewBox="0 0 32 32">
+            <rect width="32" height="32" rx="8" className="fill-accent" />
+            <path d="M6 20c4-6 8 2 12-4s6-4 8-2" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
           <span className="font-display font-bold text-lg tracking-tight">AiBlocks</span>
         </Link>
 
@@ -24,7 +22,7 @@ export function Navbar() {
           </Show>
           <Show when="signed-out">
             <SignInButton mode="modal">
-              <button className="rounded-block bg-ink text-paper px-3.5 py-1.5 text-sm hover:bg-accent transition-colors">
+              <button className="rounded-block bg-accent text-accent-ink px-3.5 py-1.5 text-sm hover:bg-accent-strong transition-colors">
                 Sign in
               </button>
             </SignInButton>
