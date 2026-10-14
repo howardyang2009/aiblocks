@@ -52,7 +52,7 @@ export default async function HomePage() {
             Free or paid, your price, your payout.
           </p>
           <div className="mt-8 flex gap-3">
-            <Link href="/browse" className="rounded-block bg-ink text-paper px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors">
+            <Link href="/browse" className="rounded-block bg-accent text-accent-ink px-5 py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors">
               Browse components
             </Link>
             <Link href="/dashboard/seller/new" className="rounded-block border px-5 py-2.5 text-sm font-medium hover:bg-surface transition-colors">

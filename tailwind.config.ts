@@ -18,6 +18,7 @@ const config: Config = {
         subtle: "var(--subtle)",
         line: "var(--line)",
         accent: "var(--accent)",
+        "accent-strong": "var(--accent-strong)",
         "accent-ink": "var(--accent-ink)",
         free: "var(--free)",
       },

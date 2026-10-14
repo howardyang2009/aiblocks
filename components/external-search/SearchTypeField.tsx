@@ -30,7 +30,7 @@ export function SearchTypeField({ selected }: { selected: ComponentType }) {
           />
           <label
             htmlFor={`type-${opt.value}`}
-            className="cursor-pointer select-none rounded-block border px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper"
+            className="cursor-pointer select-none rounded-block border px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent peer-checked:border-accent peer-checked:bg-accent peer-checked:text-accent-ink"
           >
             {opt.label}
           </label>

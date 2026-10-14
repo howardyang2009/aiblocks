@@ -77,7 +77,7 @@ export default function StripeGuidePage() {
       <div className="mx-auto max-w-3xl px-5 pb-16">
         <Link
           href="/dashboard/seller/stripe"
-          className="inline-flex items-center justify-center rounded-block bg-ink text-paper px-5 py-2.5 text-sm font-medium hover:bg-accent transition-colors"
+          className="inline-flex items-center justify-center rounded-block bg-accent text-accent-ink px-5 py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors"
         >
           Go to Stripe onboarding →
         </Link>
