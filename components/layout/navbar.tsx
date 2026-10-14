@@ -1,16 +1,15 @@
 import Link from "next/link";
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { RheinWegLogo } from "@/components/brand/rheinweg-logo";
 
 export function Navbar() {
   return (
     <header className="border-b bg-surface">
       <div className="mx-auto max-w-shell px-5 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
-          <svg aria-hidden className="h-7 w-7" viewBox="0 0 32 32">
-            <rect width="32" height="32" rx="8" className="fill-accent" />
-            <path d="M6 20c4-6 8 2 12-4s6-4 8-2" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-          </svg>
+          <RheinWegLogo />
           <span className="font-display font-bold text-lg tracking-tight">AiBlocks</span>
+          <span className="hidden sm:inline font-mono text-xs text-subtle">by RheinWeg</span>
         </Link>
 
         <nav className="flex items-center gap-6 text-sm">
