@@ -70,7 +70,7 @@ export default async function HomePage() {
 
         <div className="rounded-block border bg-surface p-6">
           <AssemblyGrid />
-          <p className="eyebrow mt-5">npm for AI components</p>
+          <p className="eyebrow mt-5">Open marketplace for reusable AI components</p>
         </div>
       </section>
 

@@ -10,7 +10,7 @@ export function Footer() {
             <RheinWegLogo className="h-6 w-6" />
             <span className="font-display font-bold tracking-tight">AiBlocks by RheinWeg</span>
           </a>
-          <p className="font-mono text-xs text-muted mt-3">npm for AI components</p>
+          <p className="font-mono text-xs text-muted mt-3">Open marketplace for reusable AI components</p>
         </div>
 
         <nav className="flex flex-col gap-2 text-sm">
