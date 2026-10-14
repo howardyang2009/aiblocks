@@ -20,7 +20,7 @@ export default function AboutPage() {
         <div>
           <p className="eyebrow">AiBlocks</p>
           <h1 className="font-display font-bold tracking-tight text-4xl sm:text-5xl mt-4 leading-[1.05]">
-            npm for AI components.
+            Open marketplace for reusable AI components.
           </h1>
           <p className="mt-5 text-muted max-w-md leading-relaxed">
             AI development produces a lot of reusable work — prompts that took

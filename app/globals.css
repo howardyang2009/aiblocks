@@ -18,6 +18,7 @@
   --line: #e6e7eb;       /* borders, hairlines */
   --accent: #1d6a9e;     /* the one bold color (RheinWeg brand blue) — used sparingly */
   --accent-strong: #175680; /* accent hover (RheinWeg brand-700) */
+  --accent-soft: #b3d3ea;   /* light accent tint (RheinWeg brand-200) */
   --accent-ink: #ffffff; /* text on accent */
   --free: #0e9f6e;       /* "free" price signal */
 }
@@ -52,7 +53,7 @@ body {
   background: var(--line);
   display: block;
 }
-.assembly-grid > i.on { background: var(--ink); }
+.assembly-grid > i.on { background: var(--accent-soft); }
 .assembly-grid > i.hot { background: var(--accent); }
 
 @media (prefers-reduced-motion: no-preference) {

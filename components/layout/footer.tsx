@@ -1,10 +1,18 @@
 import Link from "next/link";
+import { RheinWegLogo, RHEINWEG_URL } from "@/components/brand/rheinweg-logo";
 
 export function Footer() {
   return (
     <footer className="border-t bg-surface mt-16">
       <div className="mx-auto max-w-shell px-5 py-12 grid gap-8 sm:grid-cols-[1fr_auto_auto]">
-        <p className="font-mono text-xs text-muted">AiBlocks — npm for AI components</p>
+        <div>
+          <div className="flex items-center gap-2.5">
+            <RheinWegLogo />
+            <span className="font-display font-bold text-lg tracking-tight">AiBlocks</span>
+            <a href={RHEINWEG_URL} className="font-mono text-xs text-subtle hover:text-accent">by RheinWeg</a>
+          </div>
+          <p className="font-mono text-xs text-muted mt-3">Open marketplace for reusable AI components</p>
+        </div>
 
         <nav className="flex flex-col gap-2 text-sm">
           <span className="eyebrow mb-1">Sell</span>
@@ -16,6 +24,7 @@ export function Footer() {
           <span className="eyebrow mb-1">About</span>
           <Link href="/about" className="text-muted hover:text-ink">About</Link>
           <Link href="/contact" className="text-muted hover:text-ink">Contact</Link>
+          <Link href="/impressum" className="text-muted hover:text-ink">Impressum</Link>
           <Link href="/terms" className="text-muted hover:text-ink">Terms</Link>
           <Link href="/privacy" className="text-muted hover:text-ink">Privacy</Link>
         </nav>

@@ -10,7 +10,7 @@ import { ExternalSearchForm } from "@/components/external-search/ExternalSearchF
 // assembly-grid hero (the brand signature) follows right below it.
 export const dynamic = "force-dynamic";
 
-const Pimary_TAGS = [
+const PRIMARY_TAGS = [
   "mcp-server",
   "claude-md",
   "subagent",
@@ -60,7 +60,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="mt-8 flex flex-wrap gap-2">
-            {Pimary_TAGS.map((t) => (
+            {PRIMARY_TAGS.map((t) => (
               <Link key={t} href={`/browse?tag=${t}`} className="font-mono text-xs rounded-[3px] border px-2 py-1 text-muted hover:border-accent">
                 {t}
               </Link>
@@ -70,7 +70,7 @@ export default async function HomePage() {
 
         <div className="rounded-block border bg-surface p-6">
           <AssemblyGrid />
-          <p className="eyebrow mt-5">npm for AI components</p>
+          <p className="eyebrow mt-5">Open marketplace for reusable AI components</p>
         </div>
       </section>
 
