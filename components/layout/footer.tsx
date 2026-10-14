@@ -6,10 +6,11 @@ export function Footer() {
     <footer className="border-t bg-surface mt-16">
       <div className="mx-auto max-w-shell px-5 py-12 grid gap-8 sm:grid-cols-[1fr_auto_auto]">
         <div>
-          <a href={RHEINWEG_URL} className="inline-flex items-center gap-2 hover:text-accent">
-            <RheinWegLogo className="h-6 w-6" />
-            <span className="font-display font-bold tracking-tight">AiBlocks by RheinWeg</span>
-          </a>
+          <div className="flex items-center gap-2.5">
+            <RheinWegLogo />
+            <span className="font-display font-bold text-lg tracking-tight">AiBlocks</span>
+            <a href={RHEINWEG_URL} className="font-mono text-xs text-subtle hover:text-accent">by RheinWeg</a>
+          </div>
           <p className="font-mono text-xs text-muted mt-3">Open marketplace for reusable AI components</p>
         </div>
 
