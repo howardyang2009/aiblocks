@@ -1,6 +1,6 @@
 // The RheinWeg wave mark. AiBlocks is a RheinWeg product, so the navbar
 // and footer share this one definition instead of inlining the SVG.
-export const RHEINWEG_URL = "https://rheinwegde.vercel.app/de/";
+export const RHEINWEG_URL = "https://rheinwegde.de/";
 
 export function RheinWegLogo({ className = "h-7 w-7" }: { className?: string }) {
   return (

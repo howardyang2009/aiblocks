@@ -7,8 +7,10 @@ export function Footer() {
       <div className="mx-auto max-w-shell px-5 py-12 grid gap-8 sm:grid-cols-[1fr_auto_auto]">
         <div>
           <div className="flex items-center gap-2.5">
-            <RheinWegLogo />
-            <span className="font-display font-bold text-lg tracking-tight">AiBlocks</span>
+            <Link href="/" className="flex items-center gap-2.5">
+              <RheinWegLogo />
+              <span className="font-display font-bold text-lg tracking-tight">AiBlocks</span>
+            </Link>
             <a href={RHEINWEG_URL} className="font-mono text-xs text-subtle hover:text-accent">by RheinWeg</a>
           </div>
           <p className="font-mono text-xs text-muted mt-3">Open marketplace for reusable AI components</p>
