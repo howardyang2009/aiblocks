@@ -64,6 +64,10 @@ _Avoid_: Favorite, like
 One of the three language versions of the site: German (`de`, the default), English (`en`), and Simplified Chinese (`zh-CN`). Every page URL names its Locale; a URL without one is only a doorway that sends the visitor to a Locale. Covers the site's own copy only, never user-generated content.
 _Avoid_: Language, region
 
+**Source copy**:
+The `en` version of the site's own copy, the text everything else is translated from. A new string is written in `en` first; the `de` and `zh-CN` versions are translations of it, drafted by Claude and reviewed afterwards by a native speaker. Legal pages are the one exception: there the `de` version is the master.
+_Avoid_: Original, base language
+
 **Legal page**:
 The Impressum, the privacy policy, or the terms. Only the `de` version is binding and it is the master text: every change lands in `de` first, and the `en` and `zh-CN` versions are full convenience translations derived from it that say so. A translation may lag behind `de`; each version carries its own last-updated date and says when it is behind. The Impressum needs no convenience-translation notice, since it states facts, not terms.
 _Avoid_: Policy page, legal docs
