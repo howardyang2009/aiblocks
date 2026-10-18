@@ -1,0 +1,10 @@
+# Every page URL carries its Locale prefix, including the default `de`
+
+Every page lives under a Locale prefix: `/de/...`, `/en/...`, `/zh/...` (the `zh` segment maps to the `zh-CN` Locale; `<html lang>` and hreflang use `zh-CN`). We use next-intl's `localePrefix: "always"` rather than `as-needed`, even though the default `de` could have stayed unprefixed. One rule with no exceptions keeps the URL itself the single source of truth for the Locale. A URL without a prefix, such as `/`, a README link, or an old pre-i18n English URL, is only a doorway: it redirects to the `NEXT_LOCALE` cookie's Locale, else the browser's `Accept-Language` if it prefers `en` or `zh`, else `de`. The three Locales share one set of path segments (no translated `pathnames`).
+
+**Considered Options:** `as-needed` (unprefixed `de`, the shortest German URLs, and no redirect for old links) was rejected so that German and the other Locales are handled the same way. A cookie- or header-only approach without any prefix was rejected because one URL would serve different languages, which rules out hreflang. Translated path segments (`/de/komponenten/...`) were rejected as too much upkeep for a light-touch i18n pass.
+
+**Consequences:**
+- `/sign-in`, `/sign-up` and `/dashboard` are not exceptions. Clerk gets per-Locale `signInUrl`/`signUpUrl` from the Locale layout. The protected-route matcher must cover `/:locale/dashboard(.*)`, or the dashboard becomes unprotected.
+- API routes and `/api/webhooks/stripe` stay unprefixed. An API route has no Locale of its own, so the client sends `locale` in the request body; the server checks it against the allowed Locales and falls back to `de`. That value prefixes Stripe's `success_url`/`cancel_url` and Connect `refresh_url`/`return_url`, and it sets the Checkout `locale`.
+- Changing the prefix mode after launch would break indexed URLs, so treat this decision as fixed.
