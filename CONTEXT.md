@@ -37,7 +37,7 @@ The record of a Buyer acquiring a paid Component through Stripe. Starts pending 
 _Avoid_: Order, transaction, sale
 
 **Withdrawal waiver**:
-The EU/EEA consumer-rights waiver a Buyer must give before paying for digital content, giving up their 14-day right of withdrawal in exchange for immediate access. Enforced three times over: the checkout UI, the API, and Stripe's own consent step.
+The EU/EEA consumer-rights waiver a Buyer must give before paying for digital content, giving up their 14-day right of withdrawal in exchange for immediate access. Enforced three times over: the checkout UI, the API, and Stripe's own consent step. The Buyer always sees the waiver wording in their own Locale, because it is the Buyer's own declaration and they must understand what they give up.
 _Avoid_: Refund policy, consent
 
 ### Engagement
@@ -63,3 +63,7 @@ _Avoid_: Favorite, like
 **Locale**:
 One of the three language versions of the site: German (`de`, the default), English (`en`), and Simplified Chinese (`zh-CN`). Every page URL names its Locale; a URL without one is only a doorway that sends the visitor to a Locale. Covers the site's own copy only, never user-generated content.
 _Avoid_: Language, region
+
+**Legal page**:
+The Impressum, the privacy policy, or the terms. Only the `de` version is binding and it is the master text: every change lands in `de` first, and the `en` and `zh-CN` versions are full convenience translations derived from it that say so. A translation may lag behind `de`; each version carries its own last-updated date and says when it is behind. The Impressum needs no convenience-translation notice, since it states facts, not terms.
+_Avoid_: Policy page, legal docs
