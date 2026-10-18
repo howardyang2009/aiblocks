@@ -28,6 +28,14 @@ _Avoid_: Customer
 A single reusable AI building block listed in the marketplace — the thing that gets bought, downloaded, starred, reviewed, and commented on.
 _Avoid_: Item, product, listing
 
+**Tag**:
+A free-form label a Seller attaches to a Component, case-insensitive (`Claude` and `claude` are the same Tag). A few well-known Tags are featured on the home page, but that is only a display choice: there is no separate category concept. Tags are Seller content, so they show as submitted in every Locale.
+_Avoid_: Category, label
+
+**Ecosystem**:
+An AI platform a Component works with, such as `claude`, `gpt` or `gemini`. Named by the Seller and shown as submitted in every Locale.
+_Avoid_: Platform, model
+
 **Entitlement**:
 Whether someone has access to a Component. Free Components grant one on first download with no Purchase involved; paid Components grant one only once a Purchase succeeds.
 _Avoid_: Ownership, access, license

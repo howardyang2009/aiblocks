@@ -64,7 +64,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 ## Open risks
 
-- **Next version vs `next/root-params`.** next-intl's recommended static setup reads the locale from `next/root-params`, default only in **Next 16.3+**. The lockfile pins **16.2.10**. Either bump Next to 16.3+ (16.4.2 is current) as part of the i18n work, enable `experimental.rootParams`, or use the legacy `setRequestLocale` in every layout/page. Decide in the spec.
+- **Next version vs `next/root-params`.** next-intl's recommended static setup reads the locale from `next/root-params`, default only in **Next 16.3+**. The lockfile pins **16.2.10**. Either bump Next to 16.3+ (16.4.2 is current) as part of the i18n work, enable `experimental.rootParams`, or use the legacy `setRequestLocale` in every layout/page. Decide in the spec. **Resolved in #45:** upgrade to Next 16.4.x in its own PR first (#52), then use `next/root-params`. Only the 8 content routes need static rendering.
 - **Protected-route matcher must include the locale prefix.** Current matcher is `/dashboard(.*)`; with locale prefixes it must also match `/:locale/dashboard(.*)` or `/dashboard` would become unprotected. Clerk docs also say middleware is not the best place to protect routes; data-layer checks should stay.
 - **API routes must skip the intl step.** Clerk's matcher runs on `/api`; next-intl's default matcher excludes it. Combined file must keep Clerk on API routes but not redirect them to a locale.
 - **Dotted paths** (e.g. seller usernames with `.`) are skipped by next-intl's default matcher; Clerk's matcher is extension-based, which is safer. Keep Clerk's matcher.
