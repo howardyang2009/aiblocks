@@ -57,3 +57,9 @@ _Avoid_: Response, comment
 **Star**:
 A Viewer's bookmark on a Component — a simple toggle, not gated by Entitlement.
 _Avoid_: Favorite, like
+
+### Site
+
+**Locale**:
+One of the three language versions of the site: German (`de`, the default), English (`en`), and Simplified Chinese (`zh-CN`). Every page URL names its Locale; a URL without one is only a doorway that sends the visitor to a Locale. Covers the site's own copy only, never user-generated content.
+_Avoid_: Language, region
