@@ -6,6 +6,9 @@
     "myDownloads": "Meine Downloads",
     "signIn": "Anmelden"
   },
+  "Guide": {
+    "next": "Weiter"
+  },
   "Footer": {
     "byRheinWeg": "von RheinWeg",
     "tagline": "Offener Marktplatz für wiederverwendbare KI-Komponenten",

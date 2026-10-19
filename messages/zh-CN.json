@@ -6,6 +6,9 @@
     "myDownloads": "我的下载",
     "signIn": "登录"
   },
+  "Guide": {
+    "next": "下一步"
+  },
   "Footer": {
     "byRheinWeg": "RheinWeg 出品",
     "tagline": "可复用 AI 组件的开放市场",

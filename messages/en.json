@@ -6,6 +6,9 @@
     "myDownloads": "My downloads",
     "signIn": "Sign in"
   },
+  "Guide": {
+    "next": "Next"
+  },
   "Footer": {
     "byRheinWeg": "by RheinWeg",
     "tagline": "Open marketplace for reusable AI components",
