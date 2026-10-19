@@ -36,24 +36,24 @@ export async function postReview(
 ): Promise<PostReviewResult> {
   const rating = Number(args.rating);
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return { ok: false, status: 400, error: "Rating must be a whole number from 1 to 5." };
+    return { ok: false, status: 400, error: "ratingInvalid" };
   }
 
-  const validated = validateBody(args.body, { required: false, label: "Review text" });
+  const validated = validateBody(args.body, { required: null, tooLong: "reviewTooLong" });
   if (!validated.ok) return validated;
 
   const component = await getPublishedComponent(supabase, args.componentId);
-  if (!component) return { ok: false, status: 404, error: "Component not found." };
+  if (!component) return { ok: false, status: 404, error: "componentNotFound" };
 
   if (component.seller_id === args.buyerId) {
-    return { ok: false, status: 403, error: "You can't review your own component." };
+    return { ok: false, status: 403, error: "ownReviewNotAllowed" };
   }
 
   if (!(await getEntitlement(supabase, args.buyerId, args.componentId))) {
     return {
       ok: false,
       status: 403,
-      error: "Only verified buyers can review. Download this component first.",
+      error: "verifiedBuyerRequired",
     };
   }
 
@@ -69,7 +69,7 @@ export async function postReview(
     .single();
 
   if (error || !review) {
-    return { ok: false, status: 500, error: "Could not save the review. Try again." };
+    return { ok: false, status: 500, error: "reviewSaveFailed" };
   }
   return { ok: true, review };
 }
@@ -87,6 +87,6 @@ export async function deleteReview(
     .delete()
     .eq("component_id", args.componentId)
     .eq("buyer_id", args.buyerId);
-  if (error) return { ok: false, status: 500, error: "Could not delete the review. Try again." };
+  if (error) return { ok: false, status: 500, error: "reviewDeleteFailed" };
   return { ok: true };
 }

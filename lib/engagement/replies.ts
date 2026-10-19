@@ -44,7 +44,7 @@ export async function postReply(
   supabase: PostReplyDb,
   args: { reviewId: string; sellerId: string; body: unknown }
 ): Promise<PostReplyResult> {
-  const validated = validateBody(args.body, { required: true, label: "Reply text" });
+  const validated = validateBody(args.body, { required: "replyRequired", tooLong: "replyTooLong" });
   if (!validated.ok) return validated;
 
   // Load the review to learn which component it belongs to.
@@ -53,7 +53,7 @@ export async function postReply(
     .select("id, component_id")
     .eq("id", args.reviewId)
     .maybeSingle();
-  if (!review) return { ok: false, status: 404, error: "Review not found." };
+  if (!review) return { ok: false, status: 404, error: "reviewNotFound" };
 
   const { data: component } = await supabase
     .from("components")
@@ -64,7 +64,7 @@ export async function postReply(
     return {
       ok: false,
       status: 403,
-      error: "Only the seller of this component can reply to its reviews.",
+      error: "sellerOnlyReply",
     };
   }
 
@@ -79,7 +79,7 @@ export async function postReply(
     .single();
 
   if (error || !reply) {
-    return { ok: false, status: 500, error: "Could not save the reply. Try again." };
+    return { ok: false, status: 500, error: "replySaveFailed" };
   }
   return { ok: true, reply };
 }
@@ -97,6 +97,6 @@ export async function deleteReply(
     .delete()
     .eq("review_id", args.reviewId)
     .eq("seller_id", args.sellerId);
-  if (error) return { ok: false, status: 500, error: "Could not delete the reply. Try again." };
+  if (error) return { ok: false, status: 500, error: "replyDeleteFailed" };
   return { ok: true };
 }

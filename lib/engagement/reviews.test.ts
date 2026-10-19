@@ -63,31 +63,31 @@ describe("postReview", () => {
   it("rejects a rating below 1", async () => {
     const db = fakeReviewsDb({ component: component(), owns: true });
     const result = await postReview(db, { componentId: "comp1", buyerId: "buyer1", rating: 0, body: "" });
-    expect(result).toEqual({ ok: false, status: 400, error: "Rating must be a whole number from 1 to 5." });
+    expect(result).toEqual({ ok: false, status: 400, error: "ratingInvalid" });
   });
 
   it("rejects a rating above 5", async () => {
     const db = fakeReviewsDb({ component: component(), owns: true });
     const result = await postReview(db, { componentId: "comp1", buyerId: "buyer1", rating: 6, body: "" });
-    expect(result).toEqual({ ok: false, status: 400, error: "Rating must be a whole number from 1 to 5." });
+    expect(result).toEqual({ ok: false, status: 400, error: "ratingInvalid" });
   });
 
   it("rejects a non-integer rating", async () => {
     const db = fakeReviewsDb({ component: component(), owns: true });
     const result = await postReview(db, { componentId: "comp1", buyerId: "buyer1", rating: 3.5, body: "" });
-    expect(result).toEqual({ ok: false, status: 400, error: "Rating must be a whole number from 1 to 5." });
+    expect(result).toEqual({ ok: false, status: 400, error: "ratingInvalid" });
   });
 
   it("404s when the component doesn't exist or isn't published", async () => {
     const db = fakeReviewsDb({ component: null });
     const result = await postReview(db, { componentId: "missing", buyerId: "buyer1", rating: 5, body: "" });
-    expect(result).toEqual({ ok: false, status: 404, error: "Component not found." });
+    expect(result).toEqual({ ok: false, status: 404, error: "componentNotFound" });
   });
 
   it("rejects a seller reviewing their own component", async () => {
     const db = fakeReviewsDb({ component: component({ seller_id: "buyer1" }) });
     const result = await postReview(db, { componentId: "comp1", buyerId: "buyer1", rating: 5, body: "" });
-    expect(result).toEqual({ ok: false, status: 403, error: "You can't review your own component." });
+    expect(result).toEqual({ ok: false, status: 403, error: "ownReviewNotAllowed" });
   });
 
   it("rejects a buyer who hasn't downloaded the component", async () => {
@@ -96,7 +96,7 @@ describe("postReview", () => {
     expect(result).toEqual({
       ok: false,
       status: 403,
-      error: "Only verified buyers can review. Download this component first.",
+      error: "verifiedBuyerRequired",
     });
   });
 
@@ -109,7 +109,7 @@ describe("postReview", () => {
   it("500s when the upsert fails", async () => {
     const db = fakeReviewsDb({ component: component(), owns: true, upsert: { data: null, error: { message: "db down" } } });
     const result = await postReview(db, { componentId: "comp1", buyerId: "buyer1", rating: 5, body: "" });
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not save the review. Try again." });
+    expect(result).toEqual({ ok: false, status: 500, error: "reviewSaveFailed" });
   });
 });
 
@@ -127,6 +127,6 @@ describe("deleteReview", () => {
       from: () => ({ delete: () => ({ eq: () => ({ eq: async () => ({ error: { message: "db down" } }) }) }) }),
     };
     const result = await deleteReview(db, { componentId: "comp1", buyerId: "buyer1" });
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not delete the review. Try again." });
+    expect(result).toEqual({ ok: false, status: 500, error: "reviewDeleteFailed" });
   });
 });

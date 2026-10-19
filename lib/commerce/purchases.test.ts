@@ -96,26 +96,26 @@ describe("createCheckout", () => {
     expect(result).toEqual({
       ok: false,
       status: 400,
-      error: "Please confirm the digital delivery notice before checking out.",
+      error: "waiverRequired",
     });
   });
 
   it("404s when the component doesn't exist or isn't published", async () => {
     const db = fakeCheckoutDb({ component: null });
     const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "missing", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 404, error: "Component not found." });
+    expect(result).toEqual({ ok: false, status: 404, error: "componentNotFound" });
   });
 
   it("rejects buying a free component", async () => {
     const db = fakeCheckoutDb({ component: { ...publishedComponent, price_cents: 0 } });
     const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 400, error: "This component is free — just download it." });
+    expect(result).toEqual({ ok: false, status: 400, error: "componentIsFree" });
   });
 
   it("rejects buying your own component", async () => {
     const db = fakeCheckoutDb({ component: { ...publishedComponent, seller_id: buyer.id } });
     const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 400, error: "You can't buy your own component." });
+    expect(result).toEqual({ ok: false, status: 400, error: "ownComponentPurchase" });
   });
 
   it("rejects when the buyer already owns the component", async () => {
@@ -124,14 +124,14 @@ describe("createCheckout", () => {
     expect(result).toEqual({
       ok: false,
       status: 400,
-      error: "You already own this — find it in My downloads.",
+      error: "alreadyOwned",
     });
   });
 
   it("rejects when the seller can't accept payments", async () => {
     const db = fakeCheckoutDb({ component: publishedComponent, seller: { stripe_account_id: null } });
     const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 400, error: "Seller cannot accept payments yet." });
+    expect(result).toEqual({ ok: false, status: 400, error: "sellerNotPayable" });
   });
 
   it("does not call Stripe when the pending purchase insert fails", async () => {
@@ -145,7 +145,7 @@ describe("createCheckout", () => {
     expect(result).toEqual({
       ok: false,
       status: 500,
-      error: "Could not create purchase record. Please try again.",
+      error: "purchaseCreateFailed",
     });
     expect(create).not.toHaveBeenCalled();
   });
@@ -180,7 +180,7 @@ describe("createCheckout", () => {
       insertPurchase: { data: { id: "purchase1" }, error: null },
     });
     const result = await createCheckout(fakeStripe(create), db, { buyer, componentId: "c1", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not start checkout. Please try again." });
+    expect(result).toEqual({ ok: false, status: 500, error: "checkoutFailed" });
   });
 });
 

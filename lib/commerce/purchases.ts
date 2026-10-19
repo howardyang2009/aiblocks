@@ -67,7 +67,7 @@ export async function createCheckout(
     return {
       ok: false,
       status: 400,
-      error: "Please confirm the digital delivery notice before checking out.",
+      error: "waiverRequired",
     };
   }
 
@@ -78,24 +78,24 @@ export async function createCheckout(
     .maybeSingle();
 
   if (!component || component.status !== "published") {
-    return { ok: false, status: 404, error: "Component not found." };
+    return { ok: false, status: 404, error: "componentNotFound" };
   }
   if (isFreeComponent(component.price_cents)) {
-    return { ok: false, status: 400, error: "This component is free — just download it." };
+    return { ok: false, status: 400, error: "componentIsFree" };
   }
   if (component.seller_id === args.buyer.id) {
-    return { ok: false, status: 400, error: "You can't buy your own component." };
+    return { ok: false, status: 400, error: "ownComponentPurchase" };
   }
 
   // Already owns it? Don't double-charge.
   if (await getEntitlement(supabase, args.buyer.id, component.id)) {
-    return { ok: false, status: 400, error: "You already own this — find it in My downloads." };
+    return { ok: false, status: 400, error: "alreadyOwned" };
   }
 
   const { data: seller } = await supabase
     .from("profiles").select("stripe_account_id").eq("id", component.seller_id).maybeSingle();
   if (!seller || !seller.stripe_account_id) {
-    return { ok: false, status: 400, error: "Seller cannot accept payments yet." };
+    return { ok: false, status: 400, error: "sellerNotPayable" };
   }
 
   // Create a pending purchase first so the webhook can reconcile by id.
@@ -117,7 +117,7 @@ export async function createCheckout(
     .select("id").single();
 
   if (purchaseErr || !purchase) {
-    return { ok: false, status: 500, error: "Could not create purchase record. Please try again." };
+    return { ok: false, status: 500, error: "purchaseCreateFailed" };
   }
 
   const session = await stripe.checkout.sessions.create({
@@ -158,7 +158,7 @@ export async function createCheckout(
   });
 
   if (!session.url) {
-    return { ok: false, status: 500, error: "Could not start checkout. Please try again." };
+    return { ok: false, status: 500, error: "checkoutFailed" };
   }
   return { ok: true, url: session.url };
 }

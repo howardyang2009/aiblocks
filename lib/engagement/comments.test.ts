@@ -55,13 +55,13 @@ describe("postComment", () => {
   it("rejects an empty body", async () => {
     const { db } = fakeCommentsDb({ component: component() });
     const result = await postComment(db, { componentId: "comp1", userId: "u1", body: "", parentId: null });
-    expect(result).toEqual({ ok: false, status: 400, error: "Comment text is required." });
+    expect(result).toEqual({ ok: false, status: 400, error: "commentRequired" });
   });
 
   it("404s when the component doesn't exist or isn't published", async () => {
     const { db } = fakeCommentsDb({ component: null });
     const result = await postComment(db, { componentId: "missing", userId: "u1", body: "hi", parentId: null });
-    expect(result).toEqual({ ok: false, status: 404, error: "Component not found." });
+    expect(result).toEqual({ ok: false, status: 404, error: "componentNotFound" });
   });
 
   it("posts a top-level comment", async () => {
@@ -73,7 +73,7 @@ describe("postComment", () => {
   it("404s replying to a parent that doesn't exist", async () => {
     const { db } = fakeCommentsDb({ component: component(), parent: null });
     const result = await postComment(db, { componentId: "comp1", userId: "u1", body: "hi", parentId: "ghost" });
-    expect(result).toEqual({ ok: false, status: 404, error: "Comment to reply to was not found." });
+    expect(result).toEqual({ ok: false, status: 404, error: "parentCommentNotFound" });
   });
 
   it("404s replying to a parent on a different component", async () => {
@@ -82,7 +82,7 @@ describe("postComment", () => {
       parent: { id: "p1", component_id: "other-comp", parent_id: null },
     });
     const result = await postComment(db, { componentId: "comp1", userId: "u1", body: "hi", parentId: "p1" });
-    expect(result).toEqual({ ok: false, status: 404, error: "Comment to reply to was not found." });
+    expect(result).toEqual({ ok: false, status: 404, error: "parentCommentNotFound" });
   });
 
   it("rejects a reply to a reply (depth > 1)", async () => {
@@ -94,7 +94,7 @@ describe("postComment", () => {
     expect(result).toEqual({
       ok: false,
       status: 400,
-      error: "Replies can only be added to top-level comments.",
+      error: "replyToReplyNotAllowed",
     });
   });
 
@@ -111,7 +111,7 @@ describe("postComment", () => {
   it("500s when the insert fails", async () => {
     const { db } = fakeCommentsDb({ component: component(), insert: { data: null, error: { message: "db down" } } });
     const result = await postComment(db, { componentId: "comp1", userId: "u1", body: "hi", parentId: null });
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not post the comment. Try again." });
+    expect(result).toEqual({ ok: false, status: 500, error: "commentPostFailed" });
   });
 });
 
@@ -129,6 +129,6 @@ describe("deleteComment", () => {
       from: () => ({ delete: () => ({ eq: () => ({ eq: async () => ({ error: { message: "db down" } }) }) }) }),
     };
     const result = await deleteComment(db, { commentId: "c1", userId: "u1" });
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not delete the comment. Try again." });
+    expect(result).toEqual({ ok: false, status: 500, error: "commentDeleteFailed" });
   });
 });

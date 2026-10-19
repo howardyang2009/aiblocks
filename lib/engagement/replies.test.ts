@@ -38,13 +38,13 @@ describe("postReply", () => {
   it("rejects an empty body", async () => {
     const db = fakeRepliesDb({});
     const result = await postReply(db, { reviewId: "r1", sellerId: "seller1", body: "" });
-    expect(result).toEqual({ ok: false, status: 400, error: "Reply text is required." });
+    expect(result).toEqual({ ok: false, status: 400, error: "replyRequired" });
   });
 
   it("404s when the review doesn't exist", async () => {
     const db = fakeRepliesDb({ review: null });
     const result = await postReply(db, { reviewId: "missing", sellerId: "seller1", body: "thanks" });
-    expect(result).toEqual({ ok: false, status: 404, error: "Review not found." });
+    expect(result).toEqual({ ok: false, status: 404, error: "reviewNotFound" });
   });
 
   it("rejects a non-seller replying", async () => {
@@ -56,7 +56,7 @@ describe("postReply", () => {
     expect(result).toEqual({
       ok: false,
       status: 403,
-      error: "Only the seller of this component can reply to its reviews.",
+      error: "sellerOnlyReply",
     });
   });
 
@@ -76,7 +76,7 @@ describe("postReply", () => {
       upsert: { data: null, error: { message: "db down" } },
     });
     const result = await postReply(db, { reviewId: "r1", sellerId: "seller1", body: "thanks" });
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not save the reply. Try again." });
+    expect(result).toEqual({ ok: false, status: 500, error: "replySaveFailed" });
   });
 });
 
@@ -94,6 +94,6 @@ describe("deleteReply", () => {
       from: () => ({ delete: () => ({ eq: () => ({ eq: async () => ({ error: { message: "db down" } }) }) }) }),
     };
     const result = await deleteReply(db, { reviewId: "r1", sellerId: "seller1" });
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not delete the reply. Try again." });
+    expect(result).toEqual({ ok: false, status: 500, error: "replyDeleteFailed" });
   });
 });

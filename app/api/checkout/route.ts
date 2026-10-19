@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/commerce/stripe";
 import { withAuth } from "@/lib/identity/auth";
+import type { ApiError } from "@/lib/api-errors";
 import { parseBody } from "@/lib/request";
 import { createCheckout, type CreateCheckoutDb } from "@/lib/commerce/purchases";
 import { narrowDb } from "@/lib/db-port";
@@ -12,7 +13,7 @@ export const POST = withAuth(async (req, { profile: buyer, supabase }) => {
   const body = await parseBody<{ componentId?: unknown; withdrawalWaived?: unknown }>(req);
   if (body instanceof NextResponse) return body;
   const componentId = String(body.componentId ?? "");
-  if (!componentId) return NextResponse.json({ error: "Missing component." }, { status: 400 });
+  if (!componentId) return NextResponse.json({ error: "componentRequired" satisfies ApiError }, { status: 400 });
 
   const result = await createCheckout(getStripe(), narrowDb<CreateCheckoutDb>(supabase), {
     buyer,
