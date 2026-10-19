@@ -35,7 +35,7 @@ describe("withAuth", () => {
     const res = await wrapped(fakeReq, { params: Promise.resolve({}) });
 
     expect(res.status).toBe(401);
-    expect(await res.json()).toEqual({ error: "Sign in first." });
+    expect(await res.json()).toEqual({ error: "signInRequired" });
     expect(handler).not.toHaveBeenCalled();
   });
 

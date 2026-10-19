@@ -275,5 +275,9 @@
       "notFound": "Komponente nicht gefunden.",
       "notOwner": "Sie können nur Ihre eigenen Komponenten bearbeiten."
     }
+  },
+  "ApiErrors": {
+    "signInRequired": "Melden Sie sich an, um fortzufahren.",
+    "invalidBody": "Die Anfrage konnte nicht gelesen werden. Laden Sie die Seite neu und versuchen Sie es erneut."
   }
 }

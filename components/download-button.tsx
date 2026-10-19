@@ -6,6 +6,7 @@ import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow"
 import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
 import { Spinner } from "@/components/ui/spinner";
 import { Link } from "@/i18n/navigation";
+import { useErrorMessage } from "@/lib/use-error-message";
 
 // Handles the three states of acquiring a component:
 //   free            -> POST /download, follow the signed URL
@@ -32,6 +33,7 @@ export function DownloadButton({
   signedIn: boolean;
 }) {
   const t = useTranslations("DownloadButton");
+  const errorMessage = useErrorMessage();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [withdrawalWaived, setWithdrawalWaived] = useState(false);
@@ -64,7 +66,7 @@ export function DownloadButton({
     );
     setBusy(false);
     if (result.status === "error") {
-      setMsg(result.error);
+      setMsg(errorMessage(result.error));
       return;
     }
     window.location.href = result.url; // signed download URL or Stripe Checkout

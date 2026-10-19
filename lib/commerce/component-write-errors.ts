@@ -26,8 +26,8 @@ export const COMPONENT_WRITE_ERRORS = [
 
 export type ComponentWriteError = (typeof COMPONENT_WRITE_ERRORS)[number];
 
-// The form shows these keys translated. Anything else (a shared API helper's
-// own text, such as withAuth's) shows as it came.
+// The form shows these keys translated. Shared API helper keys (withAuth,
+// parseBody) are translated separately, via lib/api-errors.ts.
 export function isComponentWriteError(error: string): error is ComponentWriteError {
   return (COMPONENT_WRITE_ERRORS as readonly string[]).includes(error);
 }

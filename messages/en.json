@@ -275,5 +275,9 @@
       "notFound": "Component not found.",
       "notOwner": "You can only edit your own components."
     }
+  },
+  "ApiErrors": {
+    "signInRequired": "Sign in to continue.",
+    "invalidBody": "The request could not be read. Reload the page and try again."
   }
 }

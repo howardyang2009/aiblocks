@@ -275,5 +275,9 @@
       "notFound": "未找到该组件。",
       "notOwner": "你只能编辑自己的组件。"
     }
+  },
+  "ApiErrors": {
+    "signInRequired": "请登录后继续。",
+    "invalidBody": "无法读取请求，请刷新页面后重试。"
   }
 }

@@ -20,6 +20,7 @@ import {
   updateComponentEffect,
 } from "@/lib/commerce/component-form-effects";
 import { isComponentWriteError } from "@/lib/commerce/component-write-errors";
+import { useErrorMessage } from "@/lib/use-error-message";
 
 // PublishForm and EditForm — the two things a Seller does to submit a
 // Component — share one interactive form (IntakeForm) and one upload
@@ -74,6 +75,7 @@ function IntakeForm({
   onCancel?: () => void;
 }) {
   const t = useTranslations("ComponentForm");
+  const errorMessage = useErrorMessage();
   const [name, setName] = useState(initial.name);
   const [description, setDescription] = useState(initial.description);
   const [ecosystems, setEcosystems] = useState(initial.ecosystems);
@@ -99,7 +101,7 @@ function IntakeForm({
 
     if (result.status === "error") {
       setStatus("error");
-      setError(isComponentWriteError(result.error) ? t(`errors.${result.error}`) : result.error);
+      setError(isComponentWriteError(result.error) ? t(`errors.${result.error}`) : errorMessage(result.error));
       return;
     }
 
