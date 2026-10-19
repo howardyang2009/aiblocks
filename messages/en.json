@@ -9,6 +9,13 @@
   "Guide": {
     "next": "Next"
   },
+  "Legal": {
+    "onThisPage": "On this page",
+    "lastUpdated": "Last updated: {date}",
+    "draft": "Draft: this text has not been reviewed yet and may still change before the review is finished.",
+    "binding": "This is a convenience translation. Only the <german>German version</german> is legally binding.",
+    "behind": "The German version was updated on {date} and this translation has not caught up yet. The <german>German version</german> applies."
+  },
   "Footer": {
     "byRheinWeg": "by RheinWeg",
     "tagline": "Open marketplace for reusable AI components",

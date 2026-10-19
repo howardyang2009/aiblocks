@@ -9,6 +9,13 @@
   "Guide": {
     "next": "下一步"
   },
+  "Legal": {
+    "onThisPage": "本页目录",
+    "lastUpdated": "最后更新：{date}",
+    "draft": "草稿：本文本尚未经过审核，审核完成前仍可能修改。",
+    "binding": "本页为便于理解而提供的译文。仅<german>德语版本</german>具有法律约束力。",
+    "behind": "德语版本已于 {date} 更新，本译文尚未同步。以<german>德语版本</german>为准。"
+  },
   "Footer": {
     "byRheinWeg": "RheinWeg 出品",
     "tagline": "可复用 AI 组件的开放市场",

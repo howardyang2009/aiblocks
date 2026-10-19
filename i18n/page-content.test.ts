@@ -33,7 +33,7 @@ describe("long-form page content", () => {
     expect(missingContentFiles(appFiles)).toEqual([]);
   });
 
-  it.each(["about", "contact", "docs/seller/publish", "docs/seller/stripe"])("%s is a per-Locale content page", (page) => {
+  it.each(["about", "contact", "docs/seller/publish", "docs/seller/stripe", "impressum", "privacy", "terms"])("%s is a per-Locale content page", (page) => {
     expect(appFiles).toContain(`[locale]/(public)/${page}/content.en.tsx`);
   });
 });

@@ -9,6 +9,13 @@
   "Guide": {
     "next": "Weiter"
   },
+  "Legal": {
+    "onThisPage": "Auf dieser Seite",
+    "lastUpdated": "Zuletzt aktualisiert: {date}",
+    "draft": "Entwurf: Dieser Text ist noch nicht geprüft und kann sich bis zum Abschluss der Prüfung noch ändern.",
+    "binding": "Dies ist eine Übersetzung zu Ihrer Information. Rechtlich verbindlich ist allein die <german>deutsche Fassung</german>.",
+    "behind": "Die deutsche Fassung wurde am {date} aktualisiert, diese Übersetzung ist noch nicht auf dem neuesten Stand. Maßgeblich ist die <german>deutsche Fassung</german>."
+  },
   "Footer": {
     "byRheinWeg": "von RheinWeg",
     "tagline": "Offener Marktplatz für wiederverwendbare KI-Komponenten",
