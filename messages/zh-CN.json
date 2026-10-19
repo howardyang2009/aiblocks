@@ -137,6 +137,9 @@
     "checkbox": "我明确同意在撤回期届满前开始履行合同，并确认我知道因此将丧失 14 天的撤回权（见<terms>服务条款</terms>）。合同语言为德语。",
     "checkout": "我同意[服务条款]({termsUrl})。我明确同意在撤回期届满前开始履行合同，并确认我知道因此将丧失 14 天的撤回权。合同语言为德语。"
   },
+  "Price": {
+    "free": "免费"
+  },
   "SellerPage": {
     "componentCount": "{count, plural, other {# 个组件}}",
     "downloadCount": "{count, plural, other {# 次下载}}",

@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/routing";
+
 // Format an ISO date string to "Jan 1, 2025" (matches toLocaleDateString used
 // in comments and reviews).
 export function formatDate(iso: string): string {
@@ -8,10 +10,11 @@ export function formatDate(iso: string): string {
   });
 }
 
-// Format integer cents into a display price. 0 cents => "Free".
-export function formatPrice(cents: number, currency = "eur"): string {
-  if (cents === 0) return "Free";
-  return new Intl.NumberFormat("en-US", {
+// Format integer cents as money in the page's Locale (#67): `12,50 €` in
+// `de`, `€12.50` in `en` and `zh-CN`. Never converts the amount. A Free
+// Component's label is translated copy, so callers handle price zero.
+export function formatPrice(cents: number, currency: string, locale: Locale): string {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currency.toUpperCase(),
   }).format(cents / 100);

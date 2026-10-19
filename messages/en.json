@@ -137,6 +137,9 @@
     "checkbox": "I expressly agree that performance of the contract begins before the withdrawal period ends, and I confirm that I know I lose my 14-day right of withdrawal as a result (see the <terms>Terms</terms>). The contract language is German.",
     "checkout": "I agree to the [Terms]({termsUrl}). I expressly agree that performance of the contract begins before the withdrawal period ends, and I confirm that I know I lose my 14-day right of withdrawal as a result. The contract language is German."
   },
+  "Price": {
+    "free": "Free"
+  },
   "SellerPage": {
     "componentCount": "{count, plural, one {# component} other {# components}}",
     "downloadCount": "{count, plural, one {# download} other {# downloads}}",

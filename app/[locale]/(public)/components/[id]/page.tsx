@@ -7,7 +7,7 @@ import { StarButton } from "@/components/star-button";
 import { DownloadButton } from "@/components/download-button";
 import { ReviewsSection } from "@/components/reviews-section";
 import { CommentsSection } from "@/components/comments-section";
-import { formatPrice } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { getViewer } from "@/lib/identity/viewer";
 import { fetchComponentRows, buildComponentView } from "./view-model";
 
@@ -82,7 +82,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
       </article>
 
       <aside className="lg:sticky lg:top-8 h-fit rounded-block border bg-surface p-5">
-        <p className="font-mono text-2xl">{formatPrice(component.price_cents, component.currency)}</p>
+        <p className="font-mono text-2xl"><Price cents={component.price_cents} currency={component.currency} /></p>
         {owned && component.price_cents > 0 && (
           <p className="font-mono text-[11px] text-free mt-1">{t("purchased")}</p>
         )}
