@@ -82,7 +82,7 @@ const publishedComponent: ComponentRow = {
   id: "c1",
   name: "Widget",
   price_cents: 500,
-  currency: "usd",
+  currency: "eur",
   seller_id: "seller1",
   status: "published",
 };
@@ -172,6 +172,7 @@ describe("createCheckout", () => {
       buyer_id: buyer.id,
     });
     expect(params.payment_intent_data).toEqual({ transfer_data: { destination: "acct_1" } });
+    expect(params.line_items?.[0].price_data?.currency).toBe("eur");
   });
 
   // The Stripe session params createCheckout sends for a Buyer in `locale`.

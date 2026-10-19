@@ -9,7 +9,7 @@ export function formatDate(iso: string): string {
 }
 
 // Format integer cents into a display price. 0 cents => "Free".
-export function formatPrice(cents: number, currency = "usd"): string {
+export function formatPrice(cents: number, currency = "eur"): string {
   if (cents === 0) return "Free";
   return new Intl.NumberFormat("en-US", {
     style: "currency",

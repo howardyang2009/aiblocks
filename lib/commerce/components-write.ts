@@ -40,13 +40,20 @@ export function validateComponentDescription(description: string): ComponentWrit
 
 export type ParsedComponentPrice = { ok: true; cents: number } | { ok: false; error: ComponentWriteError };
 
-// Accept dollars, store integer cents.
+// Accept euros with `,` or `.` as decimal separator (`12,50`, `12.50`), store
+// integer cents (#66). At most two decimals and no thousands separators, so
+// `1.000` and `1,000` are rejected instead of guessed.
+const PRICE_PATTERN = /^(\d+)(?:[.,](\d{1,2}))?$/;
+// `components.price_cents` is a Postgres integer.
+const MAX_PRICE_CENTS = 2147483647;
+
 export function parseComponentPrice(raw: string): ParsedComponentPrice {
-  const dollars = parseFloat(raw);
-  if (Number.isNaN(dollars) || dollars < 0) {
-    return { ok: false, error: "priceInvalid" };
-  }
-  return { ok: true, cents: Math.round(dollars * 100) };
+  const match = PRICE_PATTERN.exec(raw.trim());
+  if (!match) return { ok: false, error: "priceInvalid" };
+  const [, euros, decimals = ""] = match;
+  const cents = Number(euros) * 100 + Number(decimals.padEnd(2, "0"));
+  if (cents > MAX_PRICE_CENTS) return { ok: false, error: "priceInvalid" };
+  return { ok: true, cents };
 }
 
 // Validates and shapes the raw publish request body — pure, no I/O, no
@@ -347,7 +354,7 @@ export async function publishComponent(
       readme: args.readme,
       ecosystems: args.ecosystems,
       price_cents: args.priceCents,
-      currency: "usd",
+      currency: "eur",
       zip_path: args.zipPath,
       zip_size_bytes: args.sizeBytes,
       status: "published",

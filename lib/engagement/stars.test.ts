@@ -6,7 +6,7 @@ function component(overrides: Partial<Tables<"components">> = {}): Tables<"compo
   return {
     id: "comp1",
     created_at: "",
-    currency: "usd",
+    currency: "eur",
     description: "",
     download_count: 0,
     ecosystems: [],

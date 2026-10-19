@@ -259,7 +259,7 @@
     "ecosystemsPlaceholder": "claude, gpt, gemini",
     "tags": "Tags (comma separated)",
     "tagsPlaceholder": "agent, email, productivity",
-    "price": "Price in USD (0 for free)",
+    "price": "Price in EUR (0 for free)",
     "zip": "Component zip (max 10MB)",
     "replaceZip": "Replace zip (optional — leave empty to keep current)",
     "currentZip": "Current: {file}",
@@ -272,7 +272,7 @@
     "errors": {
       "nameTooShort": "Name must be at least 3 characters.",
       "descriptionTooShort": "Add a short description (10+ characters).",
-      "priceInvalid": "Price must be 0 or a positive number.",
+      "priceInvalid": "Price must be 0 or a positive amount such as 12.50 or 12,50, with no thousands separator.",
       "zipRequired": "Choose a zip file to upload.",
       "zipTooLarge": "Zip exceeds the 10MB limit.",
       "uploadPathMismatch": "Upload path mismatch. Upload the zip again.",

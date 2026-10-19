@@ -70,11 +70,25 @@ describe("parsePublishInput", () => {
     expect(result).toEqual({ ok: false, status: 400, error: "priceInvalid" });
   });
 
-  it("rounds dollars to integer cents", () => {
-    const result = parsePublishInput({ ...validPublishBody, price: "0.005" }, "seller1");
-    expect(result.ok).toBe(true);
-    expect(result.ok && result.data.priceCents).toBe(1);
+  it.each([
+    ["12.50", 1250],
+    ["12,50", 1250],
+    ["12", 1200],
+    ["0,5", 50],
+    [" 5 ", 500],
+    ["0", 0],
+  ])("accepts %j as euros and stores integer cents", (price, cents) => {
+    const result = parsePublishInput({ ...validPublishBody, price }, "seller1");
+    expect(result.ok && result.data.priceCents).toBe(cents);
   });
+
+  it.each(["1,000.00", "1.000,50", "1,000", "1.000", "1 000", "0.005", "12.", ",5", "99999999"])(
+    "rejects %j (thousands separator, more than two decimals, or too large)",
+    (price) => {
+      const result = parsePublishInput({ ...validPublishBody, price }, "seller1");
+      expect(result).toEqual({ ok: false, status: 400, error: "priceInvalid" });
+    }
+  );
 });
 
 const validEditBody = {
@@ -135,10 +149,9 @@ describe("parseEditInput", () => {
     expect(result).toEqual({ ok: false, status: 403, error: "uploadPathMismatch" });
   });
 
-  it("rounds dollars to integer cents", () => {
-    const result = parseEditInput({ ...validEditBody, price: "0.005" }, "seller1");
-    expect(result.ok).toBe(true);
-    expect(result.ok && result.data.priceCents).toBe(1);
+  it("accepts a comma as decimal separator", () => {
+    const result = parseEditInput({ ...validEditBody, price: "12,50" }, "seller1");
+    expect(result.ok && result.data.priceCents).toBe(1250);
   });
 });
 
@@ -212,12 +225,13 @@ function fakePublishDb(opts: {
   insertComponent?: { data: { id: string } | null; error: { message: string } | null };
   upsertTags?: { data: { id: string; name: string }[] | null; error: { message: string } | null };
   insertTagLinks?: { error: { message: string } | null };
+  onInsertComponent?: (row: unknown) => void;
 }) {
   return {
     from: (table: string) => {
       if (table === "components") {
         return {
-          insert: () => ({
+          insert: (row: unknown) => (opts.onInsertComponent?.(row), {
             select: () => ({
               single: async () => opts.insertComponent ?? { data: { id: "comp1" }, error: null },
             }),
@@ -257,6 +271,13 @@ describe("publishComponent", () => {
     const result = await publishComponent(db, { ...publishArgs, tagNames: [] });
     expect(result.ok).toBe(true);
     expect(result.ok && result.id).toBe("comp1");
+  });
+
+  it("saves the component priced in EUR", async () => {
+    let inserted: unknown;
+    const db = fakePublishDb({ onInsertComponent: (row) => (inserted = row) });
+    await publishComponent(db, publishArgs);
+    expect(inserted).toMatchObject({ price_cents: 500, currency: "eur" });
   });
 
   it("fails when the component insert fails", async () => {

@@ -259,7 +259,7 @@
     "ecosystemsPlaceholder": "claude, gpt, gemini",
     "tags": "标签（用逗号分隔）",
     "tagsPlaceholder": "agent, email, productivity",
-    "price": "价格（美元，0 表示免费）",
+    "price": "价格（欧元，0 表示免费）",
     "zip": "组件 zip（最大 10MB）",
     "replaceZip": "替换 zip（可选，留空则保留当前文件）",
     "currentZip": "当前：{file}",
@@ -272,7 +272,7 @@
     "errors": {
       "nameTooShort": "名称至少需要 3 个字符。",
       "descriptionTooShort": "请添加简短描述（至少 10 个字符）。",
-      "priceInvalid": "价格必须为 0 或正数。",
+      "priceInvalid": "价格必须为 0 或正数，例如 12.50 或 12,50，不能使用千位分隔符。",
       "zipRequired": "请选择要上传的 zip 文件。",
       "zipTooLarge": "zip 超过 10MB 上限。",
       "uploadPathMismatch": "上传路径不匹配，请重新上传 zip。",
