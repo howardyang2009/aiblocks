@@ -5,7 +5,8 @@ import { getLocale } from "next-intl/server";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { localePrefix, routing } from "@/i18n/routing";
+import { clerkProviderProps } from "@/i18n/clerk";
+import { routing } from "@/i18n/routing";
 import "../globals.css";
 
 const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display", weight: ["500", "700"] });
@@ -26,10 +27,9 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
-  const prefix = localePrefix(locale);
 
   return (
-    <ClerkProvider signInUrl={`${prefix}/sign-in`} signUpUrl={`${prefix}/sign-up`}>
+    <ClerkProvider {...clerkProviderProps(locale)}>
       <html lang={locale} className={`${display.variable} ${sans.variable} ${mono.variable}`}>
         <body className="min-h-screen flex flex-col">
           <NextIntlClientProvider>
