@@ -36,6 +36,10 @@ _Avoid_: Category, label
 An AI platform a Component works with, such as `claude`, `gpt` or `gemini`. Named by the Seller and shown as submitted in every Locale.
 _Avoid_: Platform, model
 
+**Price**:
+What a Buyer pays for a Component, set by its Seller. Always in euros, for every Component, and the same amount in every Locale: a Locale changes only how the number is written, never the currency or the amount. A Price of zero makes the Component free.
+_Avoid_: Cost, fee
+
 **Entitlement**:
 Whether someone has access to a Component. Free Components grant one on first download with no Purchase involved; paid Components grant one only once a Purchase succeeds.
 _Avoid_: Ownership, access, license
