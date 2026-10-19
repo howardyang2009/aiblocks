@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { Spinner } from "@/components/ui/spinner";
+import { formatFileSize } from "@/lib/utils";
 import {
   runPublishFlow,
   runEditFlow,
@@ -75,6 +76,7 @@ function IntakeForm({
   onCancel?: () => void;
 }) {
   const t = useTranslations("ComponentForm");
+  const locale = useLocale();
   const errorMessage = useErrorMessage();
   const [name, setName] = useState(initial.name);
   const [description, setDescription] = useState(initial.description);
@@ -149,7 +151,7 @@ function IntakeForm({
             onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           {file ? (
             <p className="font-mono text-xs text-subtle mt-1">
-              {file.name} · {(file.size / 1024 / 1024).toFixed(2)}MB
+              {file.name} · {formatFileSize(file.size, locale)}
             </p>
           ) : initial.currentZipPath ? (
             <p className="font-mono text-xs text-subtle mt-1">

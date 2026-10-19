@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { formatDate } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDate, formatRating } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
@@ -102,6 +102,7 @@ export function ReviewsSection({
 }) {
   const t = useTranslations("Reviews");
   const tEngagement = useTranslations("Engagement");
+  const locale = useLocale();
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const mine = reviews.find((r) => r.mine) ?? null;
 
@@ -212,7 +213,7 @@ export function ReviewsSection({
           <div className="flex items-center gap-2">
             <Stars value={Math.round(average)} />
             <span className="font-mono text-xs text-subtle">
-              {t("summary", { average: average.toFixed(1), count })}
+              {t("summary", { average: formatRating(average, locale), count })}
             </span>
           </div>
         )}
@@ -314,7 +315,7 @@ export function ReviewsSection({
                   </div>
                   <div className="flex items-center gap-2">
                     <Stars value={r.rating} size="text-xs" />
-                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.created_at)}</span>
+                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.created_at, locale)}</span>
                   </div>
                 </div>
               </div>
@@ -330,7 +331,7 @@ export function ReviewsSection({
                     {sellerUsername && (
                       <span className="font-mono text-[10px] text-subtle">@{sellerUsername}</span>
                     )}
-                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.reply.created_at)}</span>
+                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.reply.created_at, locale)}</span>
                   </div>
                   <p className="mt-1.5 text-sm text-muted whitespace-pre-wrap">{r.reply.body}</p>
                   {isSeller && (

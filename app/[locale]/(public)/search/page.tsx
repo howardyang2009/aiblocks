@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { narrowDb } from "@/lib/db-port";
 import { listPublishedComponents, type ListComponentsDb } from "@/lib/commerce/browse";
 import { ComponentCard } from "@/components/component-card";
+import { formatNumber } from "@/lib/utils";
 import { ExternalSearchForm } from "@/components/external-search/ExternalSearchForm";
 import { ExternalResultsList } from "@/components/external-search/ExternalResultsList";
 import { resolveComponentType, tagForComponentType } from "@/lib/external-search/search-query";
@@ -19,7 +20,8 @@ type Search = { q?: string; type?: string; source?: string };
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Search> }) {
   const resolved = await searchParams;
   const q = resolved.q?.trim();
-  if (!q) return redirect({ href: "/", locale: await getLocale() });
+  const locale = await getLocale();
+  if (!q) return redirect({ href: "/", locale });
 
   const type = resolveComponentType(resolved.type);
   const tag = tagForComponentType(type);
@@ -87,7 +89,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                   href={sourceHref(s.source)}
                   className={activeSource === s.source ? "text-accent" : "text-subtle hover:text-ink"}
                 >
-                  {s.source} ({s.count})
+                  {s.source} ({formatNumber(s.count, locale)})
                 </Link>
               ))}
             </div>

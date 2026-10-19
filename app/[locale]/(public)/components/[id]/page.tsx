@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -8,6 +8,7 @@ import { DownloadButton } from "@/components/download-button";
 import { ReviewsSection } from "@/components/reviews-section";
 import { CommentsSection } from "@/components/comments-section";
 import { Price } from "@/components/price";
+import { formatNumber, formatRating } from "@/lib/utils";
 import { getViewer } from "@/lib/identity/viewer";
 import { fetchComponentRows, buildComponentView } from "./view-model";
 
@@ -22,6 +23,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
   const data = buildComponentView(rows, viewerProfile);
 
   const t = await getTranslations("ComponentPage");
+  const locale = await getLocale();
   const { component, seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
 
   return (
@@ -108,14 +110,14 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
           </div>
         )}
         <dl className="mt-6 space-y-2 font-mono text-xs text-subtle">
-          <div className="flex justify-between"><dt>{t("downloads")}</dt><dd>{component.download_count}</dd></div>
-          <div className="flex justify-between"><dt>{t("stars")}</dt><dd>{component.star_count}</dd></div>
+          <div className="flex justify-between"><dt>{t("downloads")}</dt><dd>{formatNumber(component.download_count, locale)}</dd></div>
+          <div className="flex justify-between"><dt>{t("stars")}</dt><dd>{formatNumber(component.star_count, locale)}</dd></div>
           <div className="flex justify-between">
             <dt>{t("rating")}</dt>
             <dd>
               {avgRating !== null ? (
                 <a href="#reviews" className="hover:text-accent">
-                  {avgRating.toFixed(1)} ({reviewCount})
+                  {formatRating(avgRating, locale)} ({formatNumber(reviewCount, locale)})
                 </a>
               ) : (
                 "—"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -33,6 +33,7 @@ export type { CommentNode } from "@/lib/engagement/comments-section-state";
 
 function AuthorLine({ c }: { c: CommentNode }) {
   const t = useTranslations("Engagement");
+  const locale = useLocale();
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <Link
@@ -47,7 +48,7 @@ function AuthorLine({ c }: { c: CommentNode }) {
         </span>
       )}
       {c.mine && <span className="font-mono text-[10px] text-subtle">{t("you")}</span>}
-      <span className="font-mono text-[10px] text-subtle">{formatDate(c.created_at)}</span>
+      <span className="font-mono text-[10px] text-subtle">{formatDate(c.created_at, locale)}</span>
     </div>
   );
 }
