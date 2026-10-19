@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { RheinWegLogo, RHEINWEG_URL } from "@/components/brand/rheinweg-logo";
 import { Link } from "@/i18n/navigation";
+import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 
 export function Footer() {
   const t = useTranslations("Footer");
@@ -33,6 +34,13 @@ export function Footer() {
           <Link href="/terms" className="text-muted hover:text-ink">{t("terms")}</Link>
           <Link href="/privacy" className="text-muted hover:text-ink">{t("privacy")}</Link>
         </nav>
+      </div>
+
+      <div className="border-t">
+        <div className="mx-auto max-w-shell px-5 py-4 flex items-center justify-between text-sm">
+          <span className="font-mono text-xs text-subtle">© 2026 RheinWeg</span>
+          <LocaleSwitcher />
+        </div>
       </div>
     </footer>
   );

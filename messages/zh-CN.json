@@ -19,6 +19,16 @@
     "terms": "服务条款",
     "privacy": "隐私政策"
   },
+  "LocaleSwitcher": {
+    "label": "语言",
+    "title": "选择语言",
+    "close": "关闭",
+    "names": {
+      "de": "德语",
+      "en": "英语",
+      "zh-CN": "中文"
+    }
+  },
   "HomePage": {
     "title": "在网络上查找 AI 组件"
   },

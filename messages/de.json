@@ -19,6 +19,16 @@
     "terms": "AGB",
     "privacy": "Datenschutz"
   },
+  "LocaleSwitcher": {
+    "label": "Sprache",
+    "title": "Sprache wählen",
+    "close": "Schließen",
+    "names": {
+      "de": "Deutsch",
+      "en": "Englisch",
+      "zh-CN": "Chinesisch"
+    }
+  },
   "HomePage": {
     "title": "KI-Komponenten im Web finden"
   },

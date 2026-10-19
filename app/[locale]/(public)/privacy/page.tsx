@@ -132,9 +132,12 @@ export default function PrivacyPage() {
 
       <Section id="cookies" title="9. Cookies & Tracking">
         <p>
-          AiBlocks currently uses only the essential session cookies set by
-          Clerk to keep you signed in — nothing else is required for the
-          site to function. We don't currently run analytics or advertising
+          AiBlocks currently uses only essential cookies: the session
+          cookies set by Clerk to keep you signed in, and a{" "}
+          <code>NEXT_LOCALE</code> cookie that remembers the language you
+          last viewed the site in for one year, so a visit to the home page
+          opens in that language — nothing else is required for the site to
+          function. We don't currently run analytics or advertising
           trackers. If that changes (e.g., adding product analytics), we'll
           update this policy and, where required, ask for consent first.
         </p>

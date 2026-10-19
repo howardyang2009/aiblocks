@@ -19,6 +19,16 @@
     "terms": "Terms",
     "privacy": "Privacy"
   },
+  "LocaleSwitcher": {
+    "label": "Language",
+    "title": "Choose your language",
+    "close": "Close",
+    "names": {
+      "de": "German",
+      "en": "English",
+      "zh-CN": "Chinese"
+    }
+  },
   "HomePage": {
     "title": "Find AI components on the web"
   },
