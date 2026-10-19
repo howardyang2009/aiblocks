@@ -10,6 +10,8 @@ import {
   type NudgeDb,
 } from "@/lib/commerce/seller";
 import type { Tables } from "@/types/database";
+import type Stripe from "stripe";
+import { APP_URL } from "@/lib/constants";
 
 function profile(overrides: Partial<Tables<"profiles">> = {}): Tables<"profiles"> {
   return {
@@ -77,7 +79,7 @@ describe("startOnboarding", () => {
       }),
     };
 
-    const result = await startOnboarding(stripe, supabase, profile());
+    const result = await startOnboarding(stripe, supabase, profile(), "de");
 
     expect(created).toBe(true);
     expect(result).toEqual({ ok: true, url: "https://connect.stripe.com/setup/acct_new" });
@@ -110,7 +112,7 @@ describe("startOnboarding", () => {
       }),
     };
 
-    const result = await startOnboarding(stripe, supabase, profile({ stripe_account_id: "acct_existing" }));
+    const result = await startOnboarding(stripe, supabase, profile({ stripe_account_id: "acct_existing" }), "de");
 
     expect(createCalled).toBe(false);
     expect(updateCalled).toBe(false); // no new account -> nothing to persist
@@ -127,16 +129,30 @@ describe("startOnboarding", () => {
     });
     const supabase = fakeOnboardingDb({});
 
-    const result = await startOnboarding(stripe, supabase, profile({ stripe_account_id: "acct_stale" }));
+    const result = await startOnboarding(stripe, supabase, profile({ stripe_account_id: "acct_stale" }), "de");
 
     expect(result).toEqual({ ok: true, url: "https://connect.stripe.com/setup/acct_recreated" });
+  });
+
+  it("returns the Seller to their Locale's dashboard", async () => {
+    let linkParams: Stripe.AccountLinkCreateParams | undefined;
+    const stripe = fakeOnboardingStripe({});
+    stripe.accountLinks.create = async (params) => {
+      linkParams = params;
+      return { url: "https://connect.stripe.com/setup/acct_existing" };
+    };
+
+    await startOnboarding(stripe, fakeOnboardingDb({}), profile({ stripe_account_id: "acct_existing" }), "zh-CN");
+
+    expect(linkParams?.refresh_url).toBe(`${APP_URL}/zh/dashboard/seller/stripe`);
+    expect(linkParams?.return_url).toBe(`${APP_URL}/zh/dashboard/seller/stripe?done=1`);
   });
 
   it("returns ok: false when saving the new account id fails", async () => {
     const stripe = fakeOnboardingStripe({});
     const supabase = fakeOnboardingDb({ updateError: { message: "db down" } });
 
-    const result = await startOnboarding(stripe, supabase, profile());
+    const result = await startOnboarding(stripe, supabase, profile(), "de");
 
     expect(result).toEqual({
       ok: false,

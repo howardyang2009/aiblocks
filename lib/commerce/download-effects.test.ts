@@ -26,15 +26,15 @@ describe("requestDownloadEffect", () => {
 });
 
 describe("requestCheckoutEffect", () => {
-  it("POSTs the component id and withdrawal waiver, and returns the Stripe URL", async () => {
+  it("POSTs the component id, withdrawal waiver and Locale, and returns the Stripe URL", async () => {
     const fetchImpl = fakeFetch({ ok: true, body: { url: "https://checkout.stripe.com/session1" } });
 
-    const result = await requestCheckoutEffect(fetchImpl, "comp1", true, messages);
+    const result = await requestCheckoutEffect(fetchImpl, "comp1", true, "zh-CN", messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ componentId: "comp1", withdrawalWaived: true }),
+      body: JSON.stringify({ componentId: "comp1", withdrawalWaived: true, locale: "zh-CN" }),
     });
     expect(result).toEqual({ ok: true, url: "https://checkout.stripe.com/session1" });
   });
@@ -47,7 +47,7 @@ describe("failure messages", () => {
 
   it.each([
     ["requestDownloadEffect", () => requestDownloadEffect(throwingFetch, "comp1", messages)],
-    ["requestCheckoutEffect", () => requestCheckoutEffect(throwingFetch, "comp1", true, messages)],
+    ["requestCheckoutEffect", () => requestCheckoutEffect(throwingFetch, "comp1", true, "de", messages)],
   ])("%s reports the caller's network message", async (_name, call) => {
     expect(await call()).toEqual({ ok: false, error: "NETWORK" });
   });

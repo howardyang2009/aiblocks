@@ -1,14 +1,19 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 // Stripe onboarding. Calls /api/stripe/connect to get a hosted onboarding
 // link, then redirects. Sellers must finish this before selling paid blocks.
 export default function StripeOnboardingPage() {
   const t = useTranslations("StripePage");
+  const locale = useLocale();
   async function connect() {
-    const res = await fetch("/api/stripe/connect", { method: "POST" });
+    const res = await fetch("/api/stripe/connect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale }),
+    });
     const { url } = await res.json();
     if (url) window.location.href = url;
   }

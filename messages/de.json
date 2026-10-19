@@ -133,6 +133,10 @@
       "checkoutNetwork": "Netzwerkfehler: Der Bezahlvorgang konnte nicht gestartet werden."
     }
   },
+  "Waiver": {
+    "checkbox": "Ich stimme ausdrücklich zu, dass mit der Ausführung des Vertrags vor Ablauf der Widerrufsfrist begonnen wird, und bestätige meine Kenntnis davon, dass ich dadurch mein 14-tägiges Widerrufsrecht verliere (siehe <terms>AGB</terms>). Die Vertragssprache ist Deutsch.",
+    "checkout": "Ich stimme den [AGB]({termsUrl}) zu. Ich stimme ausdrücklich zu, dass mit der Ausführung des Vertrags vor Ablauf der Widerrufsfrist begonnen wird, und bestätige meine Kenntnis davon, dass ich dadurch mein 14-tägiges Widerrufsrecht verliere. Die Vertragssprache ist Deutsch."
+  },
   "SellerPage": {
     "componentCount": "{count, plural, one {# Komponente} other {# Komponenten}}",
     "downloadCount": "{count, plural, one {# Download} other {# Downloads}}",

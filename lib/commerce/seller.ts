@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import type { Tables } from "@/types/database";
-import { APP_URL } from "@/lib/constants";
+import type { Locale } from "@/i18n/routing";
+import { localeUrl } from "@/i18n/locale-url";
 
 export type PayoutStatus = "ready" | "incomplete" | "none";
 
@@ -128,11 +129,13 @@ export type OnboardingDb = {
 };
 
 // Start (or resume) Stripe Connect onboarding for a seller and return the
-// hosted onboarding link.
+// hosted onboarding link. Stripe picks the onboarding language itself; only
+// the way back lands on the Seller's Locale (#60).
 export async function startOnboarding(
   stripe: OnboardingStripe,
   supabase: OnboardingDb,
-  profile: Tables<"profiles">
+  profile: Tables<"profiles">,
+  locale: Locale
 ): Promise<StartOnboardingResult> {
   let accountId: string | null = profile.stripe_account_id ?? null;
 
@@ -167,8 +170,8 @@ export async function startOnboarding(
 
   const link = await stripe.accountLinks.create({
     account: accountId,
-    refresh_url: `${APP_URL}/dashboard/seller/stripe`,
-    return_url: `${APP_URL}/dashboard/seller/stripe?done=1`,
+    refresh_url: localeUrl(locale, "/dashboard/seller/stripe"),
+    return_url: localeUrl(locale, "/dashboard/seller/stripe?done=1"),
     type: "account_onboarding",
   });
 

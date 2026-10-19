@@ -1,4 +1,5 @@
 import { runClientAction, type ClientActionMessages } from "@/lib/client-action";
+import type { Locale } from "@/i18n/routing";
 
 // The real effects behind DownloadFlowDeps (lib/commerce/download-flow.ts) —
 // built on the shared fetch/parse/catch in lib/client-action.ts instead of
@@ -25,6 +26,7 @@ export async function requestCheckoutEffect(
   fetchImpl: typeof fetch,
   componentId: string,
   withdrawalWaived: boolean,
+  locale: Locale,
   messages: ClientActionMessages
 ): Promise<DownloadEffectResult> {
   const result = await runClientAction<{ url: string }>(
@@ -33,7 +35,7 @@ export async function requestCheckoutEffect(
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ componentId, withdrawalWaived }),
+      body: JSON.stringify({ componentId, withdrawalWaived, locale }),
     },
     messages
   );

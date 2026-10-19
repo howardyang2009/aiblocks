@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow";
 import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
 import { Spinner } from "@/components/ui/spinner";
@@ -33,6 +33,8 @@ export function DownloadButton({
   signedIn: boolean;
 }) {
   const t = useTranslations("DownloadButton");
+  const tWaiver = useTranslations("Waiver");
+  const locale = useLocale();
   const errorMessage = useErrorMessage();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function DownloadButton({
             network: t("errors.downloadNetwork"),
           }),
         requestCheckout: (waived) =>
-          requestCheckoutEffect(fetch, componentId, waived, {
+          requestCheckoutEffect(fetch, componentId, waived, locale, {
             fallback: t("errors.checkoutFailed"),
             network: t("errors.checkoutNetwork"),
           }),
@@ -85,16 +87,14 @@ export function DownloadButton({
             }}
             className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-ink"
           />
-          {/* Waiver wording moves to the Buyer's Locale in #60, together with
-              the contract-language line and German wording matching the terms. */}
           <span>
-            I want immediate access to this digital component. I understand
-            this means I give up my 14-day EU/EEA right of withdrawal, per
-            the{" "}
-            <Link href="/terms#refunds" className="underline underline-offset-2 hover:text-ink" target="_blank" rel="noopener noreferrer">
-              Terms
-            </Link>
-            .
+            {tWaiver.rich("checkbox", {
+              terms: (chunks) => (
+                <Link href="/terms#refunds" className="underline underline-offset-2 hover:text-ink" target="_blank" rel="noopener noreferrer">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </span>
         </label>
       )}
