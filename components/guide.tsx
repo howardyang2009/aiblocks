@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export type GuideStep = { title: string; body?: string; img: string; alt: string };
 

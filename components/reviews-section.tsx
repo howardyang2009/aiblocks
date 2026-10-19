@@ -19,6 +19,7 @@ import {
   removeReplyEffect,
 } from "@/lib/engagement/reviews-effects";
 import { useRowMutation } from "@/lib/use-row-mutation";
+import { Link } from "@/i18n/navigation";
 
 export type { Review } from "@/lib/engagement/reviews-section-state";
 
@@ -232,7 +233,7 @@ export function ReviewsSection({
       {/* ---- State hints ---- */}
       {!signedIn && (
         <p className="mt-5 text-sm text-subtle">
-          <a href="/sign-in" className="text-accent hover:underline">Sign in</a> and download this
+          <Link href="/sign-in" className="text-accent hover:underline">Sign in</Link> and download this
           component to leave a verified review.
         </p>
       )}
@@ -258,12 +259,12 @@ export function ReviewsSection({
                 <UserAvatar user={r.reviewer} />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <a
+                    <Link
                       href={`/sellers/${r.reviewer.username}`}
                       className="text-sm font-medium hover:text-accent truncate"
                     >
                       {r.reviewer.display_name ?? `@${r.reviewer.username}`}
-                    </a>
+                    </Link>
                     <span className="font-mono text-[10px] rounded-[3px] border px-1 py-0.5 text-free border-free">
                       verified
                     </span>

@@ -1,0 +1,29 @@
+{
+  "Navbar": {
+    "byRheinWeg": "von RheinWeg",
+    "browse": "Durchsuchen",
+    "publish": "Veröffentlichen",
+    "myDownloads": "Meine Downloads",
+    "signIn": "Anmelden"
+  },
+  "Footer": {
+    "byRheinWeg": "von RheinWeg",
+    "tagline": "Offener Marktplatz für wiederverwendbare KI-Komponenten",
+    "sell": "Verkaufen",
+    "publishingGuide": "Anleitung zum Veröffentlichen",
+    "getPaid": "Mit Stripe bezahlt werden",
+    "aboutHeading": "Über uns",
+    "about": "Über AiBlocks",
+    "contact": "Kontakt",
+    "impressum": "Impressum",
+    "terms": "AGB",
+    "privacy": "Datenschutz"
+  },
+  "HomePage": {
+    "title": "KI-Komponenten im Web finden"
+  },
+  "NotFound": {
+    "title": "Diese Seite wurde nicht gefunden.",
+    "home": "Zurück zur Startseite"
+  }
+}

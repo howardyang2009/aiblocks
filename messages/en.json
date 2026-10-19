@@ -1,0 +1,29 @@
+{
+  "Navbar": {
+    "byRheinWeg": "by RheinWeg",
+    "browse": "Browse",
+    "publish": "Publish",
+    "myDownloads": "My downloads",
+    "signIn": "Sign in"
+  },
+  "Footer": {
+    "byRheinWeg": "by RheinWeg",
+    "tagline": "Open marketplace for reusable AI components",
+    "sell": "Sell",
+    "publishingGuide": "Publishing guide",
+    "getPaid": "Get paid with Stripe",
+    "aboutHeading": "About",
+    "about": "About",
+    "contact": "Contact",
+    "impressum": "Impressum",
+    "terms": "Terms",
+    "privacy": "Privacy"
+  },
+  "HomePage": {
+    "title": "Find AI components on the web"
+  },
+  "NotFound": {
+    "title": "This page could not be found.",
+    "home": "Back to the home page"
+  }
+}

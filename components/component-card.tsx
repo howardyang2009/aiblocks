@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { ComponentSummary } from "@/types/database";
 import { formatPrice, isFreeComponent } from "@/lib/utils";
 

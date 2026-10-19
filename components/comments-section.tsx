@@ -10,6 +10,7 @@ import { requiresDeleteConfirmation, type CommentNode } from "@/lib/engagement/c
 import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/engagement/comments-flow";
 import { postCommentEffect, removeCommentEffect } from "@/lib/engagement/comments-effects";
 import { useRowMutation } from "@/lib/use-row-mutation";
+import { Link } from "@/i18n/navigation";
 
 const COMPOSE = "compose";
 // A top-level comment's own id doubles as its delete action's row key; its
@@ -32,12 +33,12 @@ export type { CommentNode } from "@/lib/engagement/comments-section-state";
 function AuthorLine({ c }: { c: CommentNode }) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <a
+      <Link
         href={`/sellers/${c.author.username}`}
         className="text-sm font-medium hover:text-accent truncate"
       >
         {c.author.display_name ?? `@${c.author.username}`}
-      </a>
+      </Link>
       {c.isSeller && (
         <span className="font-mono text-[10px] rounded-[3px] border px-1 py-0.5 text-accent">
           seller
@@ -152,7 +153,7 @@ export function CommentsSection({
         </div>
       ) : (
         <p className="mt-5 text-sm text-subtle">
-          <a href="/sign-in" className="text-accent hover:underline">Sign in</a> to join the
+          <Link href="/sign-in" className="text-accent hover:underline">Sign in</Link> to join the
           discussion.
         </p>
       )}

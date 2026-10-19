@@ -1,0 +1,29 @@
+{
+  "Navbar": {
+    "byRheinWeg": "RheinWeg 出品",
+    "browse": "浏览",
+    "publish": "发布",
+    "myDownloads": "我的下载",
+    "signIn": "登录"
+  },
+  "Footer": {
+    "byRheinWeg": "RheinWeg 出品",
+    "tagline": "可复用 AI 组件的开放市场",
+    "sell": "出售",
+    "publishingGuide": "发布指南",
+    "getPaid": "通过 Stripe 收款",
+    "aboutHeading": "关于",
+    "about": "关于我们",
+    "contact": "联系我们",
+    "impressum": "Impressum",
+    "terms": "服务条款",
+    "privacy": "隐私政策"
+  },
+  "HomePage": {
+    "title": "在网络上查找 AI 组件"
+  },
+  "NotFound": {
+    "title": "找不到此页面。",
+    "home": "返回首页"
+  }
+}

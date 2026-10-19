@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow";
 import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
 import { Spinner } from "@/components/ui/spinner";
+import { Link } from "@/i18n/navigation";
 
 // Handles the three states of acquiring a component:
 //   free            -> POST /download, follow the signed URL
@@ -70,9 +71,9 @@ export function DownloadButton({
             I want immediate access to this digital component. I understand
             this means I give up my 14-day EU/EEA right of withdrawal, per
             the{" "}
-            <a href="/terms#refunds" className="underline underline-offset-2 hover:text-ink" target="_blank" rel="noopener noreferrer">
+            <Link href="/terms#refunds" className="underline underline-offset-2 hover:text-ink" target="_blank" rel="noopener noreferrer">
               Terms
-            </a>
+            </Link>
             .
           </span>
         </label>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
+import { getPathname } from "@/i18n/navigation";
 import type { ComponentType } from "@/lib/external-search/types";
 import { SearchTypeField } from "./SearchTypeField";
 import { Spinner } from "@/components/ui/spinner";
@@ -18,9 +20,10 @@ export function ExternalSearchForm({
   selectedType?: ComponentType;
 }) {
   const [submitting, setSubmitting] = useState(false);
+  const locale = useLocale();
 
   return (
-    <form action="/search" method="get" onSubmit={() => setSubmitting(true)}>
+    <form action={getPathname({ href: "/search", locale })} method="get" onSubmit={() => setSubmitting(true)}>
       <input
         type="search"
         name="q"

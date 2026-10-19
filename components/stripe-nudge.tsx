@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 
 // Shown across the dashboard when a seller has paid components but hasn't
 // finished Stripe onboarding. Hides itself on the Stripe page (where the

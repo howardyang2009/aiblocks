@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { Spinner } from "@/components/ui/spinner";
@@ -245,9 +245,9 @@ export function PublishForm() {
     <div className="mx-auto max-w-shell px-5 py-10">
       <p className="eyebrow">Seller</p>
       <h1 className="font-display font-bold text-3xl mt-2">Publish a component</h1>
-      <a href="/docs/seller/publish" className="inline-block mt-2 text-accent text-sm hover:underline">
+      <Link href="/docs/seller/publish" className="inline-block mt-2 text-accent text-sm hover:underline">
         New here? Read the publishing guide →
-      </a>
+      </Link>
 
       <IntakeForm
         mode="create"
