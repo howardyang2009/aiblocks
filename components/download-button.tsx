@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow";
 import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
 import { Spinner } from "@/components/ui/spinner";
@@ -30,6 +31,7 @@ export function DownloadButton({
   owned: boolean;
   signedIn: boolean;
 }) {
+  const t = useTranslations("DownloadButton");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [withdrawalWaived, setWithdrawalWaived] = useState(false);
@@ -41,10 +43,24 @@ export function DownloadButton({
     setMsg(null);
     const result = await runDownloadFlow(
       {
-        requestDownload: () => requestDownloadEffect(fetch, componentId),
-        requestCheckout: (waived) => requestCheckoutEffect(fetch, componentId, waived),
+        requestDownload: () =>
+          requestDownloadEffect(fetch, componentId, {
+            fallback: t("errors.downloadFailed"),
+            network: t("errors.downloadNetwork"),
+          }),
+        requestCheckout: (waived) =>
+          requestCheckoutEffect(fetch, componentId, waived, {
+            fallback: t("errors.checkoutFailed"),
+            network: t("errors.checkoutNetwork"),
+          }),
       },
-      { signedIn, priceCents, owned, withdrawalWaived }
+      {
+        signedIn,
+        priceCents,
+        owned,
+        withdrawalWaived,
+        messages: { signInRequired: t("errors.signInRequired"), consentRequired: t("errors.consentRequired") },
+      }
     );
     setBusy(false);
     if (result.status === "error") {
@@ -67,6 +83,8 @@ export function DownloadButton({
             }}
             className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-ink"
           />
+          {/* Waiver wording moves to the Buyer's Locale in #60, together with
+              the contract-language line and German wording matching the terms. */}
           <span>
             I want immediate access to this digital component. I understand
             this means I give up my 14-day EU/EEA right of withdrawal, per
@@ -88,8 +106,7 @@ export function DownloadButton({
             role="tooltip"
             className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max max-w-[260px] -translate-x-1/2 rounded-block bg-ink px-3 py-2 text-center text-xs leading-relaxed text-paper opacity-0 invisible transition-opacity duration-150 group-hover:visible group-hover:opacity-100"
           >
-            Please agree to and check the 14-day withdrawal policy checkbox
-            above to start the payment process.
+            {t("waiverTooltip")}
             <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-ink" />
           </div>
         )}
@@ -103,7 +120,7 @@ export function DownloadButton({
           className="w-full rounded-block bg-accent text-accent-ink py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5"
         >
           {busy && <Spinner className="h-4 w-4" />}
-          {busy ? "Working…" : label}
+          {busy ? t("working") : t(label)}
         </button>
       </div>
       {msg && <p className="text-sm text-accent mt-2">{msg}</p>}

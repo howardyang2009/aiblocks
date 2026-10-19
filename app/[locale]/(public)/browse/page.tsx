@@ -1,4 +1,4 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link, getPathname } from "@/i18n/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ComponentCard } from "@/components/component-card";
@@ -32,25 +32,22 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     tag,
   });
 
-  const sorts: [string, string][] = [
-    ["newest", "Newest"],
-    ["downloads", "Most downloaded"],
-    ["stars", "Most starred"],
-  ];
+  const t = await getTranslations("BrowsePage");
+  const sorts = ["newest", "downloads", "stars"] as const;
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10">
       <header className="flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <p className="eyebrow">Catalog</p>
-          <h1 className="font-display font-bold text-3xl mt-2">Browse components</h1>
+          <p className="eyebrow">{t("eyebrow")}</p>
+          <h1 className="font-display font-bold text-3xl mt-2">{t("title")}</h1>
         </div>
         <form action={getPathname({ href: "/browse", locale: await getLocale() })} className="w-full sm:w-72">
           <input
             type="search"
             name="q"
             defaultValue={q ?? ""}
-            placeholder="Search components…"
+            placeholder={t("searchPlaceholder")}
             className="w-full rounded-block border bg-surface px-4 py-2 text-sm focus:outline-none focus:border-accent"
           />
         </form>
@@ -59,7 +56,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
       {/* Active filters + sort */}
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
         <div className="flex gap-3 font-mono text-xs">
-          {sorts.map(([key, label]) => {
+          {sorts.map((key) => {
             const active = sort === key || (key === "newest" && !resolvedSearchParams.sort);
             return (
               <Link
@@ -67,7 +64,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
                 href={qs({ q, tag, sort: key })}
                 className={active ? "text-accent" : "text-subtle hover:text-ink"}
               >
-                {label}
+                {t(`sort.${key}`)}
               </Link>
             );
           })}
@@ -75,12 +72,12 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         {tag && (
           <span className="font-mono text-xs flex items-center gap-2">
             <span className="rounded-[3px] bg-accent text-accent-ink px-2 py-1">#{tag}</span>
-            <Link href={qs({ q, sort })} className="text-subtle hover:text-ink">clear</Link>
+            <Link href={qs({ q, sort })} className="text-subtle hover:text-ink">{t("clear")}</Link>
           </span>
         )}
         {q && (
           <span className="font-mono text-xs text-subtle">
-            results for “{q}” · <Link href={qs({ tag, sort })} className="hover:text-ink">clear</Link>
+            {t("resultsFor", { query: q })} · <Link href={qs({ tag, sort })} className="hover:text-ink">{t("clear")}</Link>
           </span>
         )}
       </div>
@@ -88,9 +85,9 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
       {/* Results */}
       {components.length === 0 ? (
         <div className="mt-16 text-center">
-          <p className="text-muted text-sm">No components match yet.</p>
+          <p className="text-muted text-sm">{t("empty")}</p>
           <Link href="/dashboard/seller/new" className="inline-block mt-4 text-accent text-sm underline">
-            Publish the first one →
+            {t("publishFirst")}
           </Link>
         </div>
       ) : (

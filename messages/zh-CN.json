@@ -30,7 +30,174 @@
     }
   },
   "HomePage": {
-    "title": "在网络上查找 AI 组件"
+    "title": "在网络上查找 AI 组件",
+    "eyebrow": "开放市场 · 多生态",
+    "heroTitle": "可复用的 AI 组件<br></br>即插即用",
+    "heroBody": "发布和下载 AI 构建块：提示词、技能、子代理、MCP 服务器、CLAUDE.md 配置、钩子，适用于 Claude、ChatGPT、Gemini 等。免费或付费，价格由你定，收益归你。",
+    "browseComponents": "浏览组件",
+    "publishYours": "发布你的组件",
+    "gridCaption": "可复用 AI 组件的开放市场",
+    "steps": {
+      "publish": {
+        "title": "发布",
+        "body": "上传 zip 文件，撰写 README，设置价格，或免费提供。"
+      },
+      "discover": {
+        "title": "发现",
+        "body": "买家按标签和生态搜索筛选，找到所需的构建块。"
+      },
+      "earn": {
+        "title": "赚取",
+        "body": "付费下载的收入直接进入你的 Stripe 账户。上线期间平台费为 0%。"
+      }
+    },
+    "latest": "最新组件",
+    "browseAll": "浏览全部 →"
+  },
+  "BrowsePage": {
+    "eyebrow": "目录",
+    "title": "浏览组件",
+    "searchPlaceholder": "搜索组件…",
+    "sort": {
+      "newest": "最新",
+      "downloads": "下载最多",
+      "stars": "收藏最多"
+    },
+    "clear": "清除",
+    "resultsFor": "“{query}”的结果",
+    "empty": "暂无匹配的组件。",
+    "publishFirst": "发布第一个 →"
+  },
+  "SearchPage": {
+    "noResults": "没有找到“{query}”的结果。请尝试其他类型或其他关键词。",
+    "fromAiBlocks": "来自 AiBlocks",
+    "browseAll": "浏览全部 →",
+    "fromWeb": "来自网络",
+    "allSources": "全部",
+    "sourceStatus": {
+      "disabled": "已停用",
+      "error": "出错"
+    }
+  },
+  "ExternalSearch": {
+    "placeholder": "描述你要找的技能、子代理、提示词或 MCP 服务器…",
+    "search": "搜索",
+    "searching": "搜索中…",
+    "typeLabel": "组件类型",
+    "types": {
+      "skill": "技能",
+      "subagent": "子代理",
+      "prompt": "提示词",
+      "mcp": "MCP 服务器",
+      "hook": "钩子",
+      "slash-command": "/命令",
+      "claude-plugin": "Claude 插件",
+      "claude-md": "CLAUDE.md",
+      "llm": "LLM"
+    },
+    "readMore": "展开",
+    "showLess": "收起",
+    "noResults": "外部来源没有结果。"
+  },
+  "ComponentPage": {
+    "eyebrow": "组件",
+    "by": "卖家 <seller>@{username}</seller>",
+    "noReadme": "未提供 README。",
+    "purchased": "已购买",
+    "edit": "编辑此组件",
+    "downloads": "下载",
+    "stars": "收藏",
+    "rating": "评分"
+  },
+  "DownloadButton": {
+    "download": "下载",
+    "buyToDownload": "购买后下载",
+    "working": "处理中…",
+    "waiverTooltip": "请先勾选上方的放弃 14 天撤回权复选框，再开始付款。",
+    "errors": {
+      "signInRequired": "请登录后继续。",
+      "consentRequired": "购买前请勾选上方的复选框进行确认。",
+      "downloadFailed": "无法准备下载。",
+      "downloadNetwork": "网络错误：无法准备下载。",
+      "checkoutFailed": "无法开始付款。",
+      "checkoutNetwork": "网络错误：无法开始付款。"
+    }
+  },
+  "SellerPage": {
+    "componentCount": "{count, plural, other {# 个组件}}",
+    "downloadCount": "{count, plural, other {# 次下载}}",
+    "starCount": "{count, plural, other {# 个收藏}}",
+    "published": "已发布",
+    "empty": "尚未发布任何组件。"
+  },
+  "StripeNudge": {
+    "message": "你有付费组件，但尚未连接收款。在你完成 Stripe 开通流程之前，买家无法购买这些组件。",
+    "connect": "连接 Stripe →"
+  },
+  "Engagement": {
+    "sellerBadge": "卖家",
+    "you": "（你）",
+    "reply": "回复",
+    "edit": "编辑",
+    "delete": "删除",
+    "cancel": "取消",
+    "posting": "发布中…",
+    "saving": "保存中…",
+    "saveChanges": "保存更改"
+  },
+  "Comments": {
+    "heading": "评论",
+    "count": "{count, plural, other {# 条评论}}",
+    "intro": "开放讨论：下载前可以先提问。任何人都可以评论。",
+    "placeholder": "提个问题或分享一个技巧",
+    "post": "发表评论",
+    "signInPrompt": "<signIn>登录</signIn>后参与讨论。",
+    "empty": "暂无评论。",
+    "replyPlaceholder": "回复 {name}",
+    "postReply": "发表回复",
+    "deleteConfirm": "{count, plural, other {删除此评论也会删除它的 # 条回复。是否继续？}}",
+    "errors": {
+      "required": "请输入评论内容。",
+      "postFailed": "评论发表失败，请重试。",
+      "postNetwork": "网络错误：评论未发表。",
+      "deleteFailed": "评论删除失败，请重试。",
+      "deleteNetwork": "网络错误：评论未删除。"
+    }
+  },
+  "Reviews": {
+    "heading": "评价",
+    "summary": "{average} · {count, plural, other {# 条已验证评价}}",
+    "intro": "每条评价都来自下载或购买过此组件的用户。",
+    "starsLabel": "{value} 星（满分 5 星）",
+    "ratingLabel": "评分",
+    "starOption": "{count, plural, other {# 星}}",
+    "select": "请选择",
+    "update": "更新你的评价",
+    "write": "撰写已验证评价",
+    "placeholder": "哪些有用、哪些不行、你是如何使用的（可选）",
+    "publish": "发布评价",
+    "signInPrompt": "<signIn>登录</signIn>并下载此组件后即可发表已验证评价。",
+    "downloadPrompt": "下载此组件后即可发表已验证评价。",
+    "sellerNote": "卖家不能评价自己的组件，但可以在下方回复每条评价。",
+    "empty": "暂无评价。",
+    "verified": "已验证",
+    "sellerResponse": "卖家回复",
+    "updateResponse": "更新你的回复",
+    "writeResponse": "以卖家身份回复：此回复公开可见",
+    "responsePlaceholder": "感谢评价者、回答对方的问题，或说明修复情况",
+    "publishResponse": "发布回复",
+    "errors": {
+      "ratingRequired": "请先选择星级评分。",
+      "replyRequired": "请输入回复内容。",
+      "saveFailed": "评价保存失败，请重试。",
+      "saveNetwork": "网络错误：评价未保存。",
+      "deleteFailed": "评价删除失败，请重试。",
+      "deleteNetwork": "网络错误：评价未删除。",
+      "replySaveFailed": "回复保存失败，请重试。",
+      "replySaveNetwork": "网络错误：回复未保存。",
+      "replyDeleteFailed": "回复删除失败，请重试。",
+      "replyDeleteNetwork": "网络错误：回复未删除。"
+    }
   },
   "NotFound": {
     "title": "找不到此页面。",

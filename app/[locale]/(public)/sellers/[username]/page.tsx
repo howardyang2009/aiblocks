@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/commerce/stripe";
@@ -25,6 +26,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
 
   // Owner-only Stripe nudge: only the signed-in owner of THIS profile sees it,
   // and only if they have paid components but payouts aren't connected yet.
+  const t = await getTranslations("SellerPage");
   const { userId } = await auth();
   const isOwner = !!userId && profile.clerk_user_id === userId;
   const showNudge = isOwner && await shouldShowStripeNudge(getStripe(), narrowDb<NudgeDb>(supabase), profile);
@@ -47,14 +49,14 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
         </header>
 
         <div className="mt-6 flex gap-8 font-mono text-xs text-subtle">
-          <span>{components.length} component{components.length === 1 ? "" : "s"}</span>
-          <span>{totalDownloads} downloads</span>
-          <span>{totalStars} stars</span>
+          <span>{t("componentCount", { count: components.length })}</span>
+          <span>{t("downloadCount", { count: totalDownloads })}</span>
+          <span>{t("starCount", { count: totalStars })}</span>
         </div>
 
-        <h2 className="font-display font-medium text-lg mt-10">Published</h2>
+        <h2 className="font-display font-medium text-lg mt-10">{t("published")}</h2>
         {components.length === 0 ? (
-          <p className="text-sm text-muted mt-4">No components published yet.</p>
+          <p className="text-sm text-muted mt-4">{t("empty")}</p>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {components.map((c) => <ComponentCard key={c.id} c={c} />)}

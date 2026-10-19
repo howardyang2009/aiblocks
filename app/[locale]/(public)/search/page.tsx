@@ -1,4 +1,4 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { narrowDb } from "@/lib/db-port";
@@ -34,6 +34,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const { results: externalResults, availableSources } = selectExternalResults(external, activeSource);
   const hasAnyResults = catalogMatches.length > 0 || externalResults.length > 0;
 
+  const t = await getTranslations("SearchPage");
+
   function sourceHref(source?: string) {
     const p = new URLSearchParams({ q: q as string, type });
     if (source) p.set("source", source);
@@ -48,19 +50,19 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
       {!hasAnyResults && (
         <p className="mt-10 text-center text-muted">
-          No results for &ldquo;{q}&rdquo;. Try a different type or a different query.
+          {t("noResults", { query: q })}
         </p>
       )}
 
       {catalogMatches.length > 0 && (
         <section className="mt-10">
           <div className="flex items-end justify-between">
-            <h2 className="font-display font-bold text-xl">From AiBlocks</h2>
+            <h2 className="font-display font-bold text-xl">{t("fromAiBlocks")}</h2>
             <Link
               href={`/browse?q=${encodeURIComponent(q)}&tag=${tag}`}
               className="font-mono text-xs text-accent hover:underline"
             >
-              browse all →
+              {t("browseAll")}
             </Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
@@ -73,11 +75,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
       <section className="mt-10">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <h2 className="font-display font-bold text-xl">From around the web</h2>
+          <h2 className="font-display font-bold text-xl">{t("fromWeb")}</h2>
           {availableSources.length > 0 && (
             <div className="flex flex-wrap gap-3 font-mono text-xs">
               <Link href={sourceHref()} className={!activeSource ? "text-accent" : "text-subtle hover:text-ink"}>
-                all
+                {t("allSources")}
               </Link>
               {availableSources.map((s) => (
                 <Link
@@ -95,7 +97,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-subtle">
           {external.sources.map((s) => (
             <span key={s.source}>
-              {s.source}: {s.status === "ok" ? s.count : s.status}
+              {s.source}: {s.status === "ok" ? s.count : t(`sourceStatus.${s.status}`)}
             </span>
           ))}
         </div>

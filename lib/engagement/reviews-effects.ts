@@ -1,4 +1,4 @@
-import { runClientAction } from "@/lib/client-action";
+import { runClientAction, type ClientActionMessages } from "@/lib/client-action";
 
 // The real effects behind the reviews-flow Deps types
 // (lib/engagement/reviews-flow.ts) — built on the shared fetch/parse/catch in
@@ -12,13 +12,14 @@ export async function submitReviewEffect(
   fetchImpl: typeof fetch,
   componentId: string,
   rating: number,
-  body: string
+  body: string,
+  messages: ClientActionMessages
 ): Promise<SubmitReviewEffectResult> {
   const result = await runClientAction<{ id: string; rating: number; body: string | null; created_at: string }>(
     fetchImpl,
     `/api/components/${componentId}/reviews`,
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rating, body }) },
-    { fallback: "Could not save the review. Try again.", network: "Network error — the review was not saved." }
+    messages
   );
   if (!result.ok) return result;
   return { ok: true, review: result.data };
@@ -28,13 +29,14 @@ export type RemoveReviewEffectResult = { ok: true } | { ok: false; error: string
 
 export async function removeReviewEffect(
   fetchImpl: typeof fetch,
-  componentId: string
+  componentId: string,
+  messages: ClientActionMessages
 ): Promise<RemoveReviewEffectResult> {
   const result = await runClientAction<object>(
     fetchImpl,
     `/api/components/${componentId}/reviews`,
     { method: "DELETE" },
-    { fallback: "Could not delete the review. Try again.", network: "Network error — the review was not deleted." }
+    messages
   );
   if (!result.ok) return result;
   return { ok: true };
@@ -47,13 +49,14 @@ export type SaveReplyEffectResult =
 export async function saveReplyEffect(
   fetchImpl: typeof fetch,
   reviewId: string,
-  body: string
+  body: string,
+  messages: ClientActionMessages
 ): Promise<SaveReplyEffectResult> {
   const result = await runClientAction<{ body: string; created_at: string }>(
     fetchImpl,
     `/api/reviews/${reviewId}/reply`,
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body }) },
-    { fallback: "Could not save the reply. Try again.", network: "Network error — the reply was not saved." }
+    messages
   );
   if (!result.ok) return result;
   return { ok: true, reply: result.data };
@@ -63,13 +66,14 @@ export type RemoveReplyEffectResult = { ok: true } | { ok: false; error: string 
 
 export async function removeReplyEffect(
   fetchImpl: typeof fetch,
-  reviewId: string
+  reviewId: string,
+  messages: ClientActionMessages
 ): Promise<RemoveReplyEffectResult> {
   const result = await runClientAction<object>(
     fetchImpl,
     `/api/reviews/${reviewId}/reply`,
     { method: "DELETE" },
-    { fallback: "Could not delete the reply. Try again.", network: "Network error — the reply was not deleted." }
+    messages
   );
   if (!result.ok) return result;
   return { ok: true };

@@ -30,7 +30,174 @@
     }
   },
   "HomePage": {
-    "title": "Find AI components on the web"
+    "title": "Find AI components on the web",
+    "eyebrow": "Open marketplace · multi-ecosystem",
+    "heroTitle": "Reusable AI components<br></br>ready to snap in",
+    "heroBody": "Publish and download AI building blocks — prompts, skills, subagents, MCP servers, CLAUDE.md configs, hooks — for Claude, ChatGPT, Gemini, and more. Free or paid, your price, your payout.",
+    "browseComponents": "Browse components",
+    "publishYours": "Publish yours",
+    "gridCaption": "Open marketplace for reusable AI components",
+    "steps": {
+      "publish": {
+        "title": "Publish",
+        "body": "Upload a zip, write a README, set a price — or make it free."
+      },
+      "discover": {
+        "title": "Discover",
+        "body": "Buyers search and filter by tag and ecosystem to find the block they need."
+      },
+      "earn": {
+        "title": "Earn",
+        "body": "Paid downloads go straight to your Stripe account. 0% platform fee at launch."
+      }
+    },
+    "latest": "Latest components",
+    "browseAll": "browse all →"
+  },
+  "BrowsePage": {
+    "eyebrow": "Catalog",
+    "title": "Browse components",
+    "searchPlaceholder": "Search components…",
+    "sort": {
+      "newest": "Newest",
+      "downloads": "Most downloaded",
+      "stars": "Most starred"
+    },
+    "clear": "clear",
+    "resultsFor": "results for “{query}”",
+    "empty": "No components match yet.",
+    "publishFirst": "Publish the first one →"
+  },
+  "SearchPage": {
+    "noResults": "No results for “{query}”. Try a different type or a different query.",
+    "fromAiBlocks": "From AiBlocks",
+    "browseAll": "browse all →",
+    "fromWeb": "From around the web",
+    "allSources": "all",
+    "sourceStatus": {
+      "disabled": "disabled",
+      "error": "error"
+    }
+  },
+  "ExternalSearch": {
+    "placeholder": "Describe the skill, subagent, prompt, or MCP server you're looking for…",
+    "search": "Search",
+    "searching": "Searching…",
+    "typeLabel": "Component type",
+    "types": {
+      "skill": "Skill",
+      "subagent": "Subagent",
+      "prompt": "Prompt",
+      "mcp": "MCP server",
+      "hook": "Hook",
+      "slash-command": "/command",
+      "claude-plugin": "Claude plugin",
+      "claude-md": "CLAUDE.md",
+      "llm": "LLM"
+    },
+    "readMore": "Read more",
+    "showLess": "Show less",
+    "noResults": "No results from external sources."
+  },
+  "ComponentPage": {
+    "eyebrow": "Component",
+    "by": "by <seller>@{username}</seller>",
+    "noReadme": "No README provided.",
+    "purchased": "purchased",
+    "edit": "Edit this component",
+    "downloads": "downloads",
+    "stars": "stars",
+    "rating": "rating"
+  },
+  "DownloadButton": {
+    "download": "Download",
+    "buyToDownload": "Buy to download",
+    "working": "Working…",
+    "waiverTooltip": "Please agree to and check the 14-day withdrawal policy checkbox above to start the payment process.",
+    "errors": {
+      "signInRequired": "Sign in to continue.",
+      "consentRequired": "Please check the box above to confirm before buying.",
+      "downloadFailed": "Could not prepare download.",
+      "downloadNetwork": "Network error — the download could not be prepared.",
+      "checkoutFailed": "Could not start checkout.",
+      "checkoutNetwork": "Network error — checkout could not be started."
+    }
+  },
+  "SellerPage": {
+    "componentCount": "{count, plural, one {# component} other {# components}}",
+    "downloadCount": "{count, plural, one {# download} other {# downloads}}",
+    "starCount": "{count, plural, one {# star} other {# stars}}",
+    "published": "Published",
+    "empty": "No components published yet."
+  },
+  "StripeNudge": {
+    "message": "You have paid components, but payouts aren’t connected yet — buyers can’t purchase them until you finish Stripe onboarding.",
+    "connect": "Connect Stripe →"
+  },
+  "Engagement": {
+    "sellerBadge": "seller",
+    "you": "(you)",
+    "reply": "reply",
+    "edit": "edit",
+    "delete": "delete",
+    "cancel": "Cancel",
+    "posting": "Posting…",
+    "saving": "Saving…",
+    "saveChanges": "Save changes"
+  },
+  "Comments": {
+    "heading": "Comments",
+    "count": "{count, plural, one {# comment} other {# comments}}",
+    "intro": "Open discussion — ask questions before you download. Anyone can comment.",
+    "placeholder": "Ask a question or share a tip",
+    "post": "Post comment",
+    "signInPrompt": "<signIn>Sign in</signIn> to join the discussion.",
+    "empty": "No comments yet.",
+    "replyPlaceholder": "Reply to {name}",
+    "postReply": "Post reply",
+    "deleteConfirm": "{count, plural, one {Deleting this comment also deletes its # reply. Continue?} other {Deleting this comment also deletes its # replies. Continue?}}",
+    "errors": {
+      "required": "Comment text is required.",
+      "postFailed": "Could not post the comment. Try again.",
+      "postNetwork": "Network error — the comment was not posted.",
+      "deleteFailed": "Could not delete the comment. Try again.",
+      "deleteNetwork": "Network error — the comment was not deleted."
+    }
+  },
+  "Reviews": {
+    "heading": "Reviews",
+    "summary": "{average} · {count, plural, one {# verified review} other {# verified reviews}}",
+    "intro": "Every review comes from someone who downloaded or purchased this component.",
+    "starsLabel": "{value} out of 5 stars",
+    "ratingLabel": "Rating",
+    "starOption": "{count, plural, one {# star} other {# stars}}",
+    "select": "select",
+    "update": "update your review",
+    "write": "write a verified review",
+    "placeholder": "What worked, what didn't, how you used it (optional)",
+    "publish": "Publish review",
+    "signInPrompt": "<signIn>Sign in</signIn> and download this component to leave a verified review.",
+    "downloadPrompt": "Download this component to leave a verified review.",
+    "sellerNote": "Sellers can't review their own components — but you can respond to each review below.",
+    "empty": "No reviews yet.",
+    "verified": "verified",
+    "sellerResponse": "seller reply",
+    "updateResponse": "update your reply",
+    "writeResponse": "reply as the seller — this is public",
+    "responsePlaceholder": "Thank the reviewer, answer their question, or explain a fix",
+    "publishResponse": "Publish reply",
+    "errors": {
+      "ratingRequired": "Pick a star rating first.",
+      "replyRequired": "Reply text is required.",
+      "saveFailed": "Could not save the review. Try again.",
+      "saveNetwork": "Network error — the review was not saved.",
+      "deleteFailed": "Could not delete the review. Try again.",
+      "deleteNetwork": "Network error — the review was not deleted.",
+      "replySaveFailed": "Could not save the reply. Try again.",
+      "replySaveNetwork": "Network error — the reply was not saved.",
+      "replyDeleteFailed": "Could not delete the reply. Try again.",
+      "replyDeleteNetwork": "Network error — the reply was not deleted."
+    }
   },
   "NotFound": {
     "title": "This page could not be found.",

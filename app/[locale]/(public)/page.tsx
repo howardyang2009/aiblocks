@@ -44,27 +44,23 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center py-16 lg:py-24 border-t">
         <div>
-          <p className="eyebrow">Open marketplace · multi-ecosystem</p>
+          <p className="eyebrow">{t("eyebrow")}</p>
           <h2 className="font-display font-bold tracking-tight text-3xl sm:text-4xl lg:text-5xl mt-4 leading-[1.05]">
-            Reusable AI components<br />ready to snap in
+            {t.rich("heroTitle", { br: () => <br /> })}
           </h2>
-          <p className="mt-5 text-muted max-w-md">
-            Publish and download AI building blocks — prompts, skills, subagents, MCP
-            servers, CLAUDE.md configs, hooks — for Claude, ChatGPT, Gemini, and more.
-            Free or paid, your price, your payout.
-          </p>
+          <p className="mt-5 text-muted max-w-md">{t("heroBody")}</p>
           <div className="mt-8 flex gap-3">
             <Link href="/browse" className="rounded-block bg-accent text-accent-ink px-5 py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors">
-              Browse components
+              {t("browseComponents")}
             </Link>
             <Link href="/dashboard/seller/new" className="rounded-block border px-5 py-2.5 text-sm font-medium hover:bg-surface transition-colors">
-              Publish yours
+              {t("publishYours")}
             </Link>
           </div>
           <div className="mt-8 flex flex-wrap gap-2">
-            {PRIMARY_TAGS.map((t) => (
-              <Link key={t} href={`/browse?tag=${t}`} className="font-mono text-xs rounded-[3px] border px-2 py-1 text-muted hover:border-accent">
-                {t}
+            {PRIMARY_TAGS.map((tag) => (
+              <Link key={tag} href={`/browse?tag=${tag}`} className="font-mono text-xs rounded-[3px] border px-2 py-1 text-muted hover:border-accent">
+                {tag}
               </Link>
             ))}
           </div>
@@ -72,22 +68,18 @@ export default async function HomePage() {
 
         <div className="rounded-block border bg-surface p-6">
           <AssemblyGrid />
-          <p className="eyebrow mt-5">Open marketplace for reusable AI components</p>
+          <p className="eyebrow mt-5">{t("gridCaption")}</p>
         </div>
       </section>
 
       {/* How it works — a real sequence, so numbering is earned */}
       <section className="py-12 border-t">
         <div className="grid sm:grid-cols-3 gap-8">
-          {[
-            ["01", "Publish", "Upload a zip, write a README, set a price — or make it free."],
-            ["02", "Discover", "Buyers search and filter by tag and ecosystem to find the block they need."],
-            ["03", "Earn", "Paid downloads go straight to your Stripe account. 0% platform fee at launch."],
-          ].map(([n, h, b]) => (
-            <div key={n}>
-              <span className="font-mono text-xs text-accent">{n}</span>
-              <h3 className="font-display font-medium text-lg mt-2">{h}</h3>
-              <p className="text-sm text-muted mt-1.5">{b}</p>
+          {(["publish", "discover", "earn"] as const).map((step, i) => (
+            <div key={step}>
+              <span className="font-mono text-xs text-accent">{String(i + 1).padStart(2, "0")}</span>
+              <h3 className="font-display font-medium text-lg mt-2">{t(`steps.${step}.title`)}</h3>
+              <p className="text-sm text-muted mt-1.5">{t(`steps.${step}.body`)}</p>
             </div>
           ))}
         </div>
@@ -97,8 +89,8 @@ export default async function HomePage() {
       {latest.length > 0 && (
         <section className="py-12 border-t">
           <div className="flex items-end justify-between">
-            <h2 className="font-display font-bold text-2xl">Latest components</h2>
-            <Link href="/browse" className="font-mono text-xs text-accent hover:underline">browse all →</Link>
+            <h2 className="font-display font-bold text-2xl">{t("latest")}</h2>
+            <Link href="/browse" className="font-mono text-xs text-accent hover:underline">{t("browseAll")}</Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
             {latest.map((c) => <ComponentCard key={c.id} c={c} />)}

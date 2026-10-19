@@ -30,7 +30,174 @@
     }
   },
   "HomePage": {
-    "title": "KI-Komponenten im Web finden"
+    "title": "KI-Komponenten im Web finden",
+    "eyebrow": "Offener Marktplatz · mehrere Ökosysteme",
+    "heroTitle": "Wiederverwendbare KI-Komponenten<br></br>sofort einsatzbereit",
+    "heroBody": "Veröffentlichen und laden Sie KI-Bausteine herunter: Prompts, Skills, Subagents, MCP-Server, CLAUDE.md-Konfigurationen, Hooks für Claude, ChatGPT, Gemini und mehr. Kostenlos oder kostenpflichtig, Ihr Preis, Ihre Auszahlung.",
+    "browseComponents": "Komponenten durchsuchen",
+    "publishYours": "Eigene veröffentlichen",
+    "gridCaption": "Offener Marktplatz für wiederverwendbare KI-Komponenten",
+    "steps": {
+      "publish": {
+        "title": "Veröffentlichen",
+        "body": "Laden Sie ein ZIP hoch, schreiben Sie eine README, legen Sie einen Preis fest oder bieten Sie die Komponente kostenlos an."
+      },
+      "discover": {
+        "title": "Entdecken",
+        "body": "Käufer suchen und filtern nach Tag und Ökosystem, um den passenden Baustein zu finden."
+      },
+      "earn": {
+        "title": "Verdienen",
+        "body": "Kostenpflichtige Downloads gehen direkt auf Ihr Stripe-Konto. 0 % Plattformgebühr zum Start."
+      }
+    },
+    "latest": "Neueste Komponenten",
+    "browseAll": "alle durchsuchen →"
+  },
+  "BrowsePage": {
+    "eyebrow": "Katalog",
+    "title": "Komponenten durchsuchen",
+    "searchPlaceholder": "Komponenten suchen…",
+    "sort": {
+      "newest": "Neueste",
+      "downloads": "Meiste Downloads",
+      "stars": "Meiste Sterne"
+    },
+    "clear": "zurücksetzen",
+    "resultsFor": "Ergebnisse für „{query}“",
+    "empty": "Noch keine passenden Komponenten.",
+    "publishFirst": "Veröffentlichen Sie die erste →"
+  },
+  "SearchPage": {
+    "noResults": "Keine Ergebnisse für „{query}“. Versuchen Sie einen anderen Typ oder eine andere Suchanfrage.",
+    "fromAiBlocks": "Von AiBlocks",
+    "browseAll": "alle durchsuchen →",
+    "fromWeb": "Aus dem Web",
+    "allSources": "alle",
+    "sourceStatus": {
+      "disabled": "deaktiviert",
+      "error": "Fehler"
+    }
+  },
+  "ExternalSearch": {
+    "placeholder": "Beschreiben Sie den Skill, Subagent, Prompt oder MCP-Server, den Sie suchen…",
+    "search": "Suchen",
+    "searching": "Suche läuft…",
+    "typeLabel": "Komponententyp",
+    "types": {
+      "skill": "Skill",
+      "subagent": "Subagent",
+      "prompt": "Prompt",
+      "mcp": "MCP-Server",
+      "hook": "Hook",
+      "slash-command": "/Befehl",
+      "claude-plugin": "Claude-Plugin",
+      "claude-md": "CLAUDE.md",
+      "llm": "LLM"
+    },
+    "readMore": "Weiterlesen",
+    "showLess": "Weniger anzeigen",
+    "noResults": "Keine Ergebnisse aus externen Quellen."
+  },
+  "ComponentPage": {
+    "eyebrow": "Komponente",
+    "by": "von <seller>@{username}</seller>",
+    "noReadme": "Keine README vorhanden.",
+    "purchased": "gekauft",
+    "edit": "Diese Komponente bearbeiten",
+    "downloads": "Downloads",
+    "stars": "Sterne",
+    "rating": "Wertung"
+  },
+  "DownloadButton": {
+    "download": "Herunterladen",
+    "buyToDownload": "Kaufen und herunterladen",
+    "working": "Wird bearbeitet…",
+    "waiverTooltip": "Bitte stimmen Sie dem Verzicht auf das 14-tägige Widerrufsrecht zu und setzen Sie oben das Häkchen, um den Bezahlvorgang zu starten.",
+    "errors": {
+      "signInRequired": "Melden Sie sich an, um fortzufahren.",
+      "consentRequired": "Bitte setzen Sie oben das Häkchen, um vor dem Kauf zu bestätigen.",
+      "downloadFailed": "Der Download konnte nicht vorbereitet werden.",
+      "downloadNetwork": "Netzwerkfehler: Der Download konnte nicht vorbereitet werden.",
+      "checkoutFailed": "Der Bezahlvorgang konnte nicht gestartet werden.",
+      "checkoutNetwork": "Netzwerkfehler: Der Bezahlvorgang konnte nicht gestartet werden."
+    }
+  },
+  "SellerPage": {
+    "componentCount": "{count, plural, one {# Komponente} other {# Komponenten}}",
+    "downloadCount": "{count, plural, one {# Download} other {# Downloads}}",
+    "starCount": "{count, plural, one {# Stern} other {# Sterne}}",
+    "published": "Veröffentlicht",
+    "empty": "Noch keine Komponenten veröffentlicht."
+  },
+  "StripeNudge": {
+    "message": "Sie haben kostenpflichtige Komponenten, aber noch keine Auszahlungen eingerichtet. Käufer können sie erst kaufen, wenn Sie das Stripe-Onboarding abgeschlossen haben.",
+    "connect": "Stripe verbinden →"
+  },
+  "Engagement": {
+    "sellerBadge": "Verkäufer",
+    "you": "(Sie)",
+    "reply": "antworten",
+    "edit": "bearbeiten",
+    "delete": "löschen",
+    "cancel": "Abbrechen",
+    "posting": "Wird gesendet…",
+    "saving": "Wird gespeichert…",
+    "saveChanges": "Änderungen speichern"
+  },
+  "Comments": {
+    "heading": "Kommentare",
+    "count": "{count, plural, one {# Kommentar} other {# Kommentare}}",
+    "intro": "Offene Diskussion: Stellen Sie Fragen, bevor Sie herunterladen. Jeder kann kommentieren.",
+    "placeholder": "Stellen Sie eine Frage oder teilen Sie einen Tipp",
+    "post": "Kommentar senden",
+    "signInPrompt": "<signIn>Melden Sie sich an</signIn>, um mitzudiskutieren.",
+    "empty": "Noch keine Kommentare.",
+    "replyPlaceholder": "Antwort an {name}",
+    "postReply": "Antwort senden",
+    "deleteConfirm": "{count, plural, one {Wenn Sie diesen Kommentar löschen, wird auch # Antwort gelöscht. Fortfahren?} other {Wenn Sie diesen Kommentar löschen, werden auch # Antworten gelöscht. Fortfahren?}}",
+    "errors": {
+      "required": "Bitte geben Sie einen Kommentar ein.",
+      "postFailed": "Der Kommentar konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+      "postNetwork": "Netzwerkfehler: Der Kommentar wurde nicht gesendet.",
+      "deleteFailed": "Der Kommentar konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+      "deleteNetwork": "Netzwerkfehler: Der Kommentar wurde nicht gelöscht."
+    }
+  },
+  "Reviews": {
+    "heading": "Bewertungen",
+    "summary": "{average} · {count, plural, one {# verifizierte Bewertung} other {# verifizierte Bewertungen}}",
+    "intro": "Jede Bewertung stammt von jemandem, der diese Komponente heruntergeladen oder gekauft hat.",
+    "starsLabel": "{value} von 5 Sternen",
+    "ratingLabel": "Sternewertung",
+    "starOption": "{count, plural, one {# Stern} other {# Sterne}}",
+    "select": "auswählen",
+    "update": "Ihre Bewertung aktualisieren",
+    "write": "verifizierte Bewertung schreiben",
+    "placeholder": "Was hat funktioniert, was nicht, wie haben Sie die Komponente eingesetzt (optional)",
+    "publish": "Bewertung veröffentlichen",
+    "signInPrompt": "<signIn>Melden Sie sich an</signIn> und laden Sie diese Komponente herunter, um eine verifizierte Bewertung abzugeben.",
+    "downloadPrompt": "Laden Sie diese Komponente herunter, um eine verifizierte Bewertung abzugeben.",
+    "sellerNote": "Verkäufer können ihre eigenen Komponenten nicht bewerten, aber Sie können unten auf jede Bewertung antworten.",
+    "empty": "Noch keine Bewertungen.",
+    "verified": "verifiziert",
+    "sellerResponse": "Antwort des Verkäufers",
+    "updateResponse": "Ihre Antwort aktualisieren",
+    "writeResponse": "als Verkäufer antworten: Diese Antwort ist öffentlich",
+    "responsePlaceholder": "Danken Sie für die Bewertung, beantworten Sie eine Frage oder erklären Sie eine Korrektur",
+    "publishResponse": "Antwort veröffentlichen",
+    "errors": {
+      "ratingRequired": "Bitte wählen Sie zuerst eine Sternebewertung.",
+      "replyRequired": "Bitte geben Sie eine Antwort ein.",
+      "saveFailed": "Die Bewertung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "saveNetwork": "Netzwerkfehler: Die Bewertung wurde nicht gespeichert.",
+      "deleteFailed": "Die Bewertung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+      "deleteNetwork": "Netzwerkfehler: Die Bewertung wurde nicht gelöscht.",
+      "replySaveFailed": "Die Antwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "replySaveNetwork": "Netzwerkfehler: Die Antwort wurde nicht gespeichert.",
+      "replyDeleteFailed": "Die Antwort konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+      "replyDeleteNetwork": "Netzwerkfehler: Die Antwort wurde nicht gelöscht."
+    }
   },
   "NotFound": {
     "title": "Diese Seite wurde nicht gefunden.",

@@ -35,10 +35,11 @@ export async function runPostCommentFlow(
     parentId: string | null;
     viewer: PublicProfile | null;
     isSeller: boolean;
+    messages: { required: string };
   }
 ): Promise<PostCommentResult> {
   const text = args.body.trim();
-  if (!text) return { status: "error", error: "Comment text is required." };
+  if (!text) return { status: "error", error: args.messages.required };
 
   const result = await deps.postComment(text, args.parentId);
   if (!result.ok) return { status: "error", error: result.error };

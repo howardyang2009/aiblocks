@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -20,21 +21,26 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
   if (!rows) notFound();
   const data = buildComponentView(rows, viewerProfile);
 
+  const t = await getTranslations("ComponentPage");
   const { component, seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10 grid lg:grid-cols-[1fr_320px] gap-10">
       <article>
-        <p className="eyebrow">Component</p>
+        <p className="eyebrow">{t("eyebrow")}</p>
         <h1 className="font-display font-bold text-3xl mt-2">{component.name}</h1>
         <p className="text-muted mt-2">{component.description}</p>
 
         {seller && (
           <p className="text-sm text-subtle mt-3">
-            by{" "}
-            <Link href={`/sellers/${seller.username}`} className="text-accent hover:underline">
-              @{seller.username}
-            </Link>
+            {t.rich("by", {
+              username: seller.username,
+              seller: (chunks) => (
+                <Link href={`/sellers/${seller.username}`} className="text-accent hover:underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         )}
 
@@ -53,7 +59,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
         <hr className="my-8" />
         {component.readme?.trim()
           ? <MarkdownRenderer source={component.readme} />
-          : <p className="text-sm text-subtle">No README provided.</p>}
+          : <p className="text-sm text-subtle">{t("noReadme")}</p>}
 
         <hr className="my-8" />
         <ReviewsSection
@@ -78,7 +84,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
       <aside className="lg:sticky lg:top-8 h-fit rounded-block border bg-surface p-5">
         <p className="font-mono text-2xl">{formatPrice(component.price_cents, component.currency)}</p>
         {owned && component.price_cents > 0 && (
-          <p className="font-mono text-[11px] text-free mt-1">purchased</p>
+          <p className="font-mono text-[11px] text-free mt-1">{t("purchased")}</p>
         )}
         <div className="mt-4">
           <DownloadButton
@@ -97,15 +103,15 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
               href={`/dashboard/seller/${component.id}/edit`}
               className="inline-flex items-center gap-1.5 rounded-block border px-3 py-1.5 text-sm text-muted hover:border-accent hover:text-accent transition-colors"
             >
-              <span aria-hidden>✎</span> Edit this component
+              <span aria-hidden>✎</span> {t("edit")}
             </Link>
           </div>
         )}
         <dl className="mt-6 space-y-2 font-mono text-xs text-subtle">
-          <div className="flex justify-between"><dt>downloads</dt><dd>{component.download_count}</dd></div>
-          <div className="flex justify-between"><dt>stars</dt><dd>{component.star_count}</dd></div>
+          <div className="flex justify-between"><dt>{t("downloads")}</dt><dd>{component.download_count}</dd></div>
+          <div className="flex justify-between"><dt>{t("stars")}</dt><dd>{component.star_count}</dd></div>
           <div className="flex justify-between">
-            <dt>rating</dt>
+            <dt>{t("rating")}</dt>
             <dd>
               {avgRating !== null ? (
                 <a href="#reviews" className="hover:text-accent">

@@ -11,11 +11,14 @@ function fakeFetch(response: { ok: boolean; body?: unknown }): typeof fetch {
   })) as unknown as typeof fetch;
 }
 
+// Stand-in for the translated copy the component passes in.
+const messages = { fallback: "FALLBACK", network: "NETWORK" };
+
 describe("requestDownloadEffect", () => {
   it("POSTs to the component's download route and returns the signed URL", async () => {
     const fetchImpl = fakeFetch({ ok: true, body: { url: "https://storage.example.com/signed1" } });
 
-    const result = await requestDownloadEffect(fetchImpl, "comp1");
+    const result = await requestDownloadEffect(fetchImpl, "comp1", messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/components/comp1/download", { method: "POST" });
     expect(result).toEqual({ ok: true, url: "https://storage.example.com/signed1" });
@@ -26,7 +29,7 @@ describe("requestCheckoutEffect", () => {
   it("POSTs the component id and withdrawal waiver, and returns the Stripe URL", async () => {
     const fetchImpl = fakeFetch({ ok: true, body: { url: "https://checkout.stripe.com/session1" } });
 
-    const result = await requestCheckoutEffect(fetchImpl, "comp1", true);
+    const result = await requestCheckoutEffect(fetchImpl, "comp1", true, messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/checkout", {
       method: "POST",
@@ -34,5 +37,18 @@ describe("requestCheckoutEffect", () => {
       body: JSON.stringify({ componentId: "comp1", withdrawalWaived: true }),
     });
     expect(result).toEqual({ ok: true, url: "https://checkout.stripe.com/session1" });
+  });
+});
+
+describe("failure messages", () => {
+  const throwingFetch = vi.fn(async () => {
+    throw new Error("network down");
+  }) as unknown as typeof fetch;
+
+  it.each([
+    ["requestDownloadEffect", () => requestDownloadEffect(throwingFetch, "comp1", messages)],
+    ["requestCheckoutEffect", () => requestCheckoutEffect(throwingFetch, "comp1", true, messages)],
+  ])("%s reports the caller's network message", async (_name, call) => {
+    expect(await call()).toEqual({ ok: false, error: "NETWORK" });
   });
 });
