@@ -202,5 +202,78 @@
   "NotFound": {
     "title": "找不到此页面。",
     "home": "返回首页"
+  },
+  "DownloadsPage": {
+    "eyebrow": "你的资源库",
+    "title": "我的下载",
+    "intro": "你获取过的所有组件都在这里，打开任意一个即可随时重新下载。",
+    "empty": "这里还没有内容。",
+    "browse": "浏览组件 →"
+  },
+  "PublishPage": {
+    "eyebrow": "卖家",
+    "title": "发布组件",
+    "guide": "第一次发布？阅读发布指南 →",
+    "publish": "发布",
+    "publishing": "发布中…",
+    "publishedEyebrow": "已发布",
+    "publishedTitle": "{name} 已上线",
+    "publishedBody": "你的组件已加入目录。",
+    "view": "查看组件",
+    "publishAnother": "再发布一个"
+  },
+  "EditPage": {
+    "eyebrow": "卖家",
+    "title": "编辑组件",
+    "intro": "直接在此更新信息。上传新的 zip 是可选的。<view>查看你的组件</view>。",
+    "save": "保存更改",
+    "saving": "保存中…"
+  },
+  "StripePage": {
+    "eyebrow": "卖家",
+    "title": "连接收款",
+    "body": "AiBlocks 将付款直接转入你的 Stripe 账户，平台费为 0%。只需连接一次，即可开始出售付费组件。",
+    "guide": "阅读分步接入指南 →",
+    "connect": "连接 Stripe"
+  },
+  "ComponentForm": {
+    "name": "名称",
+    "namePlaceholder": "邮件分拣智能体",
+    "description": "简短描述",
+    "descriptionPlaceholder": "买家在卡片上看到的一行说明",
+    "ecosystems": "生态（用逗号分隔）",
+    "ecosystemsPlaceholder": "claude, gpt, gemini",
+    "tags": "标签（用逗号分隔）",
+    "tagsPlaceholder": "agent, email, productivity",
+    "price": "价格（美元，0 表示免费）",
+    "zip": "组件 zip（最大 10MB）",
+    "replaceZip": "替换 zip（可选，留空则保留当前文件）",
+    "currentZip": "当前：{file}",
+    "readme": "README（Markdown）",
+    "defaultReadme": "# 概述\n\n它能做什么，如何安装…",
+    "uploading": "上传中…",
+    "preview": "预览",
+    "previewEmpty": "README 预览将显示在这里。",
+    "cancel": "取消",
+    "errors": {
+      "nameTooShort": "名称至少需要 3 个字符。",
+      "descriptionTooShort": "请添加简短描述（至少 10 个字符）。",
+      "priceInvalid": "价格必须为 0 或正数。",
+      "zipRequired": "请选择要上传的 zip 文件。",
+      "zipTooLarge": "zip 超过 10MB 上限。",
+      "uploadPathMismatch": "上传路径不匹配，请重新上传 zip。",
+      "uploadStartFailed": "无法开始上传。",
+      "uploadStartNetwork": "网络错误，无法开始上传。",
+      "uploadFailed": "上传失败，请重试。",
+      "uploadNotFound": "找不到已上传的文件，请重试。",
+      "publishFailed": "无法发布。",
+      "publishNetwork": "网络错误，组件未发布。",
+      "publishedTagsFailed": "组件已发布，但其标签未能保存。",
+      "saveFailed": "无法保存更改。",
+      "saveNetwork": "网络错误，更改未保存。",
+      "updatedTagsFailed": "组件已更新，但其标签未能保存。",
+      "notFound": "未找到该组件。",
+      "notOwner": "你只能编辑自己的组件。"
+    }
   }
 }

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link, getPathname, redirect } from "@/i18n/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/identity/viewer";
@@ -37,18 +37,21 @@ export default async function EditComponentPage({ params }: { params: Promise<{ 
   if (!isOwnedBySeller(component, profile.id)) notFound();
 
   // Load the current tag names so the form can show them pre-filled.
+  const t = await getTranslations("EditPage");
   const tagNames = await getComponentTagNames(narrowDb<ComponentTagsDb>(supabase), component.id);
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10">
-      <p className="eyebrow">Seller</p>
-      <h1 className="font-display font-bold text-3xl mt-2">Edit component</h1>
+      <p className="eyebrow">{t("eyebrow")}</p>
+      <h1 className="font-display font-bold text-3xl mt-2">{t("title")}</h1>
       <p className="text-muted text-sm mt-2">
-        Update details in place. Uploading a new zip is optional —{" "}
-        <Link href={`/components/${component.id}`} className="text-accent hover:underline">
-          view your component
-        </Link>
-        .
+        {t.rich("intro", {
+          view: (chunks) => (
+            <Link href={`/components/${component.id}`} className="text-accent hover:underline">
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
 
       <EditForm

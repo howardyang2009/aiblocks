@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ComponentCard } from "@/components/component-card";
@@ -13,6 +14,7 @@ import type { ComponentSummary } from "@/types/database";
 export const dynamic = "force-dynamic";
 
 export default async function MyDownloadsPage() {
+  const t = await getTranslations("DownloadsPage");
   const { profile } = await getViewer();
   const supabase = createServiceClient();
 
@@ -27,17 +29,15 @@ export default async function MyDownloadsPage() {
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10">
-      <p className="eyebrow">Your library</p>
-      <h1 className="font-display font-bold text-3xl mt-2">My downloads</h1>
-      <p className="text-muted text-sm mt-2">
-        Everything you've acquired — open one to re-download anytime.
-      </p>
+      <p className="eyebrow">{t("eyebrow")}</p>
+      <h1 className="font-display font-bold text-3xl mt-2">{t("title")}</h1>
+      <p className="text-muted text-sm mt-2">{t("intro")}</p>
 
       {components.length === 0 ? (
         <div className="mt-16 text-center">
-          <p className="text-sm text-muted">Nothing here yet.</p>
+          <p className="text-sm text-muted">{t("empty")}</p>
           <Link href="/browse" className="inline-block mt-4 text-accent text-sm underline">
-            Browse components →
+            {t("browse")}
           </Link>
         </div>
       ) : (

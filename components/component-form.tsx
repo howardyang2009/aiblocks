@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
@@ -18,6 +19,7 @@ import {
   createComponentEffect,
   updateComponentEffect,
 } from "@/lib/commerce/component-form-effects";
+import { isComponentWriteError } from "@/lib/commerce/component-write-errors";
 
 // PublishForm and EditForm — the two things a Seller does to submit a
 // Component — share one interactive form (IntakeForm) and one upload
@@ -40,15 +42,6 @@ export type ComponentFormInitial = {
   currentZipPath: string | null;
 };
 
-const BLANK_INITIAL: ComponentFormInitial = {
-  name: "",
-  description: "",
-  readme: "# Overview\n\nWhat it does, how to install…",
-  ecosystems: "",
-  tags: "",
-  price: "0",
-  currentZipPath: null,
-};
 
 // Real wiring: injects the true `fetch`/browser Supabase client into the
 // tested effect functions, rather than each flow's deps constructing them
@@ -80,6 +73,7 @@ function IntakeForm({
   onDone: (id: string, name: string) => void;
   onCancel?: () => void;
 }) {
+  const t = useTranslations("ComponentForm");
   const [name, setName] = useState(initial.name);
   const [description, setDescription] = useState(initial.description);
   const [ecosystems, setEcosystems] = useState(initial.ecosystems);
@@ -105,7 +99,7 @@ function IntakeForm({
 
     if (result.status === "error") {
       setStatus("error");
-      setError(result.error);
+      setError(isComponentWriteError(result.error) ? t(`errors.${result.error}`) : result.error);
       return;
     }
 
@@ -114,36 +108,36 @@ function IntakeForm({
   }
 
   const buttonLabel =
-    status === "uploading" ? "Uploading…" : status === "saving" ? labels.saving : labels.idle;
+    status === "uploading" ? t("uploading") : status === "saving" ? labels.saving : labels.idle;
 
   const zipFieldLabel =
-    mode === "create" ? "Component zip (max 10MB)" : "Replace zip (optional — leave empty to keep current)";
+    mode === "create" ? t("zip") : t("replaceZip");
 
   return (
     <div className="grid lg:grid-cols-2 gap-8 mt-8">
       {/* ---- Form ---- */}
       <div className="space-y-5">
-        <Field label="Name">
+        <Field label={t("name")}>
           <input className="field" value={name} onChange={(e) => setName(e.target.value)}
-            placeholder="Email Triage Agent" />
+            placeholder={t("namePlaceholder")} />
         </Field>
 
-        <Field label="Short description">
+        <Field label={t("description")}>
           <input className="field" value={description} onChange={(e) => setDescription(e.target.value)}
-            placeholder="One line buyers see on the card" />
+            placeholder={t("descriptionPlaceholder")} />
         </Field>
 
-        <Field label="Ecosystems (comma separated)">
+        <Field label={t("ecosystems")}>
           <input className="field" value={ecosystems} onChange={(e) => setEcosystems(e.target.value)}
-            placeholder="claude, gpt, gemini" />
+            placeholder={t("ecosystemsPlaceholder")} />
         </Field>
 
-        <Field label="Tags (comma separated)">
+        <Field label={t("tags")}>
           <input className="field" value={tags} onChange={(e) => setTags(e.target.value)}
-            placeholder="agent, email, productivity" />
+            placeholder={t("tagsPlaceholder")} />
         </Field>
 
-        <Field label="Price in USD (0 for free)">
+        <Field label={t("price")}>
           <input className="field" inputMode="decimal" value={price}
             onChange={(e) => setPrice(e.target.value)} placeholder="0" />
         </Field>
@@ -157,12 +151,12 @@ function IntakeForm({
             </p>
           ) : initial.currentZipPath ? (
             <p className="font-mono text-xs text-subtle mt-1">
-              Current: {initial.currentZipPath.split("/").pop()}
+              {t("currentZip", { file: initial.currentZipPath.split("/").pop() ?? "" })}
             </p>
           ) : null}
         </Field>
 
-        <Field label="README (markdown)">
+        <Field label={t("readme")}>
           <textarea className="field min-h-48 font-mono text-[13px]" value={readme}
             onChange={(e) => setReadme(e.target.value)} />
         </Field>
@@ -181,7 +175,7 @@ function IntakeForm({
               disabled={busy}
               className="rounded-block border px-5 py-2.5 text-sm font-medium hover:bg-surface transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t("cancel")}
             </button>
           )}
         </div>
@@ -189,12 +183,12 @@ function IntakeForm({
 
       {/* ---- Live README preview ---- */}
       <div className="lg:sticky lg:top-8 h-fit">
-        <p className="eyebrow mb-2">Preview</p>
+        <p className="eyebrow mb-2">{t("preview")}</p>
         <div className="rounded-block border bg-surface p-5 min-h-48">
           {readme.trim() ? (
             <MarkdownRenderer source={readme} />
           ) : (
-            <p className="text-sm text-subtle">Your README preview appears here.</p>
+            <p className="text-sm text-subtle">{t("previewEmpty")}</p>
           )}
         </div>
       </div>
@@ -214,27 +208,29 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export function PublishForm() {
+  const t = useTranslations("PublishPage");
+  const tForm = useTranslations("ComponentForm");
   const router = useRouter();
   const [published, setPublished] = useState<{ id: string; name: string } | null>(null);
 
   if (published) {
     return (
       <div className="mx-auto max-w-2xl px-5 py-20 text-center">
-        <p className="eyebrow">Published</p>
-        <h1 className="font-display font-bold text-3xl mt-2">{published.name} is live</h1>
-        <p className="text-muted text-sm mt-3">Your component is now in the catalog.</p>
+        <p className="eyebrow">{t("publishedEyebrow")}</p>
+        <h1 className="font-display font-bold text-3xl mt-2">{t("publishedTitle", { name: published.name })}</h1>
+        <p className="text-muted text-sm mt-3">{t("publishedBody")}</p>
         <div className="mt-8 flex gap-3 justify-center">
           <button
             onClick={() => router.push(`/components/${published.id}`)}
             className="rounded-block bg-accent text-accent-ink px-5 py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors"
           >
-            View component
+            {t("view")}
           </button>
           <button
             onClick={() => setPublished(null)}
             className="rounded-block border px-5 py-2.5 text-sm font-medium hover:bg-surface transition-colors"
           >
-            Publish another
+            {t("publishAnother")}
           </button>
         </div>
       </div>
@@ -243,16 +239,24 @@ export function PublishForm() {
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10">
-      <p className="eyebrow">Seller</p>
-      <h1 className="font-display font-bold text-3xl mt-2">Publish a component</h1>
+      <p className="eyebrow">{t("eyebrow")}</p>
+      <h1 className="font-display font-bold text-3xl mt-2">{t("title")}</h1>
       <Link href="/docs/seller/publish" className="inline-block mt-2 text-accent text-sm hover:underline">
-        New here? Read the publishing guide →
+        {t("guide")}
       </Link>
 
       <IntakeForm
         mode="create"
-        initial={BLANK_INITIAL}
-        labels={{ idle: "Publish", saving: "Publishing…" }}
+        initial={{
+          name: "",
+          description: "",
+          readme: tForm("defaultReadme"),
+          ecosystems: "",
+          tags: "",
+          price: "0",
+          currentZipPath: null,
+        }}
+        labels={{ idle: t("publish"), saving: t("publishing") }}
         onDone={(id, name) => setPublished({ id, name })}
       />
     </div>
@@ -266,6 +270,7 @@ export function EditForm({
   componentId: string;
   initial: ComponentFormInitial;
 }) {
+  const t = useTranslations("EditPage");
   const router = useRouter();
 
   return (
@@ -273,7 +278,7 @@ export function EditForm({
       mode="update"
       componentId={componentId}
       initial={initial}
-      labels={{ idle: "Save changes", saving: "Saving…" }}
+      labels={{ idle: t("save"), saving: t("saving") }}
       onDone={(id) => {
         // Refresh so the detail page reflects the new values, then send the
         // seller to their live listing.

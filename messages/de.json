@@ -202,5 +202,78 @@
   "NotFound": {
     "title": "Diese Seite wurde nicht gefunden.",
     "home": "Zurück zur Startseite"
+  },
+  "DownloadsPage": {
+    "eyebrow": "Ihre Bibliothek",
+    "title": "Meine Downloads",
+    "intro": "Alles, was Sie erworben haben. Öffnen Sie eine Komponente, um sie jederzeit erneut herunterzuladen.",
+    "empty": "Hier ist noch nichts.",
+    "browse": "Komponenten durchsuchen →"
+  },
+  "PublishPage": {
+    "eyebrow": "Verkäufer",
+    "title": "Komponente veröffentlichen",
+    "guide": "Neu hier? Lesen Sie die Anleitung zum Veröffentlichen →",
+    "publish": "Veröffentlichen",
+    "publishing": "Wird veröffentlicht…",
+    "publishedEyebrow": "Veröffentlicht",
+    "publishedTitle": "{name} ist online",
+    "publishedBody": "Ihre Komponente ist jetzt im Katalog.",
+    "view": "Komponente ansehen",
+    "publishAnother": "Weitere veröffentlichen"
+  },
+  "EditPage": {
+    "eyebrow": "Verkäufer",
+    "title": "Komponente bearbeiten",
+    "intro": "Aktualisieren Sie die Angaben direkt hier. Ein neues ZIP hochzuladen ist optional. <view>Ihre Komponente ansehen</view>.",
+    "save": "Änderungen speichern",
+    "saving": "Wird gespeichert…"
+  },
+  "StripePage": {
+    "eyebrow": "Verkäufer",
+    "title": "Auszahlungen verbinden",
+    "body": "AiBlocks leitet Zahlungen direkt auf Ihr Stripe-Konto weiter, mit 0 % Plattformgebühr. Verbinden Sie es einmal, um kostenpflichtige Komponenten zu verkaufen.",
+    "guide": "Schritt-für-Schritt-Anleitung zur Einrichtung lesen →",
+    "connect": "Mit Stripe verbinden"
+  },
+  "ComponentForm": {
+    "name": "Name",
+    "namePlaceholder": "E-Mail-Triage-Agent",
+    "description": "Kurzbeschreibung",
+    "descriptionPlaceholder": "Eine Zeile, die Käufer auf der Karte sehen",
+    "ecosystems": "Ökosysteme (durch Kommas getrennt)",
+    "ecosystemsPlaceholder": "claude, gpt, gemini",
+    "tags": "Tags (durch Kommas getrennt)",
+    "tagsPlaceholder": "agent, email, productivity",
+    "price": "Preis in USD (0 für kostenlos)",
+    "zip": "Komponenten-ZIP (max. 10 MB)",
+    "replaceZip": "ZIP ersetzen (optional, leer lassen, um das aktuelle zu behalten)",
+    "currentZip": "Aktuell: {file}",
+    "readme": "README (Markdown)",
+    "defaultReadme": "# Überblick\n\nWas sie tut, wie man sie installiert…",
+    "uploading": "Wird hochgeladen…",
+    "preview": "Vorschau",
+    "previewEmpty": "Hier erscheint die Vorschau Ihrer README.",
+    "cancel": "Abbrechen",
+    "errors": {
+      "nameTooShort": "Der Name muss mindestens 3 Zeichen lang sein.",
+      "descriptionTooShort": "Fügen Sie eine Kurzbeschreibung hinzu (mindestens 10 Zeichen).",
+      "priceInvalid": "Der Preis muss 0 oder eine positive Zahl sein.",
+      "zipRequired": "Wählen Sie eine ZIP-Datei zum Hochladen aus.",
+      "zipTooLarge": "Das ZIP überschreitet das Limit von 10 MB.",
+      "uploadPathMismatch": "Der Upload-Pfad stimmt nicht. Laden Sie das ZIP erneut hoch.",
+      "uploadStartFailed": "Der Upload konnte nicht gestartet werden.",
+      "uploadStartNetwork": "Netzwerkfehler: Der Upload konnte nicht gestartet werden.",
+      "uploadFailed": "Der Upload ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "uploadNotFound": "Die hochgeladene Datei wurde nicht gefunden. Versuchen Sie es erneut.",
+      "publishFailed": "Die Komponente konnte nicht veröffentlicht werden.",
+      "publishNetwork": "Netzwerkfehler: Die Komponente wurde nicht veröffentlicht.",
+      "publishedTagsFailed": "Die Komponente wurde veröffentlicht, aber ihre Tags konnten nicht gespeichert werden.",
+      "saveFailed": "Die Änderungen konnten nicht gespeichert werden.",
+      "saveNetwork": "Netzwerkfehler: Die Änderungen wurden nicht gespeichert.",
+      "updatedTagsFailed": "Die Komponente wurde aktualisiert, aber ihre Tags konnten nicht gespeichert werden.",
+      "notFound": "Komponente nicht gefunden.",
+      "notOwner": "Sie können nur Ihre eigenen Komponenten bearbeiten."
+    }
   }
 }

@@ -29,9 +29,9 @@ export function validatePublishForm(fields: PublishFormFields): PublishFormValid
   const descriptionError = validateComponentDescription(fields.description);
   if (descriptionError) return { ok: false, error: descriptionError };
 
-  if (!fields.file) return { ok: false, error: "Choose a zip file to upload." };
+  if (!fields.file) return { ok: false, error: "zipRequired" };
   if (exceedsZipSizeLimit(fields.file.size)) {
-    return { ok: false, error: "Zip exceeds the 10MB limit." };
+    return { ok: false, error: "zipTooLarge" };
   }
 
   const price = parseComponentPrice(fields.price);
@@ -67,7 +67,7 @@ export function validateEditForm(fields: EditFormFields): EditFormValidation {
   if (descriptionError) return { ok: false, error: descriptionError };
 
   if (fields.file && exceedsZipSizeLimit(fields.file.size)) {
-    return { ok: false, error: "Zip exceeds the 10MB limit." };
+    return { ok: false, error: "zipTooLarge" };
   }
 
   const price = parseComponentPrice(fields.price);

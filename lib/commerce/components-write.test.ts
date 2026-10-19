@@ -42,32 +42,32 @@ describe("parsePublishInput", () => {
 
   it("rejects a name under 3 characters", () => {
     const result = parsePublishInput({ ...validPublishBody, name: "ab" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 400, error: "Name must be at least 3 characters." });
+    expect(result).toEqual({ ok: false, status: 400, error: "nameTooShort" });
   });
 
   it("rejects a description under 10 characters", () => {
     const result = parsePublishInput({ ...validPublishBody, description: "too short" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 400, error: "Add a short description (10+ characters)." });
+    expect(result).toEqual({ ok: false, status: 400, error: "descriptionTooShort" });
   });
 
   it("rejects a missing zip path", () => {
     const result = parsePublishInput({ ...validPublishBody, zipPath: "" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 400, error: "Upload a zip before publishing." });
+    expect(result).toEqual({ ok: false, status: 400, error: "zipRequired" });
   });
 
   it("rejects a zip path outside the seller's namespace", () => {
     const result = parsePublishInput({ ...validPublishBody, zipPath: "someone-else/widget.zip" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 403, error: "Upload path mismatch." });
+    expect(result).toEqual({ ok: false, status: 403, error: "uploadPathMismatch" });
   });
 
   it("rejects a negative price", () => {
     const result = parsePublishInput({ ...validPublishBody, price: "-5" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 400, error: "Price must be 0 or a positive number." });
+    expect(result).toEqual({ ok: false, status: 400, error: "priceInvalid" });
   });
 
   it("rejects a non-numeric price", () => {
     const result = parsePublishInput({ ...validPublishBody, price: "free plz" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 400, error: "Price must be 0 or a positive number." });
+    expect(result).toEqual({ ok: false, status: 400, error: "priceInvalid" });
   });
 
   it("rounds dollars to integer cents", () => {
@@ -117,22 +117,22 @@ describe("parseEditInput", () => {
 
   it("rejects a name under 3 characters", () => {
     const result = parseEditInput({ ...validEditBody, name: "ab" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 400, error: "Name must be at least 3 characters." });
+    expect(result).toEqual({ ok: false, status: 400, error: "nameTooShort" });
   });
 
   it("rejects a description under 10 characters", () => {
     const result = parseEditInput({ ...validEditBody, description: "too short" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 400, error: "Add a short description (10+ characters)." });
+    expect(result).toEqual({ ok: false, status: 400, error: "descriptionTooShort" });
   });
 
   it("rejects a negative price", () => {
     const result = parseEditInput({ ...validEditBody, price: "-5" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 400, error: "Price must be 0 or a positive number." });
+    expect(result).toEqual({ ok: false, status: 400, error: "priceInvalid" });
   });
 
   it("rejects a zip path outside the seller's namespace", () => {
     const result = parseEditInput({ ...validEditBody, zipPath: "someone-else/widget.zip" }, "seller1");
-    expect(result).toEqual({ ok: false, status: 403, error: "Upload path mismatch." });
+    expect(result).toEqual({ ok: false, status: 403, error: "uploadPathMismatch" });
   });
 
   it("rounds dollars to integer cents", () => {
@@ -167,7 +167,7 @@ describe("createUploadUrl", () => {
     const db = fakeUploadUrlDb({ result: { data: null, error: { message: "storage down" } } });
     const result = await createUploadUrl(db, "component-zips", "seller1");
 
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not create upload URL." });
+    expect(result).toEqual({ ok: false, status: 500, error: "uploadStartFailed" });
   });
 });
 
@@ -191,7 +191,7 @@ describe("verifyUploadedZip", () => {
   it("rejects when the uploaded object can't be found", async () => {
     const db = fakeStorageDb({ listed: [] });
     const result = await verifyUploadedZip(db, "bucket", "seller1/widget.zip");
-    expect(result).toEqual({ ok: false, status: 400, error: "Uploaded file not found. Try again." });
+    expect(result).toEqual({ ok: false, status: 400, error: "uploadNotFound" });
   });
 
   it("accepts a file within the size limit", async () => {
@@ -203,7 +203,7 @@ describe("verifyUploadedZip", () => {
   it("rejects and cleans up a file over the size limit", async () => {
     const db = fakeStorageDb({ listed: [{ name: "widget.zip", metadata: { size: 20 * 1024 * 1024 } }] });
     const result = await verifyUploadedZip(db, "bucket", "seller1/widget.zip");
-    expect(result).toEqual({ ok: false, status: 413, error: "Zip exceeds the 10MB limit." });
+    expect(result).toEqual({ ok: false, status: 413, error: "zipTooLarge" });
     expect(db._remove).toHaveBeenCalledWith(["seller1/widget.zip"]);
   });
 });
@@ -262,7 +262,7 @@ describe("publishComponent", () => {
   it("fails when the component insert fails", async () => {
     const db = fakePublishDb({ insertComponent: { data: null, error: { message: "constraint" } } });
     const result = await publishComponent(db, publishArgs);
-    expect(result).toEqual({ ok: false, status: 500, error: "constraint" });
+    expect(result).toEqual({ ok: false, status: 500, error: "publishFailed" });
   });
 
   it("reports a visible failure when tag linking fails, without rolling back the component", async () => {
@@ -274,7 +274,7 @@ describe("publishComponent", () => {
     expect(result).toEqual({
       ok: false,
       status: 500,
-      error: "Component published, but linking tags failed.",
+      error: "publishedTagsFailed",
     });
   });
 
@@ -284,7 +284,7 @@ describe("publishComponent", () => {
     expect(result).toEqual({
       ok: false,
       status: 500,
-      error: "Component published, but saving tags failed.",
+      error: "publishedTagsFailed",
     });
   });
 });
@@ -366,7 +366,7 @@ describe("updateComponent", () => {
   it("404s when the component doesn't exist", async () => {
     const db = fakeUpdateDb({ existing: null });
     const result = await updateComponent(db, editArgs);
-    expect(result).toEqual({ ok: false, status: 404, error: "Component not found." });
+    expect(result).toEqual({ ok: false, status: 404, error: "notFound" });
     // Nothing was written.
     expect(db._componentUpdate).not.toHaveBeenCalled();
     expect(db._tagLinkDelete).not.toHaveBeenCalled();
@@ -380,7 +380,7 @@ describe("updateComponent", () => {
     expect(result).toEqual({
       ok: false,
       status: 403,
-      error: "You can only edit your own components.",
+      error: "notOwner",
     });
     expect(db._componentUpdate).not.toHaveBeenCalled();
   });
@@ -432,7 +432,7 @@ describe("updateComponent", () => {
   it("fails when the components UPDATE returns an error", async () => {
     const db = fakeUpdateDb({ updateError: { message: "constraint" } });
     const result = await updateComponent(db, editArgs);
-    expect(result).toEqual({ ok: false, status: 500, error: "constraint" });
+    expect(result).toEqual({ ok: false, status: 500, error: "saveFailed" });
   });
 
   it("reports a visible partial failure when clearing old tags fails", async () => {
@@ -441,7 +441,7 @@ describe("updateComponent", () => {
     expect(result).toEqual({
       ok: false,
       status: 500,
-      error: "Component updated, but clearing old tags failed.",
+      error: "updatedTagsFailed",
     });
   });
 
@@ -451,7 +451,7 @@ describe("updateComponent", () => {
     expect(result).toEqual({
       ok: false,
       status: 500,
-      error: "Component updated, but linking tags failed.",
+      error: "updatedTagsFailed",
     });
   });
 });

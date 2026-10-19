@@ -67,7 +67,7 @@ describe("uploadZip", () => {
 
     const result = await uploadZip(storage, "component-zips", "seller1/x.zip", "tok", file);
 
-    expect(result).toEqual({ ok: false, error: "Upload failed. Please try again." });
+    expect(result).toEqual({ ok: false, error: "uploadFailed" });
   });
 });
 
@@ -117,5 +117,29 @@ describe("updateComponentEffect", () => {
       body: JSON.stringify(editPayload),
     });
     expect(result).toEqual({ ok: true, id: "comp1" });
+  });
+});
+
+// Failures carry message keys, not text: the form translates them into the
+// Viewer's Locale (messages/*.json, ComponentForm.errors).
+describe("failure message keys", () => {
+  const failing = fakeFetch({ ok: false, body: {} });
+  const offline = vi.fn(async () => {
+    throw new TypeError("Failed to fetch");
+  }) as unknown as typeof fetch;
+
+  it("requestUploadUrl falls back to uploadStartFailed / uploadStartNetwork", async () => {
+    expect(await requestUploadUrl(failing, 1)).toEqual({ ok: false, error: "uploadStartFailed" });
+    expect(await requestUploadUrl(offline, 1)).toEqual({ ok: false, error: "uploadStartNetwork" });
+  });
+
+  it("createComponentEffect falls back to publishFailed / publishNetwork", async () => {
+    expect(await createComponentEffect(failing, publishPayload)).toEqual({ ok: false, error: "publishFailed" });
+    expect(await createComponentEffect(offline, publishPayload)).toEqual({ ok: false, error: "publishNetwork" });
+  });
+
+  it("updateComponentEffect falls back to saveFailed / saveNetwork", async () => {
+    expect(await updateComponentEffect(failing, "comp1", editPayload)).toEqual({ ok: false, error: "saveFailed" });
+    expect(await updateComponentEffect(offline, "comp1", editPayload)).toEqual({ ok: false, error: "saveNetwork" });
   });
 });

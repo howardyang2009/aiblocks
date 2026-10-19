@@ -2,12 +2,14 @@ import { randomUUID } from "crypto";
 import type { Tables, TablesInsert, TablesUpdate } from "@/types/database";
 import { slugify, parseList } from "@/lib/utils";
 import { exceedsZipSizeLimit } from "@/lib/constants";
+import type { ComponentWriteError } from "@/lib/commerce/component-write-errors";
 
 // A Seller submitting a Component — publish (create) and edit (update) —
 // as one module. The two operations differ in real ways (edit's zipPath is
 // optional and carries an ownership check; publish's doesn't), so they stay
 // two functions; the field-level validation rules and the tag-relinking
 // dance are the parts that were byte-identical, so those are shared.
+
 
 export type PublishInput = {
   name: string;
@@ -28,21 +30,21 @@ export type PublishInputResult =
 // way they did before: the form used to skip the price check entirely,
 // letting a negative price through until this server-side round-trip
 // caught it.
-export function validateComponentName(name: string): string | null {
-  return name.trim().length < 3 ? "Name must be at least 3 characters." : null;
+export function validateComponentName(name: string): ComponentWriteError | null {
+  return name.trim().length < 3 ? "nameTooShort" : null;
 }
 
-export function validateComponentDescription(description: string): string | null {
-  return description.trim().length < 10 ? "Add a short description (10+ characters)." : null;
+export function validateComponentDescription(description: string): ComponentWriteError | null {
+  return description.trim().length < 10 ? "descriptionTooShort" : null;
 }
 
-export type ParsedComponentPrice = { ok: true; cents: number } | { ok: false; error: string };
+export type ParsedComponentPrice = { ok: true; cents: number } | { ok: false; error: ComponentWriteError };
 
 // Accept dollars, store integer cents.
 export function parseComponentPrice(raw: string): ParsedComponentPrice {
   const dollars = parseFloat(raw);
   if (Number.isNaN(dollars) || dollars < 0) {
-    return { ok: false, error: "Price must be 0 or a positive number." };
+    return { ok: false, error: "priceInvalid" };
   }
   return { ok: true, cents: Math.round(dollars * 100) };
 }
@@ -69,11 +71,11 @@ export function parsePublishInput(
   if (descriptionError) return { ok: false, status: 400, error: descriptionError };
 
   if (!zipPath) {
-    return { ok: false, status: 400, error: "Upload a zip before publishing." };
+    return { ok: false, status: 400, error: "zipRequired" };
   }
   // The uploaded object must live under THIS seller's namespace.
   if (!zipPath.startsWith(`${sellerId}/`)) {
-    return { ok: false, status: 403, error: "Upload path mismatch." };
+    return { ok: false, status: 403, error: "uploadPathMismatch" };
   }
 
   const price = parseComponentPrice(String(body.price ?? "0"));
@@ -145,7 +147,7 @@ export function parseEditInput(
   if (rawZip !== undefined && rawZip !== null && rawZip !== "") {
     const candidate = String(rawZip);
     if (!candidate.startsWith(`${sellerId}/`)) {
-      return { ok: false, status: 403, error: "Upload path mismatch." };
+      return { ok: false, status: 403, error: "uploadPathMismatch" };
     }
     zipPath = candidate;
   }
@@ -192,7 +194,7 @@ export async function createUploadUrl(
   const path = `${sellerId}/${randomUUID()}.zip`;
   const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(path);
   if (error || !data) {
-    return { ok: false, status: 500, error: "Could not create upload URL." };
+    return { ok: false, status: 500, error: "uploadStartFailed" };
   }
   return { ok: true, path, token: data.token };
 }
@@ -229,14 +231,14 @@ export async function verifyUploadedZip(
   const { data: listed } = await supabase.storage.from(bucket).list(folder, { search: fileName });
   const obj = listed?.find((o) => o.name === fileName);
   if (!obj) {
-    return { ok: false, status: 400, error: "Uploaded file not found. Try again." };
+    return { ok: false, status: 400, error: "uploadNotFound" };
   }
 
   const sizeBytes = obj.metadata?.size ?? null;
   if (sizeBytes !== null && exceedsZipSizeLimit(sizeBytes)) {
     // Clean up the oversized object so it doesn't linger.
     await supabase.storage.from(bucket).remove([zipPath]);
-    return { ok: false, status: 413, error: "Zip exceeds the 10MB limit." };
+    return { ok: false, status: 413, error: "zipTooLarge" };
   }
 
   return { ok: true, sizeBytes };
@@ -265,7 +267,7 @@ type RelinkTagsDb = {
   };
 };
 
-type RelinkTagsResult = { ok: true } | { ok: false; error: string };
+type RelinkTagsResult = { ok: boolean };
 
 // Normalize + link free-form tags. `wipeExisting` deletes the component's
 // current links first — publish has none to wipe yet; edit does, since a
@@ -283,7 +285,7 @@ async function relinkTags(
       .from("component_tags")
       .delete()
       .eq("component_id", componentId);
-    if (unlinkErr) return { ok: false, error: "clearing old tags failed." };
+    if (unlinkErr) return { ok: false };
   }
 
   if (tagNames.length === 0) return { ok: true };
@@ -296,13 +298,13 @@ async function relinkTags(
     )
     .select("id, name");
 
-  if (tagsErr) return { ok: false, error: "saving tags failed." };
+  if (tagsErr) return { ok: false };
 
   if (tagRows && tagRows.length > 0) {
     const { error: linkErr } = await supabase.from("component_tags").insert(
       tagRows.map((t) => ({ component_id: componentId, tag_id: t.id }))
     );
-    if (linkErr) return { ok: false, error: "linking tags failed." };
+    if (linkErr) return { ok: false };
   }
 
   return { ok: true };
@@ -354,12 +356,13 @@ export async function publishComponent(
     .single();
 
   if (insertErr || !component) {
-    return { ok: false, status: 500, error: insertErr?.message ?? "Could not publish." };
+    console.error("publishComponent insert failed:", insertErr?.message);
+    return { ok: false, status: 500, error: "publishFailed" };
   }
 
   const relinked = await relinkTags(supabase, component.id, args.tagNames, { wipeExisting: false });
   if (!relinked.ok) {
-    return { ok: false, status: 500, error: `Component published, but ${relinked.error}` };
+    return { ok: false, status: 500, error: "publishedTagsFailed" };
   }
 
   // Return the slug we generated, not the round-tripped column — the
@@ -420,9 +423,9 @@ export async function updateComponent(
     .eq("id", args.componentId)
     .maybeSingle();
 
-  if (!existing) return { ok: false, status: 404, error: "Component not found." };
+  if (!existing) return { ok: false, status: 404, error: "notFound" };
   if (!isOwnedBySeller(existing, args.sellerId)) {
-    return { ok: false, status: 403, error: "You can only edit your own components." };
+    return { ok: false, status: 403, error: "notOwner" };
   }
 
   // Only include zip_path / zip_size_bytes in the update when a new zip was
@@ -448,12 +451,13 @@ export async function updateComponent(
     .eq("seller_id", args.sellerId);
 
   if (updateErr) {
-    return { ok: false, status: 500, error: updateErr.message };
+    console.error("updateComponent update failed:", updateErr.message);
+    return { ok: false, status: 500, error: "saveFailed" };
   }
 
   const relinked = await relinkTags(supabase, args.componentId, args.tagNames, { wipeExisting: true });
   if (!relinked.ok) {
-    return { ok: false, status: 500, error: `Component updated, but ${relinked.error}` };
+    return { ok: false, status: 500, error: "updatedTagsFailed" };
   }
 
   return {

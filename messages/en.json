@@ -202,5 +202,78 @@
   "NotFound": {
     "title": "This page could not be found.",
     "home": "Back to the home page"
+  },
+  "DownloadsPage": {
+    "eyebrow": "Your library",
+    "title": "My downloads",
+    "intro": "Everything you've acquired — open one to re-download anytime.",
+    "empty": "Nothing here yet.",
+    "browse": "Browse components →"
+  },
+  "PublishPage": {
+    "eyebrow": "Seller",
+    "title": "Publish a component",
+    "guide": "New here? Read the publishing guide →",
+    "publish": "Publish",
+    "publishing": "Publishing…",
+    "publishedEyebrow": "Published",
+    "publishedTitle": "{name} is live",
+    "publishedBody": "Your component is now in the catalog.",
+    "view": "View component",
+    "publishAnother": "Publish another"
+  },
+  "EditPage": {
+    "eyebrow": "Seller",
+    "title": "Edit component",
+    "intro": "Update details in place. Uploading a new zip is optional — <view>view your component</view>.",
+    "save": "Save changes",
+    "saving": "Saving…"
+  },
+  "StripePage": {
+    "eyebrow": "Seller",
+    "title": "Connect payouts",
+    "body": "AiBlocks routes payments directly to your Stripe account with a 0% platform fee. Connect once to start selling paid components.",
+    "guide": "Read the step-by-step onboarding guide →",
+    "connect": "Connect with Stripe"
+  },
+  "ComponentForm": {
+    "name": "Name",
+    "namePlaceholder": "Email Triage Agent",
+    "description": "Short description",
+    "descriptionPlaceholder": "One line buyers see on the card",
+    "ecosystems": "Ecosystems (comma separated)",
+    "ecosystemsPlaceholder": "claude, gpt, gemini",
+    "tags": "Tags (comma separated)",
+    "tagsPlaceholder": "agent, email, productivity",
+    "price": "Price in USD (0 for free)",
+    "zip": "Component zip (max 10MB)",
+    "replaceZip": "Replace zip (optional — leave empty to keep current)",
+    "currentZip": "Current: {file}",
+    "readme": "README (markdown)",
+    "defaultReadme": "# Overview\n\nWhat it does, how to install…",
+    "uploading": "Uploading…",
+    "preview": "Preview",
+    "previewEmpty": "Your README preview appears here.",
+    "cancel": "Cancel",
+    "errors": {
+      "nameTooShort": "Name must be at least 3 characters.",
+      "descriptionTooShort": "Add a short description (10+ characters).",
+      "priceInvalid": "Price must be 0 or a positive number.",
+      "zipRequired": "Choose a zip file to upload.",
+      "zipTooLarge": "Zip exceeds the 10MB limit.",
+      "uploadPathMismatch": "Upload path mismatch. Upload the zip again.",
+      "uploadStartFailed": "Could not start upload.",
+      "uploadStartNetwork": "Network error — the upload could not be started.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "uploadNotFound": "Uploaded file not found. Try again.",
+      "publishFailed": "Could not publish.",
+      "publishNetwork": "Network error — the component was not published.",
+      "publishedTagsFailed": "Component published, but its tags could not be saved.",
+      "saveFailed": "Could not save changes.",
+      "saveNetwork": "Network error — the changes were not saved.",
+      "updatedTagsFailed": "Component updated, but its tags could not be saved.",
+      "notFound": "Component not found.",
+      "notOwner": "You can only edit your own components."
+    }
   }
 }

@@ -4,6 +4,7 @@ import { exceedsZipSizeLimit } from "@/lib/constants";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { parseBody } from "@/lib/request";
 import { createUploadUrl, type CreateUploadUrlStorage } from "@/lib/commerce/components-write";
+import type { ComponentWriteError } from "@/lib/commerce/component-write-errors";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
 
@@ -11,7 +12,7 @@ export const POST = withAuth(async (req, { profile, supabase }) => {
   const body = await parseBody<{ size?: unknown }>(req);
   if (body instanceof NextResponse) return body;
   if (typeof body.size === "number" && exceedsZipSizeLimit(body.size)) {
-    return NextResponse.json({ error: "Zip exceeds the 10MB limit." }, { status: 413 });
+    return NextResponse.json({ error: "zipTooLarge" satisfies ComponentWriteError }, { status: 413 });
   }
 
   const result = await createUploadUrl(narrowDb<CreateUploadUrlStorage>(supabase), ACTIVE_ZIP_BUCKET, profile.id);
