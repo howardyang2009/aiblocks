@@ -61,4 +61,14 @@ test.describe("browse & search", () => {
     await expect(page.getByRole("heading", { name: seeded.name })).toBeVisible();
     await expect(page.getByText("Free")).toBeVisible();
   });
+
+  test("search streams the web results in under the form", async ({ page }) => {
+    const nonsense = `no-such-component-${Date.now()}`;
+    await page.goto(`/en/search?q=${nonsense}`);
+
+    await expect(page.locator(`input[value="${nonsense}"]`)).toBeVisible();
+    // The skeleton carries aria-busy; it is gone once the Suspense boundary resolved (#80).
+    await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "From around the web" })).toBeVisible();
+  });
 });

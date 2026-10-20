@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
+import { refreshSession } from "./fixtures/session";
 
 // One signed-in identity drives this whole journey, so each step depends on
 // the previous one's output (the same published component) — test.describe.serial
@@ -18,6 +19,7 @@ test.describe.serial("publish, download, and engage", () => {
       .getByLabel("Component zip (max 10MB)")
       .setInputFiles(path.join(__dirname, "fixtures", "test-component.zip"));
 
+    await refreshSession(page);
     await page.getByRole("button", { name: "Publish" }).click();
 
     await expect(page.getByRole("heading", { name: `${componentName} is live` })).toBeVisible({

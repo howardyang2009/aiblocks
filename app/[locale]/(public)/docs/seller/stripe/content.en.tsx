@@ -1,59 +1,60 @@
 import { Guide, type GuideStep } from "@/components/guide";
+import { screenshots } from "./screenshots";
 import { Link } from "@/i18n/navigation";
 
 const steps: GuideStep[] = [
   {
     title: "Start Stripe onboarding",
     body: "Signed in, go to your seller Stripe page /dashboard/seller/stripe and click “Connect with Stripe” to begin onboarding your connected account.",
-    img: "/guides/stripe/01.png",
+    img: screenshots[0],
     alt: "The Connect with Stripe button on AiBlocks",
   },
   {
     title: "Complete Stripe’s Express onboarding",
     body: "Stripe hosts the rest of the flow. Follow its prompts to set up your account.",
-    img: "/guides/stripe/02.png",
+    img: screenshots[1],
     alt: "Stripe Express onboarding start",
   },
   {
     title: "Provide your mobile phone number",
-    img: "/guides/stripe/03.png",
+    img: screenshots[2],
     alt: "Entering a mobile phone number",
   },
   {
     title: "Enter the 6-digit code Stripe texts to your mobile phone",
-    img: "/guides/stripe/04.png",
+    img: screenshots[3],
     alt: "Entering the verification code",
   },
   {
     title: "Tell Stripe about your business",
-    img: "/guides/stripe/05.png",
+    img: screenshots[4],
     alt: "Business type selection",
   },
   {
     title: "Provide your personal details",
-    img: "/guides/stripe/06.png",
+    img: screenshots[5],
     alt: "Personal details form",
   },
   {
     title: "Add your business details",
-    img: "/guides/stripe/07.png",
+    img: screenshots[6],
     alt: "Business details form",
   },
   {
     title: "Add a bank account for payouts",
     body: "This is where your earnings are paid out. Payments from buyers route directly to this account.",
-    img: "/guides/stripe/08.png",
+    img: screenshots[7],
     alt: "Adding a payout bank account",
   },
   {
     title: "Review and submit",
-    img: "/guides/stripe/09.png",
+    img: screenshots[8],
     alt: "Review and submit screen",
   },
   {
     title: "Done — return to AiBlocks",
     body: "Once Stripe finishes onboarding your account, you’re returned to AiBlocks and can sell paid components.",
-    img: "/guides/stripe/10.png",
+    img: screenshots[9],
     alt: "Returned to AiBlocks after onboarding",
   },
 ];
