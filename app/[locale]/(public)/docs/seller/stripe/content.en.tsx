@@ -1,60 +1,60 @@
 import { Guide, type GuideStep } from "@/components/guide";
-import { screens } from "./screens";
+import { screenshots } from "./screenshots";
 import { Link } from "@/i18n/navigation";
 
 const steps: GuideStep[] = [
   {
     title: "Start Stripe onboarding",
     body: "Signed in, go to your seller Stripe page /dashboard/seller/stripe and click “Connect with Stripe” to begin onboarding your connected account.",
-    img: screens[0],
+    img: screenshots[0],
     alt: "The Connect with Stripe button on AiBlocks",
   },
   {
     title: "Complete Stripe’s Express onboarding",
     body: "Stripe hosts the rest of the flow. Follow its prompts to set up your account.",
-    img: screens[1],
+    img: screenshots[1],
     alt: "Stripe Express onboarding start",
   },
   {
     title: "Provide your mobile phone number",
-    img: screens[2],
+    img: screenshots[2],
     alt: "Entering a mobile phone number",
   },
   {
     title: "Enter the 6-digit code Stripe texts to your mobile phone",
-    img: screens[3],
+    img: screenshots[3],
     alt: "Entering the verification code",
   },
   {
     title: "Tell Stripe about your business",
-    img: screens[4],
+    img: screenshots[4],
     alt: "Business type selection",
   },
   {
     title: "Provide your personal details",
-    img: screens[5],
+    img: screenshots[5],
     alt: "Personal details form",
   },
   {
     title: "Add your business details",
-    img: screens[6],
+    img: screenshots[6],
     alt: "Business details form",
   },
   {
     title: "Add a bank account for payouts",
     body: "This is where your earnings are paid out. Payments from buyers route directly to this account.",
-    img: screens[7],
+    img: screenshots[7],
     alt: "Adding a payout bank account",
   },
   {
     title: "Review and submit",
-    img: screens[8],
+    img: screenshots[8],
     alt: "Review and submit screen",
   },
   {
     title: "Done — return to AiBlocks",
     body: "Once Stripe finishes onboarding your account, you’re returned to AiBlocks and can sell paid components.",
-    img: screens[9],
+    img: screenshots[9],
     alt: "Returned to AiBlocks after onboarding",
   },
 ];

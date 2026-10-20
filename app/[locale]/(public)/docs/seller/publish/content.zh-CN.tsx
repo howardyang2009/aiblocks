@@ -1,35 +1,35 @@
 import { Guide, type GuideStep } from "@/components/guide";
-import { screens } from "./screens";
+import { screenshots } from "./screenshots";
 
 const steps: GuideStep[] = [
   {
     title: "开始发布流程",
     body: "在卖家控制台点击“发布”按钮即可开始。",
-    img: screens[0],
+    img: screenshots[0],
     alt: "用于开始发布流程的“发布”按钮",
   },
   {
     title: "填写发布表单，然后点击“发布”",
     body: "填写名称、描述、生态、标签、价格（0 表示免费）、README，并上传组件的 zip 文件（最大 10MB），然后提交。",
-    img: screens[1],
+    img: screenshots[1],
     alt: "填写完成的发布表单",
   },
   {
     title: "组件已创建",
     body: "提交后，组件即发布到组件目录中。",
-    img: screens[2],
+    img: screenshots[2],
     alt: "新组件已创建的确认信息",
   },
   {
     title: "查看组件详情页",
     body: "详情页展示组件的全部信息：README、元数据、价格和下载。",
-    img: screens[3],
+    img: screenshots[3],
     alt: "组件详情页",
   },
   {
     title: "在你的卖家页面找到它",
     body: "你发布的所有组件都会列在你的卖家个人资料页上。",
-    img: screens[4],
+    img: screenshots[4],
     alt: "列出已发布组件的卖家页面",
   },
 ];

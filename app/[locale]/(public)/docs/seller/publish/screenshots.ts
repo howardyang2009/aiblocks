@@ -6,4 +6,4 @@ import s03 from "./screens/03.png";
 import s04 from "./screens/04.png";
 import s05 from "./screens/05.png";
 
-export const screens = [s01, s02, s03, s04, s05] as const;
+export const screenshots = [s01, s02, s03, s04, s05] as const;

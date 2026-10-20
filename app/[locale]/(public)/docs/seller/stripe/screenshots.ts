@@ -11,4 +11,4 @@ import s08 from "./screens/08.png";
 import s09 from "./screens/09.png";
 import s10 from "./screens/10.png";
 
-export const screens = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10] as const;
+export const screenshots = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10] as const;

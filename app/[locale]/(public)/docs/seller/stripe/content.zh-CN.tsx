@@ -1,60 +1,60 @@
 import { Guide, type GuideStep } from "@/components/guide";
-import { screens } from "./screens";
+import { screenshots } from "./screenshots";
 import { Link } from "@/i18n/navigation";
 
 const steps: GuideStep[] = [
   {
     title: "开始 Stripe 接入流程",
     body: "登录后，前往你的卖家 Stripe 页面 /dashboard/seller/stripe，点击“连接 Stripe”，开始接入你的关联账户。",
-    img: screens[0],
+    img: screenshots[0],
     alt: "AiBlocks 上的“连接 Stripe”按钮",
   },
   {
     title: "完成 Stripe Express 接入流程",
     body: "其余流程由 Stripe 托管。按照提示设置你的账户。",
-    img: screens[1],
+    img: screenshots[1],
     alt: "Stripe Express 接入流程的起始页",
   },
   {
     title: "填写你的手机号码",
-    img: screens[2],
+    img: screenshots[2],
     alt: "输入手机号码",
   },
   {
     title: "输入 Stripe 发送到你手机上的 6 位验证码",
-    img: screens[3],
+    img: screenshots[3],
     alt: "输入验证码",
   },
   {
     title: "告诉 Stripe 你的业务类型",
-    img: screens[4],
+    img: screenshots[4],
     alt: "选择业务类型",
   },
   {
     title: "填写你的个人信息",
-    img: screens[5],
+    img: screenshots[5],
     alt: "个人信息表单",
   },
   {
     title: "填写你的业务信息",
-    img: screens[6],
+    img: screenshots[6],
     alt: "业务信息表单",
   },
   {
     title: "添加用于提现的银行账户",
     body: "你的收入会提现到这个账户。买家的付款会直接进入这个账户。",
-    img: screens[7],
+    img: screenshots[7],
     alt: "添加提现银行账户",
   },
   {
     title: "检查并提交",
-    img: screens[8],
+    img: screenshots[8],
     alt: "检查并提交页面",
   },
   {
     title: "完成，返回 AiBlocks",
     body: "Stripe 完成账户接入后，你会回到 AiBlocks，即可出售付费组件。",
-    img: screens[9],
+    img: screenshots[9],
     alt: "接入完成后返回 AiBlocks",
   },
 ];

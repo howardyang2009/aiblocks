@@ -1,60 +1,60 @@
 import { Guide, type GuideStep } from "@/components/guide";
-import { screens } from "./screens";
+import { screenshots } from "./screenshots";
 import { Link } from "@/i18n/navigation";
 
 const steps: GuideStep[] = [
   {
     title: "Stripe-Onboarding starten",
     body: "Öffnen Sie angemeldet Ihre Stripe-Seite für Verkäufer /dashboard/seller/stripe und klicken Sie auf „Mit Stripe verbinden“, um das Onboarding Ihres verbundenen Kontos zu beginnen.",
-    img: screens[0],
+    img: screenshots[0],
     alt: "Die Schaltfläche „Mit Stripe verbinden“ auf AiBlocks",
   },
   {
     title: "Express-Onboarding von Stripe abschließen",
     body: "Den restlichen Ablauf stellt Stripe bereit. Folgen Sie den Anweisungen, um Ihr Konto einzurichten.",
-    img: screens[1],
+    img: screenshots[1],
     alt: "Start des Stripe-Express-Onboardings",
   },
   {
     title: "Mobilnummer angeben",
-    img: screens[2],
+    img: screenshots[2],
     alt: "Eingabe einer Mobilnummer",
   },
   {
     title: "Den 6-stelligen Code eingeben, den Stripe per SMS an Ihr Mobiltelefon schickt",
-    img: screens[3],
+    img: screenshots[3],
     alt: "Eingabe des Bestätigungscodes",
   },
   {
     title: "Angaben zu Ihrem Unternehmen machen",
-    img: screens[4],
+    img: screenshots[4],
     alt: "Auswahl der Unternehmensart",
   },
   {
     title: "Persönliche Daten angeben",
-    img: screens[5],
+    img: screenshots[5],
     alt: "Formular für persönliche Daten",
   },
   {
     title: "Unternehmensdaten ergänzen",
-    img: screens[6],
+    img: screenshots[6],
     alt: "Formular für Unternehmensdaten",
   },
   {
     title: "Bankkonto für Auszahlungen hinzufügen",
     body: "Auf dieses Konto werden Ihre Einnahmen ausgezahlt. Zahlungen von Käufern gehen direkt auf dieses Konto.",
-    img: screens[7],
+    img: screenshots[7],
     alt: "Hinzufügen eines Bankkontos für Auszahlungen",
   },
   {
     title: "Prüfen und absenden",
-    img: screens[8],
+    img: screenshots[8],
     alt: "Bildschirm zum Prüfen und Absenden",
   },
   {
     title: "Fertig: zurück zu AiBlocks",
     body: "Sobald Stripe das Onboarding Ihres Kontos abgeschlossen hat, kehren Sie zu AiBlocks zurück und können kostenpflichtige Komponenten verkaufen.",
-    img: screens[9],
+    img: screenshots[9],
     alt: "Zurück auf AiBlocks nach dem Onboarding",
   },
 ];
