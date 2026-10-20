@@ -30,13 +30,6 @@ export type ListComponentsDb = {
       eq(column: string, value: string): ComponentsQuery;
     };
   };
-  from(table: "tags"): {
-    select(columns: string): {
-      eq(column: string, value: string): {
-        maybeSingle(): PromiseLike<{ data: Pick<Tables<"tags">, "id"> | null }>;
-      };
-    };
-  };
   from(table: "component_tags"): {
     select(columns: string): {
       eq(column: string, value: string): PromiseLike<{ data: Pick<Tables<"component_tags">, "component_id">[] | null }>;
@@ -58,18 +51,17 @@ export async function listPublishedComponents(
   supabase: ListComponentsDb,
   args: ListPublishedComponentsArgs
 ): Promise<ListPublishedComponentsResult> {
+  // The tag name is matched on the embedded `tags` row (`!inner` keeps only
+  // links whose tag matches), so a tag resolves to component ids in one
+  // round trip instead of tags -> component_tags. An unknown tag has no
+  // links, which is exactly the "no matches" case.
   let componentIds: string[] | null = null;
   if (args.tag) {
-    const { data: tagRow } = await supabase.from("tags").select("id").eq("name", args.tag).maybeSingle();
-    if (tagRow) {
-      const { data: links } = await supabase
-        .from("component_tags")
-        .select("component_id")
-        .eq("tag_id", tagRow.id);
-      componentIds = (links ?? []).map((r) => r.component_id);
-    } else {
-      componentIds = []; // unknown tag -> no matches
-    }
+    const { data: links } = await supabase
+      .from("component_tags")
+      .select("component_id, tags!inner()")
+      .eq("tags.name", args.tag);
+    componentIds = (links ?? []).map((r) => r.component_id);
   }
 
   let query = supabase.from("components").select(COMPONENT_SUMMARY_COLS).eq("status", "published");

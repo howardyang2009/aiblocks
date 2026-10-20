@@ -43,29 +43,29 @@ function fakeQuery(rows: ComponentSummary[]) {
 
 function fakeDb(opts: {
   rows?: ComponentSummary[];
-  tag?: { id: string } | null;
   linkedComponentIds?: string[];
 }) {
+  const tagLookups: { columns: string; filter: unknown[] }[] = [];
   const { query, calls } = fakeQuery(opts.rows ?? []);
   const db = {
     from: (table: string) => {
       if (table === "components") {
         return { select: () => ({ eq: () => query }) };
       }
-      if (table === "tags") {
-        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: opts.tag ?? null }) }) }) };
-      }
       if (table === "component_tags") {
         return {
-          select: () => ({
-            eq: async () => ({ data: (opts.linkedComponentIds ?? []).map((id) => ({ component_id: id })) }),
+          select: (columns: string) => ({
+            eq: async (...filter: unknown[]) => {
+              tagLookups.push({ columns, filter });
+              return { data: (opts.linkedComponentIds ?? []).map((id) => ({ component_id: id })) };
+            },
           }),
         };
       }
       throw new Error(`unexpected table ${table}`);
     },
   } as unknown as ListComponentsDb;
-  return { db, calls };
+  return { db, calls, tagLookups };
 }
 
 describe("listPublishedComponents", () => {
@@ -98,23 +98,17 @@ describe("listPublishedComponents", () => {
     expect(calls2[0].args).toEqual(["star_count", { ascending: false }]);
   });
 
-  it("filters by tag, resolving the tag name to component ids", async () => {
-    const { db, calls } = fakeDb({ tag: { id: "tag1" }, linkedComponentIds: ["c1", "c2"] });
+  it("filters by tag, resolving the tag name to component ids in one embedded lookup", async () => {
+    const { db, calls, tagLookups } = fakeDb({ linkedComponentIds: ["c1", "c2"] });
     await listPublishedComponents(db, { tag: "agent" });
 
+    expect(tagLookups).toEqual([{ columns: "component_id, tags!inner()", filter: ["tags.name", "agent"] }]);
     expect(calls[0]).toEqual({ method: "in", args: ["id", ["c1", "c2"]] });
   });
 
-  it("matches nothing for an unknown tag, instead of matching everything", async () => {
-    const { db, calls } = fakeDb({ tag: null });
+  it("matches nothing for an unknown or unused tag, instead of matching everything", async () => {
+    const { db, calls } = fakeDb({ linkedComponentIds: [] });
     await listPublishedComponents(db, { tag: "ghost-tag" });
-
-    expect(calls[0]).toEqual({ method: "in", args: ["id", ["00000000-0000-0000-0000-000000000000"]] });
-  });
-
-  it("matches nothing for a tag with no linked components", async () => {
-    const { db, calls } = fakeDb({ tag: { id: "tag1" }, linkedComponentIds: [] });
-    await listPublishedComponents(db, { tag: "unused" });
 
     expect(calls[0]).toEqual({ method: "in", args: ["id", ["00000000-0000-0000-0000-000000000000"]] });
   });

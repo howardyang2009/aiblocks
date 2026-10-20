@@ -11,7 +11,11 @@ import { ExternalSearchForm } from "@/components/external-search/ExternalSearchF
 
 // Home. A Google-style search is the first thing a visitor sees; the
 // assembly-grid hero (the brand signature) follows right below it.
-export const dynamic = "force-dynamic";
+//
+// Nothing here is per-Viewer (the Navbar reads auth in the browser, #45), so
+// the page is prerendered per Locale and served from the CDN; the "Latest
+// components" strip is refreshed in the background at most every 5 minutes.
+export const revalidate = 300;
 
 // Title and description come from the Locale layout's defaults.
 export async function generateMetadata() {

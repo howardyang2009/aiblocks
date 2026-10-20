@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
@@ -15,19 +16,31 @@ import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce
 import { narrowDb } from "@/lib/db-port";
 import { canonical, componentPath, truncateDescription } from "@/lib/seo";
 import { loadShownText, type DisplayDb } from "@/lib/translation/display";
+import type { Tables } from "@/types/database";
 import { fetchComponentRows, buildComponentView } from "./view-model";
 
 export const dynamic = "force-dynamic";
+
+// One lookup per request, shared by generateMetadata and the page (the
+// seller profile page does the same): both need the published row and its
+// text in the Locale, and Next renders them as separate Server Components.
+// getShownText is keyed by the row getComponent returns, which is the same
+// object for the whole request, so cache()'s argument-identity check hits.
+const getComponent = cache((id: string) =>
+  getPublishedComponent(narrowDb<PublishedComponentDb>(createServiceClient()), id)
+);
+const getShownText = cache((component: Tables<"components">, locale: Awaited<ReturnType<typeof getLocale>>) =>
+  loadShownText(narrowDb<DisplayDb>(createServiceClient()), component, locale)
+);
 
 // The Component's name as submitted; its description as shown in the
 // page's Locale, the same text the page itself shows (#70).
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = createServiceClient();
-  const component = await getPublishedComponent(narrowDb<PublishedComponentDb>(supabase), id);
+  const component = await getComponent(id);
   if (!component) return {};
   const locale = await getLocale();
-  const { description } = await loadShownText(narrowDb<DisplayDb>(supabase), component, locale);
+  const { description } = await getShownText(component, locale);
   return {
     title: component.name,
     description: truncateDescription(description.text),
@@ -37,16 +50,25 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ComponentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { profile: viewerProfile } = await getViewer();
+  // Kicked off first: the Clerk round trip overlaps the component queries
+  // instead of preceding them (fetchComponentRows awaits it only where needed).
+  // The no-op catch only covers the notFound() exit below, where nothing
+  // awaits it; every later await still sees a rejection.
+  const viewerPromise = getViewer();
+  viewerPromise.catch(() => {});
+  const [component, locale] = await Promise.all([getComponent(id), getLocale()]);
+  if (!component) notFound();
+
   const supabase = createServiceClient();
-  const rows = await fetchComponentRows(supabase, id, viewerProfile);
-  if (!rows) notFound();
+  const [rows, shown, { profile: viewerProfile }, t] = await Promise.all([
+    fetchComponentRows(supabase, component, viewerPromise),
+    getShownText(component, locale),
+    viewerPromise,
+    getTranslations("ComponentPage"),
+  ]);
   const data = buildComponentView(rows, viewerProfile);
 
-  const t = await getTranslations("ComponentPage");
-  const locale = await getLocale();
-  const { component, seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
-  const shown = await loadShownText(narrowDb<DisplayDb>(supabase), component, locale);
+  const { seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
   const renderReadme = (readme: string) =>
     readme.trim() ? <MarkdownRenderer source={readme} /> : <p className="text-sm text-subtle">{t("noReadme")}</p>;
 

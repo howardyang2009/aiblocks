@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { getPublishedComponent, getComponentTagNames, type PublishedComponentDb, type ComponentTagsDb } from "@/lib/commerce/components";
 import type { Tables } from "@/types/database";
 
@@ -57,48 +57,39 @@ describe("getPublishedComponent", () => {
   });
 });
 
-function fakeTagsDb(opts: {
-  tagIdRows: { tag_id: string }[] | null;
-  tagNameRows?: { name: string }[] | null;
-}): ComponentTagsDb & { _tagsSelect: ReturnType<typeof vi.fn> } {
-  const tagsSelect = vi.fn(() => ({
-    in: async () => ({ data: opts.tagNameRows ?? [] }),
-  }));
+function fakeTagsDb(rows: { tags: { name: string } | null }[] | null) {
+  const calls: { columns: string; filter: unknown[] }[] = [];
   const db = {
     from: (table: string) => {
-      if (table === "component_tags") {
-        return { select: () => ({ eq: async () => ({ data: opts.tagIdRows }) }) };
-      }
-      if (table === "tags") {
-        return { select: tagsSelect };
-      }
-      throw new Error(`unexpected table ${table}`);
+      if (table !== "component_tags") throw new Error(`unexpected table ${table}`);
+      return {
+        select: (columns: string) => ({
+          eq: async (...filter: unknown[]) => {
+            calls.push({ columns, filter });
+            return { data: rows };
+          },
+        }),
+      };
     },
-  } as unknown as ComponentTagsDb & { _tagsSelect: typeof tagsSelect };
-  db._tagsSelect = tagsSelect;
-  return db;
+  } as unknown as ComponentTagsDb;
+  return { db, calls };
 }
 
 describe("getComponentTagNames", () => {
-  it("returns the tag names for a component with tags", async () => {
-    const db = fakeTagsDb({
-      tagIdRows: [{ tag_id: "t1" }, { tag_id: "t2" }],
-      tagNameRows: [{ name: "agent" }, { name: "email" }],
-    });
+  it("returns the tag names for a component in one query, embedding the tag via its FK", async () => {
+    const { db, calls } = fakeTagsDb([{ tags: { name: "agent" } }, { tags: { name: "email" } }]);
     const result = await getComponentTagNames(db, "c1");
     expect(result).toEqual(["agent", "email"]);
+    expect(calls).toEqual([{ columns: "tags!inner(name)", filter: ["component_id", "c1"] }]);
   });
 
-  it("returns an empty array without querying tag names when the component has no tags", async () => {
-    const db = fakeTagsDb({ tagIdRows: [] });
-    const result = await getComponentTagNames(db, "c1");
-    expect(result).toEqual([]);
-    expect(db._tagsSelect).not.toHaveBeenCalled();
+  it("returns an empty array when the component has no tags", async () => {
+    const { db } = fakeTagsDb([]);
+    expect(await getComponentTagNames(db, "c1")).toEqual([]);
   });
 
-  it("returns an empty array when the component_tags query returns no rows", async () => {
-    const db = fakeTagsDb({ tagIdRows: null });
-    const result = await getComponentTagNames(db, "c1");
-    expect(result).toEqual([]);
+  it("returns an empty array when the query returns no rows", async () => {
+    const { db } = fakeTagsDb(null);
+    expect(await getComponentTagNames(db, "c1")).toEqual([]);
   });
 });
