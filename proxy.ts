@@ -1,6 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
-import { localeFromPathname, localePrefix, routing } from "./i18n/routing";
+import { localeCookie, localeFromPathname, localePrefix, routing } from "./i18n/routing";
+import { rememberedLocalePath } from "./i18n/switch-locale";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
@@ -15,6 +17,16 @@ export default clerkMiddleware(
   async (auth, req) => {
     // API routes and the Stripe webhook have no Locale: never redirect them.
     if (isApi(req)) return;
+    // A page load whose prefix disagrees with the remembered Locale goes to
+    // that Locale instead of rewriting the cookie (back button, bookmarks,
+    // links from rheinwegde.de). Background router requests are left alone.
+    const dest = req.headers.get("sec-fetch-dest");
+    const remembered = rememberedLocalePath(req.nextUrl.pathname, req.cookies.get(localeCookie.name)?.value);
+    if (remembered && (dest === null || dest === "document")) {
+      const url = req.nextUrl.clone();
+      url.pathname = remembered;
+      return NextResponse.redirect(url);
+    }
     if (isProtected(req)) await auth.protect();
     return handleI18nRouting(req);
   },

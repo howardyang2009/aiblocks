@@ -68,4 +68,16 @@ test.describe("Locale switcher", () => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/de$/);
   });
+
+  test("back button returns to the new choice, not the old page's Locale", async ({ page }) => {
+    await page.goto("/de/browse");
+    await page.getByRole("button", { name: `${de.LocaleSwitcher.label}: ${DEUTSCH}` }).click();
+    await page.getByRole("dialog").getByRole("link", { name: new RegExp(`^${ZHONGWEN}`) }).click();
+    await expect(page).toHaveURL(/\/zh\/browse$/);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/zh\/browse$/);
+    const cookie = (await page.context().cookies()).find((c) => c.name === "RHEINWEG_LOCALE");
+    expect(cookie?.value).toBe("zh-CN");
+  });
 });
