@@ -52,10 +52,12 @@ test.describe("Locale smoke", () => {
     test(`${prefix}/sign-in and ${prefix}/sign-up show Clerk in ${lang}`, async ({ page }) => {
       await page.goto(`${prefix}/sign-in`);
       await expect(page.getByRole("button", { name: clerk.formButtonPrimary, exact: true })).toBeVisible();
-      await expect(page.getByRole("link", { name: clerk.signIn!.start!.actionLink! })).toHaveAttribute(
-        "href",
-        new RegExp(`^${prefix}/sign-up`)
-      );
+      // Clerk may render the link relative or absolute; only where it leads matters.
+      const signUpLink = page.getByRole("link", { name: clerk.signIn!.start!.actionLink! });
+      await expect(signUpLink).toHaveAttribute("href", /sign-up/);
+      const signUpUrl = new URL((await signUpLink.getAttribute("href"))!, BASE_URL);
+      expect(signUpUrl.origin).toBe(new URL(BASE_URL).origin);
+      expect(signUpUrl.pathname).toMatch(new RegExp(`^${prefix}/sign-up`));
 
       await page.goto(`${prefix}/sign-up`);
       await expect(page.getByRole("heading", { name: clerk.signUp!.start!.title! })).toBeVisible();
