@@ -9,18 +9,21 @@ const prefixes = {
   "zh-CN": "/zh",
 } as const;
 
+// Remembered language choice (#42): one year. In production the cookie lives
+// on the parent domain, so rheinwegde.de and AiBlocks share one choice;
+// rheinwegde.de writes the same ids. The choice wins over a page's prefix
+// (see `proxy.ts`), the same rule rheinwegde.de follows.
+export const localeCookie = {
+  name: "RHEINWEG_LOCALE",
+  maxAge: 60 * 60 * 24 * 365,
+  ...(process.env.NEXT_PUBLIC_VERCEL_ENV === "production" && { domain: ".rheinwegde.de" }),
+};
+
 export const routing = defineRouting({
   locales: ["de", "en", "zh-CN"],
   defaultLocale: "de",
   localePrefix: { mode: "always", prefixes },
-  // Remembered choice for the unprefixed doorway URL (#42): one year. In
-  // production the cookie lives on the parent domain, so rheinwegde.de and
-  // AiBlocks share one language choice; rheinwegde.de writes the same ids.
-  localeCookie: {
-    name: "RHEINWEG_LOCALE",
-    maxAge: 60 * 60 * 24 * 365,
-    ...(process.env.NEXT_PUBLIC_VERCEL_ENV === "production" && { domain: ".rheinwegde.de" }),
-  },
+  localeCookie,
 });
 
 export type Locale = (typeof routing.locales)[number];

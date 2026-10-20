@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { switchLocaleHref } from "@/i18n/switch-locale";
+import { rememberedLocalePath, switchLocaleHref } from "@/i18n/switch-locale";
 
 describe("switchLocaleHref", () => {
   it("swaps the Locale prefix and keeps path, query and hash", () => {
@@ -20,5 +20,22 @@ describe("switchLocaleHref", () => {
   it("prefixes an unprefixed path instead of replacing its first segment", () => {
     expect(switchLocaleHref({ pathname: "/browse", search: "", hash: "" }, "en")).toBe("/en/browse");
     expect(switchLocaleHref({ pathname: "/", search: "", hash: "" }, "zh-CN")).toBe("/zh/");
+  });
+});
+
+describe("rememberedLocalePath", () => {
+  it("moves a page to the remembered Locale, keeping the path", () => {
+    expect(rememberedLocalePath("/de/browse", "zh-CN")).toBe("/zh/browse");
+    expect(rememberedLocalePath("/zh", "en")).toBe("/en");
+  });
+
+  it("leaves the page alone when cookie and prefix agree", () => {
+    expect(rememberedLocalePath("/zh/browse", "zh-CN")).toBeUndefined();
+  });
+
+  it("leaves the page alone without a valid cookie or a prefix", () => {
+    expect(rememberedLocalePath("/de/browse", undefined)).toBeUndefined();
+    expect(rememberedLocalePath("/de/browse", "zh")).toBeUndefined();
+    expect(rememberedLocalePath("/", "en")).toBeUndefined();
   });
 });

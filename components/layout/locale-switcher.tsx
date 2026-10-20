@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { localePrefix, routing, type Locale } from "@/i18n/routing";
+import { localeCookie, localePrefix, routing, type Locale } from "@/i18n/routing";
 import { switchLocaleHref, type PageLocation } from "@/i18n/switch-locale";
 
 // Each Locale's own name, the same on every page (#42). `中文`, not `简体中文`.
@@ -13,8 +13,9 @@ const OWN_NAMES: Record<Locale, string> = {
 };
 
 // Footer button plus native modal <dialog>: the browser traps focus, closes it
-// on Escape and returns focus to the button. Links are full navigations, so
-// the middleware writes the RHEINWEG_LOCALE cookie for the new Locale.
+// on Escape and returns focus to the button. Links are full navigations; a
+// click writes the RHEINWEG_LOCALE cookie first, because the middleware sends
+// a page whose prefix disagrees with the cookie back to the remembered Locale.
 export function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher");
   const current = useLocale();
@@ -67,6 +68,7 @@ export function LocaleSwitcher() {
                   hrefLang={locale}
                   lang={locale}
                   aria-current={isCurrent ? "true" : undefined}
+                  onClick={() => rememberLocale(locale)}
                   className="flex items-center justify-between px-5 py-2.5 hover:bg-paper"
                 >
                   <span className="flex flex-col">
@@ -82,6 +84,11 @@ export function LocaleSwitcher() {
       </dialog>
     </>
   );
+}
+
+function rememberLocale(locale: Locale) {
+  const { name, maxAge, domain } = localeCookie;
+  document.cookie = `${name}=${locale}; path=/; max-age=${maxAge}; samesite=lax${domain ? `; domain=${domain}` : ""}`;
 }
 
 function GlobeIcon() {
