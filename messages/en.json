@@ -119,6 +119,12 @@
     "stars": "stars",
     "rating": "rating"
   },
+  "MachineTranslation": {
+    "note": "{language, select, de {Machine-translated from German} en {Machine-translated from English} zh {Machine-translated from Chinese} other {Machine-translated from another language}}",
+    "label": "Machine-translated",
+    "showOriginal": "Show original",
+    "showTranslation": "Show translation"
+  },
   "DownloadButton": {
     "download": "Download",
     "buyToDownload": "Buy to download",

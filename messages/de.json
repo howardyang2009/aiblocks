@@ -119,6 +119,12 @@
     "stars": "Sterne",
     "rating": "Wertung"
   },
+  "MachineTranslation": {
+    "note": "{language, select, de {Maschinell übersetzt aus dem Deutschen} en {Maschinell übersetzt aus dem Englischen} zh {Maschinell übersetzt aus dem Chinesischen} other {Maschinell übersetzt aus einer anderen Sprache}}",
+    "label": "Maschinell übersetzt",
+    "showOriginal": "Original anzeigen",
+    "showTranslation": "Übersetzung anzeigen"
+  },
   "DownloadButton": {
     "download": "Herunterladen",
     "buyToDownload": "Kaufen und herunterladen",

@@ -18,4 +18,4 @@ export const MAX_BODY_LENGTH = 2000;
 // Columns fetched for component summary cards (browse, search, seller profile,
 // downloads library). Matches the ComponentSummary type in types/database.ts.
 export const COMPONENT_SUMMARY_COLS =
-  "id, name, description, ecosystems, price_cents, currency, star_count, download_count" as const;
+  "id, name, description, source_language, ecosystems, price_cents, currency, star_count, download_count" as const;

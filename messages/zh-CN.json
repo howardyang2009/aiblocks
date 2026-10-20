@@ -119,6 +119,12 @@
     "stars": "收藏",
     "rating": "评分"
   },
+  "MachineTranslation": {
+    "note": "{language, select, de {机器翻译自德语} en {机器翻译自英语} zh {机器翻译自中文} other {机器翻译自其他语言}}",
+    "label": "机器翻译",
+    "showOriginal": "显示原文",
+    "showTranslation": "显示翻译"
+  },
   "DownloadButton": {
     "download": "下载",
     "buyToDownload": "购买后下载",

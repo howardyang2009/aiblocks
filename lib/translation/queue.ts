@@ -9,12 +9,13 @@ import { runTranslationJob, type TranslationJobDb } from "./job";
  * Machine-translates a Component's changed Source text once the response is
  * sent (ADR 0006): a long readme must not hold up the save. Called by the
  * Component create and update routes after a successful write; the job skips
- * unchanged fields. Failures are logged; readers fall back to the Source text.
+ * unchanged fields. With `retry`, failed or stuck rows are redone too (the
+ * retry route). Failures are logged; readers fall back to the Source text.
  */
-export function queueTranslations(componentId: string): void {
+export function queueTranslations(componentId: string, opts: { retry?: boolean } = {}): void {
   after(async () => {
     try {
-      await runTranslationJob(narrowDb<TranslationJobDb>(createServiceClient()), new Anthropic(), componentId);
+      await runTranslationJob(narrowDb<TranslationJobDb>(createServiceClient()), new Anthropic(), componentId, opts);
     } catch (error) {
       console.error("queueTranslations failed:", error instanceof Error ? error.message : error);
     }

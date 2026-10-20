@@ -5,6 +5,7 @@ import { listLatestPublished, type ListComponentsDb } from "@/lib/commerce/brows
 import { narrowDb } from "@/lib/db-port";
 import { canonical } from "@/lib/seo";
 import { ComponentCard } from "@/components/component-card";
+import { localizeSummaries, type DisplayDb } from "@/lib/translation/display";
 import { AssemblyGrid } from "@/components/brand/assembly-grid";
 import { ExternalSearchForm } from "@/components/external-search/ExternalSearchForm";
 
@@ -29,10 +30,9 @@ const PRIMARY_TAGS = [
 ];
 
 export default async function HomePage() {
-  const { components: latest } = await listLatestPublished(
-    narrowDb<ListComponentsDb>(createServiceClient()),
-    6
-  );
+  const supabase = createServiceClient();
+  const { components: newest } = await listLatestPublished(narrowDb<ListComponentsDb>(supabase), 6);
+  const latest = await localizeSummaries(narrowDb<DisplayDb>(supabase), newest, await getLocale());
   const t = await getTranslations("HomePage");
 
   return (

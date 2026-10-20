@@ -14,6 +14,7 @@ function componentSummary(overrides: Partial<ComponentSummary> = {}): ComponentS
     id: "c1",
     name: "Widget",
     description: "",
+    source_language: "en",
     ecosystems: [],
     price_cents: 0,
     currency: "eur",
@@ -80,11 +81,11 @@ describe("listPublishedComponents", () => {
     expect(calls[1].args).toEqual([48]);
   });
 
-  it("applies full-text search when q is given", async () => {
+  it("searches name, Source text and Translations with the language-neutral simple config", async () => {
     const { db, calls } = fakeDb({});
     await listPublishedComponents(db, { q: "email agent" });
 
-    expect(calls[0]).toEqual({ method: "textSearch", args: ["search_tsv", "email agent", { type: "websearch" }] });
+    expect(calls[0]).toEqual({ method: "textSearch", args: ["search_tsv", "email agent", { type: "websearch", config: "simple" }] });
   });
 
   it("sorts by downloads or stars when requested", async () => {

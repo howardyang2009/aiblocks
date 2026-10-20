@@ -8,25 +8,30 @@ import { DownloadButton } from "@/components/download-button";
 import { ReviewsSection } from "@/components/reviews-section";
 import { CommentsSection } from "@/components/comments-section";
 import { Price } from "@/components/price";
+import { MachineTranslatedField } from "@/components/machine-translation";
 import { formatNumber, formatRating } from "@/lib/utils";
 import { getViewer } from "@/lib/identity/viewer";
 import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce/components";
 import { narrowDb } from "@/lib/db-port";
 import { canonical, componentPath, truncateDescription } from "@/lib/seo";
+import { loadShownText, type DisplayDb } from "@/lib/translation/display";
 import { fetchComponentRows, buildComponentView } from "./view-model";
 
 export const dynamic = "force-dynamic";
 
-// The Component's own name and description, as submitted, in every Locale
-// until Translations land (#50).
+// The Component's name as submitted; its description as shown in the
+// page's Locale, the same text the page itself shows (#70).
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const component = await getPublishedComponent(narrowDb<PublishedComponentDb>(createServiceClient()), id);
+  const supabase = createServiceClient();
+  const component = await getPublishedComponent(narrowDb<PublishedComponentDb>(supabase), id);
   if (!component) return {};
+  const locale = await getLocale();
+  const { description } = await loadShownText(narrowDb<DisplayDb>(supabase), component, locale);
   return {
     title: component.name,
-    description: truncateDescription(component.description),
-    alternates: canonical(await getLocale(), componentPath(component.id)),
+    description: truncateDescription(description.text),
+    alternates: canonical(locale, componentPath(component.id)),
   };
 }
 
@@ -41,14 +46,20 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
   const t = await getTranslations("ComponentPage");
   const locale = await getLocale();
   const { component, seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
+  const shown = await loadShownText(narrowDb<DisplayDb>(supabase), component, locale);
+  const renderReadme = (readme: string) =>
+    readme.trim() ? <MarkdownRenderer source={readme} /> : <p className="text-sm text-subtle">{t("noReadme")}</p>;
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10 grid lg:grid-cols-[1fr_320px] gap-10">
       <article>
         <p className="eyebrow">{t("eyebrow")}</p>
         <h1 className="font-display font-bold text-3xl mt-2">{component.name}</h1>
-        <p className="text-muted mt-2">{component.description}</p>
-
+        <MachineTranslatedField
+          shown={<p className="text-muted mt-2">{shown.description.text}</p>}
+          source={<p className="text-muted mt-2">{component.description}</p>}
+          machineTranslatedFrom={shown.description.machineTranslatedFrom}
+        />
         {seller && (
           <p className="text-sm text-subtle mt-3">
             {t.rich("by", {
@@ -75,9 +86,11 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
         </div>
 
         <hr className="my-8" />
-        {component.readme?.trim()
-          ? <MarkdownRenderer source={component.readme} />
-          : <p className="text-sm text-subtle">{t("noReadme")}</p>}
+        <MachineTranslatedField
+          shown={renderReadme(shown.readme.text)}
+          source={renderReadme(component.readme ?? "")}
+          machineTranslatedFrom={shown.readme.machineTranslatedFrom}
+        />
 
         <hr className="my-8" />
         <ReviewsSection

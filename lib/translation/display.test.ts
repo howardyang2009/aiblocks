@@ -1,0 +1,150 @@
+import { describe, it, expect } from "vitest";
+import {
+  loadShownText,
+  localizeSummaries,
+  shownText,
+  type DisplayRow,
+  type DisplayDb,
+} from "@/lib/translation/display";
+import type { ComponentSource } from "@/lib/translation/plan";
+import type { ComponentSummary } from "@/types/database";
+
+const source: ComponentSource = { source_language: "en", description: "A tool for agents.", readme: "# Agent tool" };
+
+function row(overrides: Partial<DisplayRow> = {}): DisplayRow {
+  return { locale: "de", field: "description", kind: "machine", status: "ready", text: "Ein Werkzeug.", ...overrides };
+}
+
+describe("shownText", () => {
+  it("shows a ready machine Translation, labelled with the source language", () => {
+    expect(shownText(source, [row()], "de", "description")).toEqual({
+      text: "Ein Werkzeug.",
+      machineTranslatedFrom: "en",
+    });
+  });
+
+  it("shows a hand-edited Translation unlabelled, stale or not", () => {
+    expect(shownText(source, [row({ kind: "hand", text: "Von Hand." })], "de", "description")).toEqual({
+      text: "Von Hand.",
+      machineTranslatedFrom: null,
+    });
+  });
+
+  it("shows the Source text while the Translation is pending or failed", () => {
+    for (const status of ["pending", "failed"]) {
+      expect(shownText(source, [row({ status, text: null })], "de", "description")).toEqual({
+        text: source.description,
+        machineTranslatedFrom: null,
+      });
+    }
+  });
+
+  it("shows the Source text for a readme too long to translate", () => {
+    const long = { ...source, readme: "x".repeat(50_001) };
+    const failed = row({ field: "readme", status: "failed", text: null });
+    expect(shownText(long, [failed], "de", "readme")).toEqual({ text: long.readme, machineTranslatedFrom: null });
+  });
+
+  it("shows the Source text when no Translation exists for the Locale", () => {
+    expect(shownText(source, [row({ locale: "zh-CN" })], "de", "description").text).toBe(source.description);
+    expect(shownText(source, [row()], "de", "readme").text).toBe(source.readme);
+  });
+
+  it("shows the Source text in the Locale it is written in, even if a row is left over", () => {
+    expect(shownText(source, [row({ locale: "en", kind: "hand" })], "en", "description").text).toBe(source.description);
+  });
+
+  it("labels a Translation of a source in another language as such", () => {
+    const other = { ...source, source_language: "other" };
+    expect(shownText(other, [row()], "de", "description").machineTranslatedFrom).toBe("other");
+  });
+
+  it("shows an empty readme as empty", () => {
+    expect(shownText({ ...source, readme: null }, [], "de", "readme").text).toBe("");
+  });
+});
+
+function summary(overrides: Partial<ComponentSummary> = {}): ComponentSummary {
+  return {
+    id: "c1",
+    name: "Widget",
+    description: "A widget.",
+    source_language: "en",
+    ecosystems: [],
+    price_cents: 0,
+    currency: "eur",
+    star_count: 0,
+    download_count: 0,
+    ...overrides,
+  };
+}
+
+function fakeDb(rows: (DisplayRow & { component_id: string })[]) {
+  const calls: { method: string; args: unknown[] }[] = [];
+  const query: Record<string, unknown> = {};
+  const record = (method: string, ...args: unknown[]) => {
+    calls.push({ method, args });
+    return query;
+  };
+  query.in = (...args: unknown[]) => record("in", ...args);
+  query.eq = (...args: unknown[]) => record("eq", ...args);
+  query.then = (resolve: (value: { data: typeof rows }) => void) => Promise.resolve(resolve({ data: rows }));
+  const db = {
+    from: (table: string) => {
+      calls.push({ method: "from", args: [table] });
+      return { select: (...args: unknown[]) => record("select", ...args) };
+    },
+  } as unknown as DisplayDb;
+  return { db, calls };
+}
+
+describe("localizeSummaries", () => {
+  it("swaps in each card's ready description Translation for the Locale", async () => {
+    const { db, calls } = fakeDb([{ component_id: "c2", ...row({ kind: "hand", text: "Zwei." }) }]);
+    const result = await localizeSummaries(db, [summary(), summary({ id: "c2", description: "Two." })], "de");
+
+    expect(result.map((c) => [c.description, c.machineTranslatedFrom])).toEqual([
+      ["A widget.", null],
+      ["Zwei.", null],
+    ]);
+    expect(calls).toContainEqual({ method: "in", args: ["component_id", ["c1", "c2"]] });
+    expect(calls).toContainEqual({ method: "eq", args: ["locale", "de"] });
+    expect(calls).toContainEqual({ method: "eq", args: ["field", "description"] });
+  });
+
+  it("labels a machine Translation on a card", async () => {
+    const { db } = fakeDb([{ component_id: "c1", ...row() }]);
+    const [card] = await localizeSummaries(db, [summary()], "de");
+    expect(card).toMatchObject({ description: "Ein Werkzeug.", machineTranslatedFrom: "en" });
+  });
+
+  it("skips the query when there are no cards", async () => {
+    const { db, calls } = fakeDb([]);
+    expect(await localizeSummaries(db, [], "de")).toEqual([]);
+    expect(calls).toEqual([]);
+  });
+});
+
+describe("loadShownText", () => {
+  it("resolves description and readme from the Component's rows for the Locale", async () => {
+    const { db, calls } = fakeDb([
+      { component_id: "c1", ...row() },
+      { component_id: "c1", ...row({ field: "readme", kind: "hand", text: "# Werkzeug" }) },
+    ]);
+    const shown = await loadShownText(db, { id: "c1", ...source }, "de");
+
+    expect(shown).toEqual({
+      description: { text: "Ein Werkzeug.", machineTranslatedFrom: "en" },
+      readme: { text: "# Werkzeug", machineTranslatedFrom: null },
+    });
+    expect(calls).toContainEqual({ method: "in", args: ["component_id", ["c1"]] });
+    expect(calls).toContainEqual({ method: "eq", args: ["locale", "de"] });
+  });
+
+  it("skips the query in the Locale the source is written in", async () => {
+    const { db, calls } = fakeDb([]);
+    const shown = await loadShownText(db, { id: "c1", ...source }, "en");
+    expect(shown.description.text).toBe(source.description);
+    expect(calls).toEqual([]);
+  });
+});

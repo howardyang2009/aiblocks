@@ -19,6 +19,14 @@ Chromium browser against the app running with `NODE_ENV=test` (so it loads
   4. Comment on it.
   5. Confirm the review form is correctly hidden — sellers can't review their own
      components (see `CONTEXT.md`).
+- **`translated-content.spec.ts`** — signed out: Seller content per Locale (#70), with
+  Translations seeded straight into `component_translations`. A Locale with no
+  Translation shows the Source text; a German query finds a Component written in
+  Chinese through its `de` Translation.
+- **`translation-job.spec.ts`** — signed in: the real translation job, answered by the
+  mock Anthropic server. A published `en` Component shows its `de` Translation with the
+  machine-translated note, and "Show original" swaps in place; a failed Translation
+  falls back to the Source text until the retry route produces a ready one.
 
 **Not covered yet** (deliberately deferred):
 - Paid checkout + the Stripe webhook — needs the Stripe CLI forwarding events to
@@ -85,7 +93,10 @@ npm run test:e2e        # headless, once
 npm run test:e2e:ui     # Playwright's interactive UI mode — start here if debugging
 ```
 
-Playwright starts the app itself (`npm run dev:test`) and stops it after the run. If
+Playwright starts the app itself (`npm run dev:test`) and stops it after the run,
+together with the mock Anthropic server (`e2e/mock-anthropic/`) on the port in
+`ANTHROPIC_BASE_URL`. The translation job never calls the real API: the mock answers
+`[de] <source>`, and a spec makes it fail by posting a marker to `/__mock/fail`. If
 port 3000 is already taken (e.g. by a regular `npm run dev`), the suite fails fast
 rather than silently testing against the wrong server — stop the other process first.
 

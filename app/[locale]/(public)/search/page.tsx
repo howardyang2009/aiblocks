@@ -13,6 +13,7 @@ import { getConfig } from "@/lib/external-search/config";
 import { runSearch } from "@/lib/external-search/search/orchestrator";
 import { selectExternalResults } from "@/lib/external-search/search/by-source";
 import { pageMetadata } from "@/i18n/metadata";
+import { localizeSummaries, type DisplayDb } from "@/lib/translation/display";
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +34,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const tag = tagForComponentType(type);
 
   const configPromise = getConfig();
-  const [{ components: catalogMatches }, external] = await Promise.all([
-    listPublishedComponents(narrowDb<ListComponentsDb>(createServiceClient()), { q, tag }),
+  const supabase = createServiceClient();
+  const [catalogMatches, external] = await Promise.all([
+    listPublishedComponents(narrowDb<ListComponentsDb>(supabase), { q, tag }).then(({ components }) =>
+      localizeSummaries(narrowDb<DisplayDb>(supabase), components.slice(0, 6), locale)
+    ),
     configPromise.then((config) => runSearch(selectAdapters(createAdapters(config), type), q, type)),
   ]);
 
@@ -74,7 +78,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             </Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {catalogMatches.slice(0, 6).map((c) => (
+            {catalogMatches.map((c) => (
               <ComponentCard key={c.id} c={c} />
             ))}
           </div>

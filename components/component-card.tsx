@@ -1,12 +1,15 @@
 import { Link } from "@/i18n/navigation";
-import type { ComponentSummary } from "@/types/database";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import type { LocalizedSummary } from "@/lib/translation/display";
 import { formatNumber, isFreeComponent } from "@/lib/utils";
 import { Price } from "@/components/price";
 
 // A card in the browse grid. Metadata sits in monospace because it's data.
-export function ComponentCard({ c }: { c: ComponentSummary }) {
+// The description is already shown in the page's Locale (localizeSummaries);
+// a machine Translation is labelled, and the detail page can show the Source text.
+export function ComponentCard({ c }: { c: LocalizedSummary }) {
   const locale = useLocale();
+  const t = useTranslations("MachineTranslation");
   return (
     <Link
       href={`/components/${c.id}`}
@@ -20,6 +23,7 @@ export function ComponentCard({ c }: { c: ComponentSummary }) {
       </div>
 
       <p className="mt-2 text-sm text-muted line-clamp-2">{c.description}</p>
+      {c.machineTranslatedFrom && <p className="mt-1 font-mono text-[11px] text-subtle">{t("label")}</p>}
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {c.ecosystems.map((e) => (

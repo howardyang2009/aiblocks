@@ -706,6 +706,7 @@ export type ComponentSummary = Pick<
   | "id"
   | "name"
   | "description"
+  | "source_language"
   | "ecosystems"
   | "price_cents"
   | "currency"
