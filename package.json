@@ -4,6 +4,9 @@
   "private": true,
   "license": "MIT",
   "description": "A marketplace for reusable AI components.",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "next dev",
     "dev:test": "NODE_ENV=test next dev",
@@ -34,7 +37,7 @@
   "devDependencies": {
     "@clerk/testing": "^2.2.2",
     "@playwright/test": "^1.61.1",
-    "@types/node": "^20.14.0",
+    "@types/node": "^24.0.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
