@@ -13,8 +13,14 @@ export const routing = defineRouting({
   locales: ["de", "en", "zh-CN"],
   defaultLocale: "de",
   localePrefix: { mode: "always", prefixes },
-  // Remembered choice for the unprefixed doorway URL (#42): one year.
-  localeCookie: { maxAge: 60 * 60 * 24 * 365 },
+  // Remembered choice for the unprefixed doorway URL (#42): one year. In
+  // production the cookie lives on the parent domain, so rheinwegde.de and
+  // AiBlocks share one language choice; rheinwegde.de writes the same ids.
+  localeCookie: {
+    name: "RHEINWEG_LOCALE",
+    maxAge: 60 * 60 * 24 * 365,
+    ...(process.env.NEXT_PUBLIC_VERCEL_ENV === "production" && { domain: ".rheinwegde.de" }),
+  },
 });
 
 export type Locale = (typeof routing.locales)[number];

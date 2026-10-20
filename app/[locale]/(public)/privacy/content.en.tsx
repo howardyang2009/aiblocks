@@ -142,7 +142,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
         </p>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong className="text-ink">Clerk session cookies</strong> — keep you signed in.</li>
-          <li><strong className="text-ink"><code>NEXT_LOCALE</code></strong> — remembers the language you last viewed the site in, so a visit to the home page opens in that language. Kept for one year.</li>
+          <li><strong className="text-ink"><code>RHEINWEG_LOCALE</code></strong> — remembers the language you last viewed the site in, so a visit to the home page opens in that language. It is shared with rheinwegde.de and its subdomains, so both sites open in the same language. It holds only the language code. Kept for one year.</li>
         </ul>
         <p>
           We don't currently run analytics or advertising trackers. If that
