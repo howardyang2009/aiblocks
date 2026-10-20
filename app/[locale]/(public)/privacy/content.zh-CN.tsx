@@ -128,7 +128,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
         <p>AiBlocks 目前只使用网站运行所必需的 Cookie：</p>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong className="text-ink">Clerk 会话 Cookie</strong>：保持你的登录状态。</li>
-          <li><strong className="text-ink"><code>NEXT_LOCALE</code></strong>：记住你上次浏览网站时使用的语言，以便下次访问首页时以该语言打开。保存一年。</li>
+          <li><strong className="text-ink"><code>RHEINWEG_LOCALE</code></strong>：记住你上次浏览网站时使用的语言，以便下次访问首页时以该语言打开。该 Cookie 与 rheinwegde.de 及其子域名共用，使两个网站以同一语言打开。它只包含语言代码。保存一年。</li>
         </ul>
         <p>
           我们目前不使用任何分析或广告跟踪工具。如果情况发生变化（例如加入产品分析），

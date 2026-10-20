@@ -59,7 +59,7 @@ test.describe("Locale switcher", () => {
     await expect(page).toHaveURL(/\/de\/browse\?q=agent#results$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "de");
 
-    const cookie = (await page.context().cookies()).find((c) => c.name === "NEXT_LOCALE");
+    const cookie = (await page.context().cookies()).find((c) => c.name === "RHEINWEG_LOCALE");
     expect(cookie?.value).toBe("de");
     // One-year maxAge, give or take the test's own runtime.
     expect(cookie!.expires - Date.now() / 1000).toBeGreaterThan(ONE_YEAR - 60);

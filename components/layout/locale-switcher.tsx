@@ -14,7 +14,7 @@ const OWN_NAMES: Record<Locale, string> = {
 
 // Footer button plus native modal <dialog>: the browser traps focus, closes it
 // on Escape and returns focus to the button. Links are full navigations, so
-// the middleware writes the NEXT_LOCALE cookie for the new Locale.
+// the middleware writes the RHEINWEG_LOCALE cookie for the new Locale.
 export function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher");
   const current = useLocale();

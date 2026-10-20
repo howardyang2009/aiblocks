@@ -148,7 +148,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
         </p>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong className="text-ink">Sitzungs-Cookies von Clerk</strong>: halten Sie angemeldet.</li>
-          <li><strong className="text-ink"><code>NEXT_LOCALE</code></strong>: merkt sich die Sprache, in der Sie die Website zuletzt angesehen haben, damit die Startseite beim nächsten Besuch in dieser Sprache öffnet. Speicherdauer: ein Jahr.</li>
+          <li><strong className="text-ink"><code>RHEINWEG_LOCALE</code></strong>: merkt sich die Sprache, in der Sie die Website zuletzt angesehen haben, damit die Startseite beim nächsten Besuch in dieser Sprache öffnet. Das Cookie wird mit rheinwegde.de und dessen Subdomains geteilt, damit beide Websites in derselben Sprache öffnen. Es enthält nur den Sprachcode. Speicherdauer: ein Jahr.</li>
         </ul>
         <p>
           Wir setzen derzeit keine Analyse- oder Werbe-Tracker ein. Sollte sich

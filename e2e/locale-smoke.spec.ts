@@ -16,14 +16,14 @@ const LOCALES = [
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-// A fresh context per doorway test so no NEXT_LOCALE cookie leaks between them.
+// A fresh context per doorway test so no RHEINWEG_LOCALE cookie leaks between them.
 async function visitDoorway(
   browser: Browser,
   { acceptLanguage, cookieLocale }: { acceptLanguage: string; cookieLocale?: string }
 ) {
   const context = await browser.newContext({ locale: acceptLanguage });
   if (cookieLocale) {
-    await context.addCookies([{ name: "NEXT_LOCALE", value: cookieLocale, url: BASE_URL }]);
+    await context.addCookies([{ name: "RHEINWEG_LOCALE", value: cookieLocale, url: BASE_URL }]);
   }
   const page = await context.newPage();
   await page.goto("/");
@@ -71,7 +71,7 @@ test.describe("Locale smoke", () => {
     expect(await visitDoorway(browser, { acceptLanguage: "zh-TW" })).toBe("/zh");
   });
 
-  test("doorway prefers the NEXT_LOCALE cookie over Accept-Language", async ({ browser }) => {
+  test("doorway prefers the RHEINWEG_LOCALE cookie over Accept-Language", async ({ browser }) => {
     expect(await visitDoorway(browser, { acceptLanguage: "en-US", cookieLocale: "zh-CN" })).toBe("/zh");
   });
 
