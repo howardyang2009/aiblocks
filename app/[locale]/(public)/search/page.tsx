@@ -1,17 +1,19 @@
+import { Suspense } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { narrowDb } from "@/lib/db-port";
 import { listPublishedComponents, type ListComponentsDb } from "@/lib/commerce/browse";
 import { ComponentCard } from "@/components/component-card";
-import { formatNumber } from "@/lib/utils";
 import { ExternalSearchForm } from "@/components/external-search/ExternalSearchForm";
-import { ExternalResultsList } from "@/components/external-search/ExternalResultsList";
+import {
+  ExternalResultsSection,
+  ExternalResultsSkeleton,
+} from "@/components/external-search/ExternalResultsSection";
 import { resolveComponentType, tagForComponentType } from "@/lib/external-search/search-query";
 import { createAdapters, selectAdapters } from "@/lib/external-search/adapters";
 import { getConfig } from "@/lib/external-search/config";
 import { runSearch } from "@/lib/external-search/search/orchestrator";
-import { selectExternalResults } from "@/lib/external-search/search/by-source";
 import { pageMetadata } from "@/i18n/metadata";
 import { localizeSummaries, type DisplayDb } from "@/lib/translation/display";
 
@@ -33,38 +35,20 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const type = resolveComponentType(resolved.type);
   const tag = tagForComponentType(type);
 
-  const configPromise = getConfig();
+  // Started before the catalog query so both run in parallel, but only the
+  // Suspense boundary below waits on it (#80).
+  const external = getConfig().then((config) => runSearch(selectAdapters(createAdapters(config), type), q, type));
   const supabase = createServiceClient();
-  const [catalogMatches, external] = await Promise.all([
-    listPublishedComponents(narrowDb<ListComponentsDb>(supabase), { q, tag }).then(({ components }) =>
-      localizeSummaries(narrowDb<DisplayDb>(supabase), components.slice(0, 6), locale)
-    ),
-    configPromise.then((config) => runSearch(selectAdapters(createAdapters(config), type), q, type)),
-  ]);
-
-  const activeSource = resolved.source;
-  const { results: externalResults, availableSources } = selectExternalResults(external, activeSource);
-  const hasAnyResults = catalogMatches.length > 0 || externalResults.length > 0;
+  const { components } = await listPublishedComponents(narrowDb<ListComponentsDb>(supabase), { q, tag });
+  const catalogMatches = await localizeSummaries(narrowDb<DisplayDb>(supabase), components.slice(0, 6), locale);
 
   const t = await getTranslations("SearchPage");
-
-  function sourceHref(source?: string) {
-    const p = new URLSearchParams({ q: q as string, type });
-    if (source) p.set("source", source);
-    return `/search?${p.toString()}`;
-  }
 
   return (
     <div className="mx-auto max-w-shell px-5 py-10">
       <div className="max-w-2xl mx-auto">
         <ExternalSearchForm defaultQuery={q} selectedType={type} />
       </div>
-
-      {!hasAnyResults && (
-        <p className="mt-10 text-center text-muted">
-          {t("noResults", { query: q })}
-        </p>
-      )}
 
       {catalogMatches.length > 0 && (
         <section className="mt-10">
@@ -85,39 +69,15 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </section>
       )}
 
-      <section className="mt-10">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <h2 className="font-display font-bold text-xl">{t("fromWeb")}</h2>
-          {availableSources.length > 0 && (
-            <div className="flex flex-wrap gap-3 font-mono text-xs">
-              <Link href={sourceHref()} className={!activeSource ? "text-accent" : "text-subtle hover:text-ink"}>
-                {t("allSources")}
-              </Link>
-              {availableSources.map((s) => (
-                <Link
-                  key={s.source}
-                  href={sourceHref(s.source)}
-                  className={activeSource === s.source ? "text-accent" : "text-subtle hover:text-ink"}
-                >
-                  {s.source} ({formatNumber(s.count, locale)})
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-subtle">
-          {external.sources.map((s) => (
-            <span key={s.source}>
-              {s.source}: {s.status === "ok" ? s.count : t(`sourceStatus.${s.status}`)}
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-4">
-          <ExternalResultsList results={externalResults} />
-        </div>
-      </section>
+      <Suspense fallback={<ExternalResultsSkeleton />}>
+        <ExternalResultsSection
+          q={q}
+          type={type}
+          external={external}
+          activeSource={resolved.source}
+          catalogCount={catalogMatches.length}
+        />
+      </Suspense>
     </div>
   );
 }

@@ -61,4 +61,14 @@ test.describe("browse & search", () => {
     await expect(page.getByRole("heading", { name: seeded.name })).toBeVisible();
     await expect(page.getByText("Free")).toBeVisible();
   });
+
+  test("search streams the web results in under the form", async ({ page }) => {
+    const nonsense = `no-such-component-${Date.now()}`;
+    await page.goto(`/en/search?q=${nonsense}`);
+
+    await expect(page.locator(`input[value="${nonsense}"]`)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "From around the web" })).toBeVisible();
+    // The per-source status line only exists once the Suspense boundary resolved (#80).
+    await expect(page.getByText(/^github: /)).toBeVisible({ timeout: 15_000 });
+  });
 });
