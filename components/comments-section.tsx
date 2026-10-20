@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -10,6 +11,7 @@ import { requiresDeleteConfirmation, type CommentNode } from "@/lib/engagement/c
 import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/engagement/comments-flow";
 import { postCommentEffect, removeCommentEffect } from "@/lib/engagement/comments-effects";
 import { useRowMutation } from "@/lib/use-row-mutation";
+import { Link } from "@/i18n/navigation";
 
 const COMPOSE = "compose";
 // A top-level comment's own id doubles as its delete action's row key; its
@@ -30,21 +32,23 @@ export type { CommentNode } from "@/lib/engagement/comments-section-state";
 
 
 function AuthorLine({ c }: { c: CommentNode }) {
+  const t = useTranslations("Engagement");
+  const locale = useLocale();
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <a
+      <Link
         href={`/sellers/${c.author.username}`}
         className="text-sm font-medium hover:text-accent truncate"
       >
         {c.author.display_name ?? `@${c.author.username}`}
-      </a>
+      </Link>
       {c.isSeller && (
         <span className="font-mono text-[10px] rounded-[3px] border px-1 py-0.5 text-accent">
-          seller
+          {t("sellerBadge")}
         </span>
       )}
-      {c.mine && <span className="font-mono text-[10px] text-subtle">(you)</span>}
-      <span className="font-mono text-[10px] text-subtle">{formatDate(c.created_at)}</span>
+      {c.mine && <span className="font-mono text-[10px] text-subtle">{t("you")}</span>}
+      <span className="font-mono text-[10px] text-subtle">{formatDate(c.created_at, locale)}</span>
     </div>
   );
 }
@@ -64,6 +68,8 @@ export function CommentsSection({
   viewer: PublicProfile | null;
   isSeller: boolean;
 }) {
+  const t = useTranslations("Comments");
+  const tEngagement = useTranslations("Engagement");
   const [comments, setComments] = useState<CommentNode[]>(initialComments);
 
   // Top-level composer.
@@ -80,8 +86,21 @@ export function CommentsSection({
     const key = parentId ? replyKey(parentId) : COMPOSE;
     const result = await run(key, () =>
       runPostCommentFlow(
-        { postComment: (text, parentId) => postCommentEffect(fetch, componentId, text, parentId) },
-        { comments, body: parentId ? replyBody : body, parentId, viewer, isSeller }
+        {
+          postComment: (text, parentId) =>
+            postCommentEffect(fetch, componentId, text, parentId, {
+              fallback: t("errors.postFailed"),
+              network: t("errors.postNetwork"),
+            }),
+        },
+        {
+          comments,
+          body: parentId ? replyBody : body,
+          parentId,
+          viewer,
+          isSeller,
+          messages: { required: t("errors.required") },
+        }
       )
     );
     if (result.status === "error") return;
@@ -96,15 +115,18 @@ export function CommentsSection({
 
   async function remove(comment: CommentNode) {
     if (requiresDeleteConfirmation(comment)) {
-      const replyCount = comment.replies.length;
-      const confirmed = window.confirm(
-        `Deleting this comment also deletes its ${replyCount} ${replyCount === 1 ? "reply" : "replies"}. Continue?`
-      );
+      const confirmed = window.confirm(t("deleteConfirm", { count: comment.replies.length }));
       if (!confirmed) return;
     }
     const result = await run(comment.id, () =>
       runRemoveCommentFlow(
-        { removeComment: () => removeCommentEffect(fetch, comment.id) },
+        {
+          removeComment: () =>
+            removeCommentEffect(fetch, comment.id, {
+              fallback: t("errors.deleteFailed"),
+              network: t("errors.deleteNetwork"),
+            }),
+        },
         { comments, comment, confirmed: true }
       )
     );
@@ -114,15 +136,15 @@ export function CommentsSection({
   return (
     <section className="mt-10" id="comments">
       <div className="flex items-baseline justify-between gap-4 flex-wrap">
-        <h2 className="font-display font-bold text-xl">Comments</h2>
+        <h2 className="font-display font-bold text-xl">{t("heading")}</h2>
         {count > 0 && (
           <span className="font-mono text-xs text-subtle">
-            {count} {count === 1 ? "comment" : "comments"}
+            {t("count", { count })}
           </span>
         )}
       </div>
       <p className="text-xs text-subtle mt-1">
-        Open discussion — ask questions before you download. Anyone can comment.
+        {t("intro")}
       </p>
 
       {/* ---- Top-level composer ---- */}
@@ -133,7 +155,7 @@ export function CommentsSection({
             onChange={(e) => setBody(e.target.value)}
             maxLength={MAX_BODY_LENGTH}
             rows={3}
-            placeholder="Ask a question or share a tip"
+            placeholder={t("placeholder")}
             data-testid="comment-input"
             className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
           />
@@ -146,20 +168,25 @@ export function CommentsSection({
               className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
             >
               {isBusy(COMPOSE) && <Spinner className="h-3.5 w-3.5" />}
-              {isBusy(COMPOSE) ? "Posting…" : "Post comment"}
+              {isBusy(COMPOSE) ? tEngagement("posting") : t("post")}
             </button>
           </div>
         </div>
       ) : (
         <p className="mt-5 text-sm text-subtle">
-          <a href="/sign-in" className="text-accent hover:underline">Sign in</a> to join the
-          discussion.
+          {t.rich("signInPrompt", {
+            signIn: (chunks) => (
+              <Link href="/sign-in" className="text-accent hover:underline">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       )}
 
       {/* ---- Thread ---- */}
       {count === 0 ? (
-        <p className="mt-5 text-sm text-subtle">No comments yet.</p>
+        <p className="mt-5 text-sm text-subtle">{t("empty")}</p>
       ) : (
         <ul className="mt-5 space-y-5">
           {comments.map((c) => (
@@ -179,7 +206,7 @@ export function CommentsSection({
                         }}
                         className="font-mono text-[11px] text-subtle hover:text-accent"
                       >
-                        reply
+                        {tEngagement("reply")}
                       </button>
                     )}
                     {c.mine && (
@@ -188,7 +215,7 @@ export function CommentsSection({
                         disabled={isBusy(c.id)}
                         className="font-mono text-[11px] text-subtle hover:text-red-600"
                       >
-                        delete
+                        {tEngagement("delete")}
                       </button>
                     )}
                   </div>
@@ -209,7 +236,7 @@ export function CommentsSection({
                                   disabled={isBusy(r.id)}
                                   className="mt-1 font-mono text-[11px] text-subtle hover:text-red-600"
                                 >
-                                  delete
+                                  {tEngagement("delete")}
                                 </button>
                               )}
                             </div>
@@ -227,7 +254,7 @@ export function CommentsSection({
                         onChange={(e) => setReplyBody(e.target.value)}
                         maxLength={MAX_BODY_LENGTH}
                         rows={2}
-                        placeholder={`Reply to ${c.author.display_name ?? `@${c.author.username}`}`}
+                        placeholder={t("replyPlaceholder", { name: c.author.display_name ?? `@${c.author.username}` })}
                         className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
                       />
                       {errorFor(replyKey(c.id)) && (
@@ -240,7 +267,7 @@ export function CommentsSection({
                           className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
                         >
                           {isBusy(replyKey(c.id)) && <Spinner className="h-3.5 w-3.5" />}
-                          {isBusy(replyKey(c.id)) ? "Posting…" : "Post reply"}
+                          {isBusy(replyKey(c.id)) ? tEngagement("posting") : t("postReply")}
                         </button>
                         <button
                           onClick={() => {
@@ -249,7 +276,7 @@ export function CommentsSection({
                           }}
                           className="text-sm text-subtle hover:text-muted"
                         >
-                          Cancel
+                          {tEngagement("cancel")}
                         </button>
                       </div>
                     </div>

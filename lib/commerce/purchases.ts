@@ -1,6 +1,8 @@
 import type Stripe from "stripe";
 import type { Tables, TablesInsert } from "@/types/database";
-import { APP_URL } from "@/lib/constants";
+import { createTranslator } from "next-intl";
+import type { Locale } from "@/i18n/routing";
+import { localeUrl } from "@/i18n/locale-url";
 import { getEntitlement, grantEntitlement, type EntitlementLookupDb, type EntitlementGrantDb } from "@/lib/commerce/entitlements";
 import { isFreeComponent } from "@/lib/utils";
 
@@ -48,6 +50,21 @@ export type CheckoutStripe = {
   };
 };
 
+// Stripe Checkout has no `zh-CN`; plain `zh` is Simplified Chinese.
+const STRIPE_CHECKOUT_LOCALES: Record<Locale, Stripe.Checkout.SessionCreateParams.Locale> = {
+  de: "de",
+  en: "en",
+  "zh-CN": "zh",
+};
+
+// The Withdrawal waiver as Stripe Markdown, linking to the terms' withdrawal
+// clause in the same Locale.
+async function checkoutWaiverText(locale: Locale): Promise<string> {
+  const messages = (await import(`../../messages/${locale}.json`)).default;
+  const t = createTranslator({ locale, messages, namespace: "Waiver" });
+  return t("checkout", { termsUrl: localeUrl(locale, "/terms#refunds") });
+}
+
 // Everything needed to buy a paid component: entitlement/eligibility checks,
 // the pending purchase row (so the webhook can reconcile by id), and the
 // Stripe Checkout Session itself — the buyer -> seller leg of the same
@@ -55,7 +72,7 @@ export type CheckoutStripe = {
 export async function createCheckout(
   stripe: CheckoutStripe,
   supabase: CreateCheckoutDb,
-  args: { buyer: Tables<"profiles">; componentId: string; withdrawalWaived: boolean }
+  args: { buyer: Tables<"profiles">; componentId: string; withdrawalWaived: boolean; locale: Locale }
 ): Promise<CheckoutResult> {
   // EU/EEA Consumer Rights Directive (Art. 16(m)): buyers get a 14-day
   // withdrawal right on digital content unless they've expressly consented
@@ -67,7 +84,7 @@ export async function createCheckout(
     return {
       ok: false,
       status: 400,
-      error: "Please confirm the digital delivery notice before checking out.",
+      error: "waiverRequired",
     };
   }
 
@@ -78,25 +95,28 @@ export async function createCheckout(
     .maybeSingle();
 
   if (!component || component.status !== "published") {
-    return { ok: false, status: 404, error: "Component not found." };
+    return { ok: false, status: 404, error: "componentNotFound" };
   }
   if (isFreeComponent(component.price_cents)) {
-    return { ok: false, status: 400, error: "This component is free — just download it." };
+    return { ok: false, status: 400, error: "componentIsFree" };
   }
   if (component.seller_id === args.buyer.id) {
-    return { ok: false, status: 400, error: "You can't buy your own component." };
+    return { ok: false, status: 400, error: "ownComponentPurchase" };
   }
 
   // Already owns it? Don't double-charge.
   if (await getEntitlement(supabase, args.buyer.id, component.id)) {
-    return { ok: false, status: 400, error: "You already own this — find it in My downloads." };
+    return { ok: false, status: 400, error: "alreadyOwned" };
   }
 
   const { data: seller } = await supabase
     .from("profiles").select("stripe_account_id").eq("id", component.seller_id).maybeSingle();
   if (!seller || !seller.stripe_account_id) {
-    return { ok: false, status: 400, error: "Seller cannot accept payments yet." };
+    return { ok: false, status: 400, error: "sellerNotPayable" };
   }
+
+  // Built before the pending purchase so a failure here leaves no orphan row.
+  const waiverText = await checkoutWaiverText(args.locale);
 
   // Create a pending purchase first so the webhook can reconcile by id.
   // Guard the error: if the insert fails we must NOT proceed to Stripe —
@@ -117,7 +137,7 @@ export async function createCheckout(
     .select("id").single();
 
   if (purchaseErr || !purchase) {
-    return { ok: false, status: 500, error: "Could not create purchase record. Please try again." };
+    return { ok: false, status: 500, error: "purchaseCreateFailed" };
   }
 
   const session = await stripe.checkout.sessions.create({
@@ -147,18 +167,18 @@ export async function createCheckout(
     // (Settings -> Business -> Public details -> Terms of service link ->
     // https://aiblocks-six.vercel.app/terms), or Stripe will reject this.
     consent_collection: { terms_of_service: "required" },
+    // Stripe does not translate our own text: the waiver comes from
+    // messages/*.json in the Buyer's Locale (#60).
     custom_text: {
-      terms_of_service_acceptance: {
-        message:
-          "I agree to the [Terms of Service](" + APP_URL + "/terms), and I want immediate access to this digital component — I understand this means I give up my 14-day EU/EEA right of withdrawal.",
-      },
+      terms_of_service_acceptance: { message: waiverText },
     },
-    success_url: `${APP_URL}/components/${component.id}?paid=1`,
-    cancel_url: `${APP_URL}/components/${component.id}?canceled=1`,
+    locale: STRIPE_CHECKOUT_LOCALES[args.locale],
+    success_url: localeUrl(args.locale, `/components/${component.id}?paid=1`),
+    cancel_url: localeUrl(args.locale, `/components/${component.id}?canceled=1`),
   });
 
   if (!session.url) {
-    return { ok: false, status: 500, error: "Could not start checkout. Please try again." };
+    return { ok: false, status: 500, error: "checkoutFailed" };
   }
   return { ok: true, url: session.url };
 }

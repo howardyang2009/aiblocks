@@ -16,7 +16,7 @@ function componentSummary(overrides: Partial<ComponentSummary> = {}): ComponentS
     description: "",
     ecosystems: [],
     price_cents: 0,
-    currency: "usd",
+    currency: "eur",
     star_count: 0,
     download_count: 0,
     ...overrides,

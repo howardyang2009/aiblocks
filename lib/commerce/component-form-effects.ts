@@ -14,7 +14,9 @@ import type {
 // so tests can hand these a fake directly instead of mocking a module — the
 // same rule every *Db port in lib/ already follows. The fetch-based effects
 // go through lib/client-action.ts so a dropped connection mid-publish/edit
-// surfaces as an error message instead of an unhandled rejection.
+// surfaces as an error message instead of an unhandled rejection. Every
+// failure is a ComponentWriteError key (lib/commerce/component-write-errors.ts),
+// which the form translates.
 
 // The narrow slice of the Supabase client uploadZip touches.
 export type UploadZipStorage = {
@@ -38,7 +40,7 @@ export async function requestUploadUrl(
     fetchImpl,
     "/api/components/upload-url",
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ size: sizeBytes }) },
-    { fallback: "Could not start upload.", network: "Network error — the upload could not be started." }
+    { fallback: "uploadStartFailed", network: "uploadStartNetwork" }
   );
   if (!result.ok) return result;
   return { ok: true, path: result.data.path, token: result.data.token, bucket: result.data.bucket };
@@ -53,7 +55,7 @@ export async function uploadZip(
   file: File
 ): Promise<UploadZipResult> {
   const { error } = await storage.storage.from(bucket).uploadToSignedUrl(path, token, file);
-  if (error) return { ok: false, error: "Upload failed. Please try again." };
+  if (error) return { ok: false, error: "uploadFailed" };
   return { ok: true };
 }
 
@@ -66,7 +68,7 @@ export async function createComponentEffect(
     fetchImpl,
     "/api/components",
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
-    { fallback: "Could not publish.", network: "Network error — the component was not published." }
+    { fallback: "publishFailed", network: "publishNetwork" }
   );
   if (!result.ok) return result;
   return { ok: true, id: result.data.id };
@@ -82,7 +84,7 @@ export async function updateComponentEffect(
     fetchImpl,
     `/api/components/${id}`,
     { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
-    { fallback: "Could not save changes.", network: "Network error — the changes were not saved." }
+    { fallback: "saveFailed", network: "saveNetwork" }
   );
   if (!result.ok) return result;
   return { ok: true, id: result.data.id };

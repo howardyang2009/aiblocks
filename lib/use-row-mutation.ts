@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { markBusy, settle, clearRow, isBusy, errorFor, type RowMap } from "@/lib/row-mutation-state";
+import { useErrorMessage } from "@/lib/use-error-message";
 
 // The thin React edge around row-mutation-state.ts's pure transitions —
 // deliberately untested, same split as lib/identity/viewer.ts around
@@ -13,9 +14,11 @@ import { markBusy, settle, clearRow, isBusy, errorFor, type RowMap } from "@/lib
 // that track two independent actions on the same underlying row (reviews:
 // editing your own review vs. the seller's reply to it) should namespace
 // their ids (e.g. `review:${id}` / `reply:${id}`) so the two don't share a
-// busy/error slot.
+// busy/error slot. `errorFor` returns text for the Viewer: a shared API
+// helper key is translated (lib/use-error-message.ts).
 export function useRowMutation() {
   const [rows, setRows] = useState<RowMap>(new Map());
+  const errorMessage = useErrorMessage();
 
   async function run<T extends { status: string; error?: string }>(
     id: string,
@@ -30,7 +33,10 @@ export function useRowMutation() {
   return {
     run,
     isBusy: (id: string) => isBusy(rows, id),
-    errorFor: (id: string) => errorFor(rows, id),
+    errorFor: (id: string) => {
+      const error = errorFor(rows, id);
+      return error === null ? null : errorMessage(error);
+    },
     clear: (id: string) => setRows((current) => clearRow(current, id)),
   };
 }

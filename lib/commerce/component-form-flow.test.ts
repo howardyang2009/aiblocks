@@ -35,42 +35,42 @@ describe("validatePublishForm", () => {
   it("rejects a name under 3 characters", () => {
     expect(validatePublishForm(validPublishFields({ name: "ab" }))).toEqual({
       ok: false,
-      error: "Name must be at least 3 characters.",
+      error: "nameTooShort",
     });
   });
 
   it("rejects a description under 10 characters", () => {
     expect(validatePublishForm(validPublishFields({ description: "too short" }))).toEqual({
       ok: false,
-      error: "Add a short description (10+ characters).",
+      error: "descriptionTooShort",
     });
   });
 
   it("rejects a missing file", () => {
     expect(validatePublishForm(validPublishFields({ file: null }))).toEqual({
       ok: false,
-      error: "Choose a zip file to upload.",
+      error: "zipRequired",
     });
   });
 
   it("rejects a file over the 10MB limit", () => {
     expect(validatePublishForm(validPublishFields({ file: smallFile(20 * 1024 * 1024) }))).toEqual({
       ok: false,
-      error: "Zip exceeds the 10MB limit.",
+      error: "zipTooLarge",
     });
   });
 
   it("rejects a negative price — the check the form used to skip", () => {
     expect(validatePublishForm(validPublishFields({ price: "-5" }))).toEqual({
       ok: false,
-      error: "Price must be 0 or a positive number.",
+      error: "priceInvalid",
     });
   });
 
   it("rejects a non-numeric price", () => {
     expect(validatePublishForm(validPublishFields({ price: "free plz" }))).toEqual({
       ok: false,
-      error: "Price must be 0 or a positive number.",
+      error: "priceInvalid",
     });
   });
 });
@@ -105,31 +105,31 @@ describe("runPublishFlow", () => {
     const deps = fakePublishDeps();
     const result = await runPublishFlow(deps, validPublishFields({ name: "ab" }));
 
-    expect(result).toEqual({ status: "error", error: "Name must be at least 3 characters." });
+    expect(result).toEqual({ status: "error", error: "nameTooShort" });
     expect(deps.requestUploadUrl).not.toHaveBeenCalled();
   });
 
   it("stops before uploading when minting the upload url fails", async () => {
-    const deps = fakePublishDeps({ requestUploadUrl: vi.fn(async () => ({ ok: false as const, error: "Could not start upload." })) });
+    const deps = fakePublishDeps({ requestUploadUrl: vi.fn(async () => ({ ok: false as const, error: "uploadStartFailed" })) });
     const result = await runPublishFlow(deps, validPublishFields());
 
-    expect(result).toEqual({ status: "error", error: "Could not start upload." });
+    expect(result).toEqual({ status: "error", error: "uploadStartFailed" });
     expect(deps.uploadZip).not.toHaveBeenCalled();
   });
 
   it("stops before creating the component when the upload fails", async () => {
-    const deps = fakePublishDeps({ uploadZip: vi.fn(async () => ({ ok: false as const, error: "Upload failed. Please try again." })) });
+    const deps = fakePublishDeps({ uploadZip: vi.fn(async () => ({ ok: false as const, error: "uploadFailed" })) });
     const result = await runPublishFlow(deps, validPublishFields());
 
-    expect(result).toEqual({ status: "error", error: "Upload failed. Please try again." });
+    expect(result).toEqual({ status: "error", error: "uploadFailed" });
     expect(deps.createComponent).not.toHaveBeenCalled();
   });
 
   it("reports the error when creating the component fails", async () => {
-    const deps = fakePublishDeps({ createComponent: vi.fn(async () => ({ ok: false as const, error: "Could not publish." })) });
+    const deps = fakePublishDeps({ createComponent: vi.fn(async () => ({ ok: false as const, error: "publishFailed" })) });
     const result = await runPublishFlow(deps, validPublishFields());
 
-    expect(result).toEqual({ status: "error", error: "Could not publish." });
+    expect(result).toEqual({ status: "error", error: "publishFailed" });
   });
 
   it("reports upload then saving stages in order", async () => {
@@ -174,28 +174,28 @@ describe("validateEditForm", () => {
   it("rejects a name under 3 characters", () => {
     expect(validateEditForm(validEditFields({ name: "ab" }))).toEqual({
       ok: false,
-      error: "Name must be at least 3 characters.",
+      error: "nameTooShort",
     });
   });
 
   it("rejects a description under 10 characters", () => {
     expect(validateEditForm(validEditFields({ description: "too short" }))).toEqual({
       ok: false,
-      error: "Add a short description (10+ characters).",
+      error: "descriptionTooShort",
     });
   });
 
   it("rejects a replacement file over the 10MB limit", () => {
     expect(validateEditForm(validEditFields({ file: smallFile(20 * 1024 * 1024) }))).toEqual({
       ok: false,
-      error: "Zip exceeds the 10MB limit.",
+      error: "zipTooLarge",
     });
   });
 
   it("rejects a negative price", () => {
     expect(validateEditForm(validEditFields({ price: "-5" }))).toEqual({
       ok: false,
-      error: "Price must be 0 or a positive number.",
+      error: "priceInvalid",
     });
   });
 });
@@ -250,33 +250,33 @@ describe("runEditFlow", () => {
     const deps = fakeEditDeps();
     const result = await runEditFlow(deps, "comp1", validEditFields({ name: "ab" }));
 
-    expect(result).toEqual({ status: "error", error: "Name must be at least 3 characters." });
+    expect(result).toEqual({ status: "error", error: "nameTooShort" });
     expect(deps.requestUploadUrl).not.toHaveBeenCalled();
     expect(deps.updateComponent).not.toHaveBeenCalled();
   });
 
   it("stops before uploading when minting the upload url fails", async () => {
-    const deps = fakeEditDeps({ requestUploadUrl: vi.fn(async () => ({ ok: false as const, error: "Could not start upload." })) });
+    const deps = fakeEditDeps({ requestUploadUrl: vi.fn(async () => ({ ok: false as const, error: "uploadStartFailed" })) });
     const result = await runEditFlow(deps, "comp1", validEditFields({ file: smallFile() }));
 
-    expect(result).toEqual({ status: "error", error: "Could not start upload." });
+    expect(result).toEqual({ status: "error", error: "uploadStartFailed" });
     expect(deps.uploadZip).not.toHaveBeenCalled();
     expect(deps.updateComponent).not.toHaveBeenCalled();
   });
 
   it("stops before updating when the upload fails", async () => {
-    const deps = fakeEditDeps({ uploadZip: vi.fn(async () => ({ ok: false as const, error: "Upload failed. Please try again." })) });
+    const deps = fakeEditDeps({ uploadZip: vi.fn(async () => ({ ok: false as const, error: "uploadFailed" })) });
     const result = await runEditFlow(deps, "comp1", validEditFields({ file: smallFile() }));
 
-    expect(result).toEqual({ status: "error", error: "Upload failed. Please try again." });
+    expect(result).toEqual({ status: "error", error: "uploadFailed" });
     expect(deps.updateComponent).not.toHaveBeenCalled();
   });
 
   it("reports the error when updating fails", async () => {
-    const deps = fakeEditDeps({ updateComponent: vi.fn(async () => ({ ok: false as const, error: "Could not save changes." })) });
+    const deps = fakeEditDeps({ updateComponent: vi.fn(async () => ({ ok: false as const, error: "saveFailed" })) });
     const result = await runEditFlow(deps, "comp1", validEditFields());
 
-    expect(result).toEqual({ status: "error", error: "Could not save changes." });
+    expect(result).toEqual({ status: "error", error: "saveFailed" });
   });
 
   it("reports upload then saving stages in order when a file IS provided", async () => {

@@ -2,6 +2,8 @@
 // Kept out of app/ so both pages can import the same section/callout
 // styling instead of drifting apart over time.
 
+import { useTranslations } from "next-intl";
+
 export function LegalSection({
   id,
   title,
@@ -30,9 +32,11 @@ export function LegalCallout({ children }: { children: React.ReactNode }) {
 }
 
 export function LegalToc({ sections }: { sections: { id: string; label: string }[] }) {
+  const t = useTranslations("Legal");
+
   return (
     <nav className="mt-8 border-t border-line pt-6">
-      <p className="eyebrow mb-3">On this page</p>
+      <p className="eyebrow mb-3">{t("onThisPage")}</p>
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
         {sections.map((s) => (
           <li key={s.id}>

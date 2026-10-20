@@ -1,0 +1,379 @@
+{
+  "Navbar": {
+    "byRheinWeg": "von RheinWeg",
+    "browse": "Durchsuchen",
+    "publish": "Veröffentlichen",
+    "myDownloads": "Meine Downloads",
+    "signIn": "Anmelden"
+  },
+  "Guide": {
+    "next": "Weiter"
+  },
+  "Legal": {
+    "onThisPage": "Auf dieser Seite",
+    "lastUpdated": "Zuletzt aktualisiert: {date}",
+    "draft": "Entwurf: Dieser Text ist noch nicht geprüft und kann sich bis zum Abschluss der Prüfung noch ändern.",
+    "binding": "Dies ist eine Übersetzung zu Ihrer Information. Rechtlich verbindlich ist allein die <german>deutsche Fassung</german>.",
+    "behind": "Die deutsche Fassung wurde am {date} aktualisiert, diese Übersetzung ist noch nicht auf dem neuesten Stand. Maßgeblich ist die <german>deutsche Fassung</german>."
+  },
+  "Footer": {
+    "byRheinWeg": "von RheinWeg",
+    "tagline": "Offener Marktplatz für wiederverwendbare KI-Komponenten",
+    "sell": "Verkaufen",
+    "publishingGuide": "Anleitung zum Veröffentlichen",
+    "getPaid": "Mit Stripe bezahlt werden",
+    "aboutHeading": "Über uns",
+    "about": "Über AiBlocks",
+    "contact": "Kontakt",
+    "impressum": "Impressum",
+    "terms": "AGB",
+    "privacy": "Datenschutz"
+  },
+  "LocaleSwitcher": {
+    "label": "Sprache",
+    "title": "Sprache wählen",
+    "close": "Schließen",
+    "names": {
+      "de": "Deutsch",
+      "en": "Englisch",
+      "zh-CN": "Chinesisch"
+    }
+  },
+  "HomePage": {
+    "title": "KI-Komponenten im Web finden",
+    "eyebrow": "Offener Marktplatz · mehrere Ökosysteme",
+    "heroTitle": "Wiederverwendbare KI-Komponenten<br></br>sofort einsatzbereit",
+    "heroBody": "Veröffentlichen und laden Sie KI-Bausteine herunter: Prompts, Skills, Subagents, MCP-Server, CLAUDE.md-Konfigurationen, Hooks für Claude, ChatGPT, Gemini und mehr. Kostenlos oder kostenpflichtig, Ihr Preis, Ihre Auszahlung.",
+    "browseComponents": "Komponenten durchsuchen",
+    "publishYours": "Eigene veröffentlichen",
+    "gridCaption": "Offener Marktplatz für wiederverwendbare KI-Komponenten",
+    "steps": {
+      "publish": {
+        "title": "Veröffentlichen",
+        "body": "Laden Sie ein ZIP hoch, schreiben Sie eine README, legen Sie einen Preis fest oder bieten Sie die Komponente kostenlos an."
+      },
+      "discover": {
+        "title": "Entdecken",
+        "body": "Käufer suchen und filtern nach Tag und Ökosystem, um den passenden Baustein zu finden."
+      },
+      "earn": {
+        "title": "Verdienen",
+        "body": "Kostenpflichtige Downloads gehen direkt auf Ihr Stripe-Konto. 0 % Plattformgebühr zum Start."
+      }
+    },
+    "latest": "Neueste Komponenten",
+    "browseAll": "alle durchsuchen →"
+  },
+  "BrowsePage": {
+    "eyebrow": "Katalog",
+    "title": "Komponenten durchsuchen",
+    "searchPlaceholder": "Komponenten suchen…",
+    "sort": {
+      "newest": "Neueste",
+      "downloads": "Meiste Downloads",
+      "stars": "Meiste Sterne"
+    },
+    "clear": "zurücksetzen",
+    "resultsFor": "Ergebnisse für „{query}“",
+    "empty": "Noch keine passenden Komponenten.",
+    "publishFirst": "Veröffentlichen Sie die erste →"
+  },
+  "SearchPage": {
+    "noResults": "Keine Ergebnisse für „{query}“. Versuchen Sie einen anderen Typ oder eine andere Suchanfrage.",
+    "fromAiBlocks": "Von AiBlocks",
+    "browseAll": "alle durchsuchen →",
+    "fromWeb": "Aus dem Web",
+    "allSources": "alle",
+    "sourceStatus": {
+      "disabled": "deaktiviert",
+      "error": "Fehler"
+    }
+  },
+  "ExternalSearch": {
+    "placeholder": "Beschreiben Sie den Skill, Subagent, Prompt oder MCP-Server, den Sie suchen…",
+    "search": "Suchen",
+    "searching": "Suche läuft…",
+    "typeLabel": "Komponententyp",
+    "types": {
+      "skill": "Skill",
+      "subagent": "Subagent",
+      "prompt": "Prompt",
+      "mcp": "MCP-Server",
+      "hook": "Hook",
+      "slash-command": "/Befehl",
+      "claude-plugin": "Claude-Plugin",
+      "claude-md": "CLAUDE.md",
+      "llm": "LLM"
+    },
+    "readMore": "Weiterlesen",
+    "showLess": "Weniger anzeigen",
+    "noResults": "Keine Ergebnisse aus externen Quellen."
+  },
+  "ComponentPage": {
+    "eyebrow": "Komponente",
+    "by": "von <seller>@{username}</seller>",
+    "noReadme": "Keine README vorhanden.",
+    "purchased": "gekauft",
+    "edit": "Diese Komponente bearbeiten",
+    "downloads": "Downloads",
+    "stars": "Sterne",
+    "rating": "Wertung"
+  },
+  "DownloadButton": {
+    "download": "Herunterladen",
+    "buyToDownload": "Kaufen und herunterladen",
+    "working": "Wird bearbeitet…",
+    "waiverTooltip": "Bitte stimmen Sie dem Verzicht auf das 14-tägige Widerrufsrecht zu und setzen Sie oben das Häkchen, um den Bezahlvorgang zu starten.",
+    "errors": {
+      "signInRequired": "Melden Sie sich an, um fortzufahren.",
+      "consentRequired": "Bitte setzen Sie oben das Häkchen, um vor dem Kauf zu bestätigen.",
+      "downloadFailed": "Der Download konnte nicht vorbereitet werden.",
+      "downloadNetwork": "Netzwerkfehler: Der Download konnte nicht vorbereitet werden.",
+      "checkoutFailed": "Der Bezahlvorgang konnte nicht gestartet werden.",
+      "checkoutNetwork": "Netzwerkfehler: Der Bezahlvorgang konnte nicht gestartet werden."
+    }
+  },
+  "Waiver": {
+    "checkbox": "Ich stimme ausdrücklich zu, dass mit der Ausführung des Vertrags vor Ablauf der Widerrufsfrist begonnen wird, und bestätige meine Kenntnis davon, dass ich dadurch mein 14-tägiges Widerrufsrecht verliere (siehe <terms>AGB</terms>). Die Vertragssprache ist Deutsch.",
+    "checkout": "Ich stimme den [AGB]({termsUrl}) zu. Ich stimme ausdrücklich zu, dass mit der Ausführung des Vertrags vor Ablauf der Widerrufsfrist begonnen wird, und bestätige meine Kenntnis davon, dass ich dadurch mein 14-tägiges Widerrufsrecht verliere. Die Vertragssprache ist Deutsch."
+  },
+  "Price": {
+    "free": "Kostenlos"
+  },
+  "SellerPage": {
+    "componentCount": "{count, plural, one {# Komponente} other {# Komponenten}}",
+    "downloadCount": "{count, plural, one {# Download} other {# Downloads}}",
+    "starCount": "{count, plural, one {# Stern} other {# Sterne}}",
+    "published": "Veröffentlicht",
+    "empty": "Noch keine Komponenten veröffentlicht."
+  },
+  "StripeNudge": {
+    "message": "Sie haben kostenpflichtige Komponenten, aber noch keine Auszahlungen eingerichtet. Käufer können sie erst kaufen, wenn Sie das Stripe-Onboarding abgeschlossen haben.",
+    "connect": "Stripe verbinden →"
+  },
+  "Engagement": {
+    "sellerBadge": "Verkäufer",
+    "you": "(Sie)",
+    "reply": "antworten",
+    "edit": "bearbeiten",
+    "delete": "löschen",
+    "cancel": "Abbrechen",
+    "posting": "Wird gesendet…",
+    "saving": "Wird gespeichert…",
+    "saveChanges": "Änderungen speichern"
+  },
+  "Comments": {
+    "heading": "Kommentare",
+    "count": "{count, plural, one {# Kommentar} other {# Kommentare}}",
+    "intro": "Offene Diskussion: Stellen Sie Fragen, bevor Sie herunterladen. Jeder kann kommentieren.",
+    "placeholder": "Stellen Sie eine Frage oder teilen Sie einen Tipp",
+    "post": "Kommentar senden",
+    "signInPrompt": "<signIn>Melden Sie sich an</signIn>, um mitzudiskutieren.",
+    "empty": "Noch keine Kommentare.",
+    "replyPlaceholder": "Antwort an {name}",
+    "postReply": "Antwort senden",
+    "deleteConfirm": "{count, plural, one {Wenn Sie diesen Kommentar löschen, wird auch # Antwort gelöscht. Fortfahren?} other {Wenn Sie diesen Kommentar löschen, werden auch # Antworten gelöscht. Fortfahren?}}",
+    "errors": {
+      "required": "Bitte geben Sie einen Kommentar ein.",
+      "postFailed": "Der Kommentar konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+      "postNetwork": "Netzwerkfehler: Der Kommentar wurde nicht gesendet.",
+      "deleteFailed": "Der Kommentar konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+      "deleteNetwork": "Netzwerkfehler: Der Kommentar wurde nicht gelöscht."
+    }
+  },
+  "Reviews": {
+    "heading": "Bewertungen",
+    "summary": "{average} · {count, plural, one {# verifizierte Bewertung} other {# verifizierte Bewertungen}}",
+    "intro": "Jede Bewertung stammt von jemandem, der diese Komponente heruntergeladen oder gekauft hat.",
+    "starsLabel": "{value} von 5 Sternen",
+    "ratingLabel": "Sternewertung",
+    "starOption": "{count, plural, one {# Stern} other {# Sterne}}",
+    "select": "auswählen",
+    "update": "Ihre Bewertung aktualisieren",
+    "write": "verifizierte Bewertung schreiben",
+    "placeholder": "Was hat funktioniert, was nicht, wie haben Sie die Komponente eingesetzt (optional)",
+    "publish": "Bewertung veröffentlichen",
+    "signInPrompt": "<signIn>Melden Sie sich an</signIn> und laden Sie diese Komponente herunter, um eine verifizierte Bewertung abzugeben.",
+    "downloadPrompt": "Laden Sie diese Komponente herunter, um eine verifizierte Bewertung abzugeben.",
+    "sellerNote": "Verkäufer können ihre eigenen Komponenten nicht bewerten, aber Sie können unten auf jede Bewertung antworten.",
+    "empty": "Noch keine Bewertungen.",
+    "verified": "verifiziert",
+    "sellerResponse": "Antwort des Verkäufers",
+    "updateResponse": "Ihre Antwort aktualisieren",
+    "writeResponse": "als Verkäufer antworten: Diese Antwort ist öffentlich",
+    "responsePlaceholder": "Danken Sie für die Bewertung, beantworten Sie eine Frage oder erklären Sie eine Korrektur",
+    "publishResponse": "Antwort veröffentlichen",
+    "errors": {
+      "ratingRequired": "Bitte wählen Sie zuerst eine Sternebewertung.",
+      "replyRequired": "Bitte geben Sie eine Antwort ein.",
+      "saveFailed": "Die Bewertung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "saveNetwork": "Netzwerkfehler: Die Bewertung wurde nicht gespeichert.",
+      "deleteFailed": "Die Bewertung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+      "deleteNetwork": "Netzwerkfehler: Die Bewertung wurde nicht gelöscht.",
+      "replySaveFailed": "Die Antwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "replySaveNetwork": "Netzwerkfehler: Die Antwort wurde nicht gespeichert.",
+      "replyDeleteFailed": "Die Antwort konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+      "replyDeleteNetwork": "Netzwerkfehler: Die Antwort wurde nicht gelöscht."
+    }
+  },
+  "NotFound": {
+    "title": "Diese Seite wurde nicht gefunden.",
+    "home": "Zurück zur Startseite"
+  },
+  "DownloadsPage": {
+    "eyebrow": "Ihre Bibliothek",
+    "title": "Meine Downloads",
+    "intro": "Alles, was Sie erworben haben. Öffnen Sie eine Komponente, um sie jederzeit erneut herunterzuladen.",
+    "empty": "Hier ist noch nichts.",
+    "browse": "Komponenten durchsuchen →"
+  },
+  "PublishPage": {
+    "eyebrow": "Verkäufer",
+    "title": "Komponente veröffentlichen",
+    "guide": "Neu hier? Lesen Sie die Anleitung zum Veröffentlichen →",
+    "publish": "Veröffentlichen",
+    "publishing": "Wird veröffentlicht…",
+    "publishedEyebrow": "Veröffentlicht",
+    "publishedTitle": "{name} ist online",
+    "publishedBody": "Ihre Komponente ist jetzt im Katalog.",
+    "view": "Komponente ansehen",
+    "publishAnother": "Weitere veröffentlichen"
+  },
+  "EditPage": {
+    "eyebrow": "Verkäufer",
+    "title": "Komponente bearbeiten",
+    "intro": "Aktualisieren Sie die Angaben direkt hier. Ein neues ZIP hochzuladen ist optional. <view>Ihre Komponente ansehen</view>.",
+    "save": "Änderungen speichern",
+    "saving": "Wird gespeichert…"
+  },
+  "StripePage": {
+    "eyebrow": "Verkäufer",
+    "title": "Auszahlungen verbinden",
+    "body": "AiBlocks leitet Zahlungen direkt auf Ihr Stripe-Konto weiter, mit 0 % Plattformgebühr. Verbinden Sie es einmal, um kostenpflichtige Komponenten zu verkaufen.",
+    "guide": "Schritt-für-Schritt-Anleitung zur Einrichtung lesen →",
+    "connect": "Mit Stripe verbinden"
+  },
+  "ComponentForm": {
+    "name": "Name",
+    "namePlaceholder": "E-Mail-Triage-Agent",
+    "description": "Kurzbeschreibung",
+    "descriptionPlaceholder": "Eine Zeile, die Käufer auf der Karte sehen",
+    "ecosystems": "Ökosysteme (durch Kommas getrennt)",
+    "ecosystemsPlaceholder": "claude, gpt, gemini",
+    "tags": "Tags (durch Kommas getrennt)",
+    "tagsPlaceholder": "agent, email, productivity",
+    "price": "Preis in EUR (0 für kostenlos)",
+    "zip": "Komponenten-ZIP (max. 10 MB)",
+    "replaceZip": "ZIP ersetzen (optional, leer lassen, um das aktuelle zu behalten)",
+    "currentZip": "Aktuell: {file}",
+    "readme": "README (Markdown)",
+    "defaultReadme": "# Überblick\n\nWas sie tut, wie man sie installiert…",
+    "uploading": "Wird hochgeladen…",
+    "preview": "Vorschau",
+    "previewEmpty": "Hier erscheint die Vorschau Ihrer README.",
+    "cancel": "Abbrechen",
+    "errors": {
+      "nameTooShort": "Der Name muss mindestens 3 Zeichen lang sein.",
+      "descriptionTooShort": "Fügen Sie eine Kurzbeschreibung hinzu (mindestens 10 Zeichen).",
+      "priceInvalid": "Der Preis muss 0 oder ein positiver Betrag wie 12,50 oder 12.50 sein, ohne Tausendertrennzeichen.",
+      "sourceLanguageInvalid": "Wählen Sie die Sprache, in der Beschreibung und README geschrieben sind.",
+      "zipRequired": "Wählen Sie eine ZIP-Datei zum Hochladen aus.",
+      "zipTooLarge": "Das ZIP überschreitet das Limit von 10 MB.",
+      "uploadPathMismatch": "Der Upload-Pfad stimmt nicht. Laden Sie das ZIP erneut hoch.",
+      "uploadStartFailed": "Der Upload konnte nicht gestartet werden.",
+      "uploadStartNetwork": "Netzwerkfehler: Der Upload konnte nicht gestartet werden.",
+      "uploadFailed": "Der Upload ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "uploadNotFound": "Die hochgeladene Datei wurde nicht gefunden. Versuchen Sie es erneut.",
+      "publishFailed": "Die Komponente konnte nicht veröffentlicht werden.",
+      "publishNetwork": "Netzwerkfehler: Die Komponente wurde nicht veröffentlicht.",
+      "publishedTagsFailed": "Die Komponente wurde veröffentlicht, aber ihre Tags konnten nicht gespeichert werden.",
+      "saveFailed": "Die Änderungen konnten nicht gespeichert werden.",
+      "saveNetwork": "Netzwerkfehler: Die Änderungen wurden nicht gespeichert.",
+      "updatedTagsFailed": "Die Komponente wurde aktualisiert, aber ihre Tags konnten nicht gespeichert werden.",
+      "notFound": "Komponente nicht gefunden.",
+      "notOwner": "Sie können nur Ihre eigenen Komponenten bearbeiten."
+    }
+  },
+  "ApiErrors": {
+    "signInRequired": "Melden Sie sich an, um fortzufahren.",
+    "invalidBody": "Die Anfrage konnte nicht gelesen werden. Laden Sie die Seite neu und versuchen Sie es erneut.",
+    "componentNotFound": "Komponente nicht gefunden.",
+    "commentRequired": "Bitte geben Sie einen Kommentar ein.",
+    "commentTooLong": "Der Kommentar darf höchstens {max} Zeichen lang sein.",
+    "parentCommentNotFound": "Der Kommentar, auf den Sie antworten, wurde nicht gefunden.",
+    "replyToReplyNotAllowed": "Antworten sind nur auf Kommentare der obersten Ebene möglich.",
+    "commentPostFailed": "Der Kommentar konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "commentDeleteFailed": "Der Kommentar konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+    "ratingInvalid": "Die Bewertung muss eine ganze Zahl von 1 bis 5 sein.",
+    "reviewTooLong": "Der Bewertungstext darf höchstens {max} Zeichen lang sein.",
+    "ownReviewNotAllowed": "Sie können Ihre eigene Komponente nicht bewerten.",
+    "verifiedBuyerRequired": "Nur verifizierte Käufer können bewerten. Laden Sie diese Komponente zuerst herunter.",
+    "reviewSaveFailed": "Die Bewertung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "reviewDeleteFailed": "Die Bewertung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+    "replyRequired": "Bitte geben Sie eine Antwort ein.",
+    "replyTooLong": "Die Antwort darf höchstens {max} Zeichen lang sein.",
+    "reviewNotFound": "Bewertung nicht gefunden.",
+    "sellerOnlyReply": "Nur der Verkäufer dieser Komponente kann auf ihre Bewertungen antworten.",
+    "replySaveFailed": "Die Antwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+    "replyDeleteFailed": "Die Antwort konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+    "componentRequired": "Es wurde keine Komponente angegeben.",
+    "waiverRequired": "Bitte bestätigen Sie den Hinweis zur digitalen Lieferung, bevor Sie zur Kasse gehen.",
+    "componentIsFree": "Diese Komponente ist kostenlos. Laden Sie sie einfach herunter.",
+    "ownComponentPurchase": "Sie können Ihre eigene Komponente nicht kaufen.",
+    "alreadyOwned": "Sie haben bereits Zugang. Sie finden die Komponente unter Meine Downloads.",
+    "sellerNotPayable": "Der Verkäufer kann noch keine Zahlungen annehmen.",
+    "purchaseCreateFailed": "Der Kauf konnte nicht angelegt werden. Bitte versuchen Sie es erneut.",
+    "checkoutFailed": "Der Bezahlvorgang konnte nicht gestartet werden.",
+    "componentUnavailable": "Diese Komponente ist nicht verfügbar.",
+    "purchaseRequired": "Kaufen Sie diese Komponente, um sie herunterzuladen.",
+    "downloadFailed": "Der Download konnte nicht vorbereitet werden."
+  },
+  "Metadata": {
+    "title": "AiBlocks: wiederverwendbare KI-Komponenten",
+    "description": "Ein offener Marktplatz für wiederverwendbare KI-Bausteine: Prompts, Skills, Agents, MCP-Server, CLAUDE.md-Konfigurationen, Hooks und mehr.",
+    "browse": {
+      "title": "Komponenten durchsuchen",
+      "description": "Wiederverwendbare KI-Komponenten durchsuchen und nach Tag, Ökosystem, Downloads und Sternen filtern."
+    },
+    "about": {
+      "title": "Über uns",
+      "description": "Warum es AiBlocks gibt und welche Entscheidungen hinter dem Marktplatz stehen."
+    },
+    "contact": {
+      "title": "Kontakt",
+      "description": "So erreichen Sie AiBlocks."
+    },
+    "impressum": {
+      "title": "Impressum",
+      "description": "Impressum von AiBlocks gemäß § 5 DDG."
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "description": "Welche personenbezogenen Daten AiBlocks erhebt, warum, und welche Rechte Sie daran haben."
+    },
+    "terms": {
+      "title": "Allgemeine Geschäftsbedingungen",
+      "description": "Die Bedingungen für den Kauf und Verkauf von Komponenten auf AiBlocks."
+    },
+    "sellerPublishGuide": {
+      "title": "Eine Komponente veröffentlichen: Anleitung für Verkäufer",
+      "description": "Schritt für Schritt: So veröffentlichen Sie Ihre KI-Komponente auf AiBlocks."
+    },
+    "sellerStripeGuide": {
+      "title": "Stripe verbinden und bezahlt werden: Anleitung für Verkäufer",
+      "description": "Schritt für Schritt: Richten Sie Ihr verbundenes Stripe-Konto ein, damit Käufer Sie direkt bezahlen können."
+    },
+    "search": {
+      "title": "Suche",
+      "description": "Suchergebnisse für KI-Komponenten auf AiBlocks und im Web."
+    },
+    "signIn": {
+      "title": "Anmelden",
+      "description": "Bei AiBlocks anmelden."
+    },
+    "signUp": {
+      "title": "Registrieren",
+      "description": "Ein AiBlocks-Konto erstellen."
+    }
+  }
+}

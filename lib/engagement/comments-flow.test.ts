@@ -40,17 +40,21 @@ function fakePostDeps(
   return deps;
 }
 
+// Stand-in for the translated copy the component passes in.
+const messages = { required: "TEXT REQUIRED" };
+
 describe("runPostCommentFlow", () => {
   it("rejects blank text without calling the effect", async () => {
     const deps = fakePostDeps({ ok: true, comment: { id: "c2", body: "x", created_at: "" } });
     const result = await runPostCommentFlow(deps, {
+      messages,
       comments: [],
       body: "   ",
       parentId: null,
       viewer: null,
       isSeller: false,
     });
-    expect(result).toEqual({ status: "error", error: "Comment text is required." });
+    expect(result).toEqual({ status: "error", error: messages.required });
     expect(deps.calls).toEqual([]);
   });
 
@@ -62,6 +66,7 @@ describe("runPostCommentFlow", () => {
     const viewer: PublicProfile = { username: "bob", display_name: "Bob", avatar_url: null };
 
     const result = await runPostCommentFlow(deps, {
+      messages,
       comments: [node({ id: "c1" })],
       body: "  hi there  ",
       parentId: null,
@@ -87,6 +92,7 @@ describe("runPostCommentFlow", () => {
       comment: { id: "r1", body: "reply", created_at: "" },
     });
     const result = await runPostCommentFlow(deps, {
+      messages,
       comments: [node({ id: "c1" })],
       body: "reply",
       parentId: "c1",
@@ -102,6 +108,7 @@ describe("runPostCommentFlow", () => {
   it("surfaces the effect's error without mutating the thread", async () => {
     const deps = fakePostDeps({ ok: false, error: "Could not post the comment. Try again." });
     const result = await runPostCommentFlow(deps, {
+      messages,
       comments: [node({ id: "c1" })],
       body: "hi",
       parentId: null,

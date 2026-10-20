@@ -16,6 +16,9 @@ function fakeFetch(response: { ok: boolean; body?: unknown }): typeof fetch {
   })) as unknown as typeof fetch;
 }
 
+// Stand-in for the translated copy the component passes in.
+const messages = { fallback: "FALLBACK", network: "NETWORK" };
+
 describe("submitReviewEffect", () => {
   it("POSTs the rating and body, and returns the saved review", async () => {
     const fetchImpl = fakeFetch({
@@ -23,7 +26,7 @@ describe("submitReviewEffect", () => {
       body: { id: "r1", rating: 5, body: "great", created_at: "2026-01-01T00:00:00Z" },
     });
 
-    const result = await submitReviewEffect(fetchImpl, "comp1", 5, "great");
+    const result = await submitReviewEffect(fetchImpl, "comp1", 5, "great", messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/components/comp1/reviews", {
       method: "POST",
@@ -41,7 +44,7 @@ describe("removeReviewEffect", () => {
   it("DELETEs the caller's review on this component", async () => {
     const fetchImpl = fakeFetch({ ok: true });
 
-    const result = await removeReviewEffect(fetchImpl, "comp1");
+    const result = await removeReviewEffect(fetchImpl, "comp1", messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/components/comp1/reviews", { method: "DELETE" });
     expect(result).toEqual({ ok: true });
@@ -52,7 +55,7 @@ describe("saveReplyEffect", () => {
   it("POSTs the seller's reply body and returns the saved reply", async () => {
     const fetchImpl = fakeFetch({ ok: true, body: { body: "thanks!", created_at: "2026-01-02T00:00:00Z" } });
 
-    const result = await saveReplyEffect(fetchImpl, "r1", "thanks!");
+    const result = await saveReplyEffect(fetchImpl, "r1", "thanks!", messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/reviews/r1/reply", {
       method: "POST",
@@ -67,9 +70,24 @@ describe("removeReplyEffect", () => {
   it("DELETEs the seller's reply on this review", async () => {
     const fetchImpl = fakeFetch({ ok: true });
 
-    const result = await removeReplyEffect(fetchImpl, "r1");
+    const result = await removeReplyEffect(fetchImpl, "r1", messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/reviews/r1/reply", { method: "DELETE" });
     expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("failure messages", () => {
+  const throwingFetch = vi.fn(async () => {
+    throw new Error("network down");
+  }) as unknown as typeof fetch;
+
+  it.each([
+    ["submitReviewEffect", () => submitReviewEffect(throwingFetch, "comp1", 5, "great", messages)],
+    ["removeReviewEffect", () => removeReviewEffect(throwingFetch, "comp1", messages)],
+    ["saveReplyEffect", () => saveReplyEffect(throwingFetch, "r1", "thanks!", messages)],
+    ["removeReplyEffect", () => removeReplyEffect(throwingFetch, "r1", messages)],
+  ])("%s reports the caller's network message", async (_name, call) => {
+    expect(await call()).toEqual({ ok: false, error: "NETWORK" });
   });
 });

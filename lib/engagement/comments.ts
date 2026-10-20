@@ -41,11 +41,11 @@ export async function postComment(
   supabase: PostCommentDb,
   args: { componentId: string; userId: string; body: unknown; parentId: unknown }
 ): Promise<PostCommentResult> {
-  const validated = validateBody(args.body, { required: true, label: "Comment text" });
+  const validated = validateBody(args.body, { required: "commentRequired", tooLong: "commentTooLong" });
   if (!validated.ok) return validated;
 
   if (!(await getPublishedComponent(supabase, args.componentId))) {
-    return { ok: false, status: 404, error: "Component not found." };
+    return { ok: false, status: 404, error: "componentNotFound" };
   }
 
   const parentId = typeof args.parentId === "string" && args.parentId ? args.parentId : null;
@@ -57,11 +57,11 @@ export async function postComment(
       .eq("id", parentId)
       .maybeSingle();
     if (!parent || parent.component_id !== args.componentId) {
-      return { ok: false, status: 404, error: "Comment to reply to was not found." };
+      return { ok: false, status: 404, error: "parentCommentNotFound" };
     }
     if (parent.parent_id) {
       // One level of threading only — replies to replies are not allowed.
-      return { ok: false, status: 400, error: "Replies can only be added to top-level comments." };
+      return { ok: false, status: 400, error: "replyToReplyNotAllowed" };
     }
   }
 
@@ -77,7 +77,7 @@ export async function postComment(
     .single();
 
   if (error || !comment) {
-    return { ok: false, status: 500, error: "Could not post the comment. Try again." };
+    return { ok: false, status: 500, error: "commentPostFailed" };
   }
   return { ok: true, comment };
 }
@@ -97,6 +97,6 @@ export async function deleteComment(
     .delete()
     .eq("id", args.commentId)
     .eq("user_id", args.userId);
-  if (error) return { ok: false, status: 500, error: "Could not delete the comment. Try again." };
+  if (error) return { ok: false, status: 500, error: "commentDeleteFailed" };
   return { ok: true };
 }

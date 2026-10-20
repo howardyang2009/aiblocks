@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { SearchResult } from "@/lib/external-search/types";
 
 const MAX_DESC_CHARS = 400;
@@ -8,6 +9,7 @@ const MAX_DESC_CHARS = 400;
 // The only client-side island in this feature: expanding a long
 // description doesn't need a page navigation or a server round-trip.
 export function ExternalResultCard({ result }: { result: SearchResult }) {
+  const t = useTranslations("ExternalSearch");
   const [expanded, setExpanded] = useState(false);
   const description = result.description ?? "";
   const isLong = description.length > MAX_DESC_CHARS;
@@ -46,7 +48,7 @@ export function ExternalResultCard({ result }: { result: SearchResult }) {
               className="ml-1 text-accent hover:underline"
               onClick={() => setExpanded((v) => !v)}
             >
-              {expanded ? "Show less" : "Read more"}
+              {expanded ? t("showLess") : t("readMore")}
             </button>
           )}
         </p>

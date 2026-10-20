@@ -15,6 +15,9 @@ function fakeFetch(response: { ok: boolean; body?: unknown }): typeof fetch {
   })) as unknown as typeof fetch;
 }
 
+// Stand-in for the translated copy the component passes in.
+const messages = { fallback: "FALLBACK", network: "NETWORK" };
+
 describe("postCommentEffect", () => {
   it("POSTs the body and parentId, and returns the saved comment", async () => {
     const fetchImpl = fakeFetch({
@@ -22,7 +25,7 @@ describe("postCommentEffect", () => {
       body: { id: "c1", body: "hi", created_at: "2026-01-01T00:00:00Z" },
     });
 
-    const result = await postCommentEffect(fetchImpl, "comp1", "hi", "top1");
+    const result = await postCommentEffect(fetchImpl, "comp1", "hi", "top1", messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/components/comp1/comments", {
       method: "POST",
@@ -37,9 +40,22 @@ describe("removeCommentEffect", () => {
   it("DELETEs the comment by id and reports success", async () => {
     const fetchImpl = fakeFetch({ ok: true });
 
-    const result = await removeCommentEffect(fetchImpl, "c1");
+    const result = await removeCommentEffect(fetchImpl, "c1", messages);
 
     expect(fetchImpl).toHaveBeenCalledWith("/api/comments/c1", { method: "DELETE" });
     expect(result).toEqual({ ok: true });
+  });
+});
+
+describe("failure messages", () => {
+  const throwingFetch = vi.fn(async () => {
+    throw new Error("network down");
+  }) as unknown as typeof fetch;
+
+  it.each([
+    ["postCommentEffect", () => postCommentEffect(throwingFetch, "comp1", "hi", null, messages)],
+    ["removeCommentEffect", () => removeCommentEffect(throwingFetch, "c1", messages)],
+  ])("%s reports the caller's network message", async (_name, call) => {
+    expect(await call()).toEqual({ ok: false, error: "NETWORK" });
   });
 });

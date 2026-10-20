@@ -7,12 +7,15 @@ import { isFreeComponent } from "@/lib/utils";
 // the component derives the same isFree/canDownload/needsConsent/label used
 // to decide what to render from the one place that computes them, instead of
 // recomputing the branch a second time.
+//
+// Copy is the caller's: `label` is a message key, and the pre-check errors
+// arrive in `messages` already translated, so this file holds no UI text.
 
 export type DownloadState = {
   isFree: boolean;
   canDownload: boolean;
   needsConsent: boolean;
-  label: string;
+  label: "download" | "buyToDownload";
 };
 
 export function getDownloadState(priceCents: number, owned: boolean): DownloadState {
@@ -22,7 +25,7 @@ export function getDownloadState(priceCents: number, owned: boolean): DownloadSt
     isFree,
     canDownload,
     needsConsent: !canDownload,
-    label: canDownload ? "Download" : "Buy to download",
+    label: canDownload ? "download" : "buyToDownload",
   };
 }
 
@@ -39,13 +42,19 @@ export type DownloadFlowResult =
 
 export async function runDownloadFlow(
   deps: DownloadFlowDeps,
-  args: { signedIn: boolean; priceCents: number; owned: boolean; withdrawalWaived: boolean }
+  args: {
+    signedIn: boolean;
+    priceCents: number;
+    owned: boolean;
+    withdrawalWaived: boolean;
+    messages: { signInRequired: string; consentRequired: string };
+  }
 ): Promise<DownloadFlowResult> {
-  if (!args.signedIn) return { status: "error", error: "Sign in to continue." };
+  if (!args.signedIn) return { status: "error", error: args.messages.signInRequired };
 
   const { canDownload, needsConsent } = getDownloadState(args.priceCents, args.owned);
   if (needsConsent && !args.withdrawalWaived) {
-    return { status: "error", error: "Please check the box above to confirm before buying." };
+    return { status: "error", error: args.messages.consentRequired };
   }
 
   const result = canDownload

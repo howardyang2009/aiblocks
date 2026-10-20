@@ -1,0 +1,379 @@
+{
+  "Navbar": {
+    "byRheinWeg": "by RheinWeg",
+    "browse": "Browse",
+    "publish": "Publish",
+    "myDownloads": "My downloads",
+    "signIn": "Sign in"
+  },
+  "Guide": {
+    "next": "Next"
+  },
+  "Legal": {
+    "onThisPage": "On this page",
+    "lastUpdated": "Last updated: {date}",
+    "draft": "Draft: this text has not been reviewed yet and may still change before the review is finished.",
+    "binding": "This is a convenience translation. Only the <german>German version</german> is legally binding.",
+    "behind": "The German version was updated on {date} and this translation has not caught up yet. The <german>German version</german> applies."
+  },
+  "Footer": {
+    "byRheinWeg": "by RheinWeg",
+    "tagline": "Open marketplace for reusable AI components",
+    "sell": "Sell",
+    "publishingGuide": "Publishing guide",
+    "getPaid": "Get paid with Stripe",
+    "aboutHeading": "About",
+    "about": "About",
+    "contact": "Contact",
+    "impressum": "Impressum",
+    "terms": "Terms",
+    "privacy": "Privacy"
+  },
+  "LocaleSwitcher": {
+    "label": "Language",
+    "title": "Choose your language",
+    "close": "Close",
+    "names": {
+      "de": "German",
+      "en": "English",
+      "zh-CN": "Chinese"
+    }
+  },
+  "HomePage": {
+    "title": "Find AI components on the web",
+    "eyebrow": "Open marketplace · multi-ecosystem",
+    "heroTitle": "Reusable AI components<br></br>ready to snap in",
+    "heroBody": "Publish and download AI building blocks — prompts, skills, subagents, MCP servers, CLAUDE.md configs, hooks — for Claude, ChatGPT, Gemini, and more. Free or paid, your price, your payout.",
+    "browseComponents": "Browse components",
+    "publishYours": "Publish yours",
+    "gridCaption": "Open marketplace for reusable AI components",
+    "steps": {
+      "publish": {
+        "title": "Publish",
+        "body": "Upload a zip, write a README, set a price — or make it free."
+      },
+      "discover": {
+        "title": "Discover",
+        "body": "Buyers search and filter by tag and ecosystem to find the block they need."
+      },
+      "earn": {
+        "title": "Earn",
+        "body": "Paid downloads go straight to your Stripe account. 0% platform fee at launch."
+      }
+    },
+    "latest": "Latest components",
+    "browseAll": "browse all →"
+  },
+  "BrowsePage": {
+    "eyebrow": "Catalog",
+    "title": "Browse components",
+    "searchPlaceholder": "Search components…",
+    "sort": {
+      "newest": "Newest",
+      "downloads": "Most downloaded",
+      "stars": "Most starred"
+    },
+    "clear": "clear",
+    "resultsFor": "results for “{query}”",
+    "empty": "No components match yet.",
+    "publishFirst": "Publish the first one →"
+  },
+  "SearchPage": {
+    "noResults": "No results for “{query}”. Try a different type or a different query.",
+    "fromAiBlocks": "From AiBlocks",
+    "browseAll": "browse all →",
+    "fromWeb": "From around the web",
+    "allSources": "all",
+    "sourceStatus": {
+      "disabled": "disabled",
+      "error": "error"
+    }
+  },
+  "ExternalSearch": {
+    "placeholder": "Describe the skill, subagent, prompt, or MCP server you're looking for…",
+    "search": "Search",
+    "searching": "Searching…",
+    "typeLabel": "Component type",
+    "types": {
+      "skill": "Skill",
+      "subagent": "Subagent",
+      "prompt": "Prompt",
+      "mcp": "MCP server",
+      "hook": "Hook",
+      "slash-command": "/command",
+      "claude-plugin": "Claude plugin",
+      "claude-md": "CLAUDE.md",
+      "llm": "LLM"
+    },
+    "readMore": "Read more",
+    "showLess": "Show less",
+    "noResults": "No results from external sources."
+  },
+  "ComponentPage": {
+    "eyebrow": "Component",
+    "by": "by <seller>@{username}</seller>",
+    "noReadme": "No README provided.",
+    "purchased": "purchased",
+    "edit": "Edit this component",
+    "downloads": "downloads",
+    "stars": "stars",
+    "rating": "rating"
+  },
+  "DownloadButton": {
+    "download": "Download",
+    "buyToDownload": "Buy to download",
+    "working": "Working…",
+    "waiverTooltip": "Please agree to and check the 14-day withdrawal policy checkbox above to start the payment process.",
+    "errors": {
+      "signInRequired": "Sign in to continue.",
+      "consentRequired": "Please check the box above to confirm before buying.",
+      "downloadFailed": "Could not prepare download.",
+      "downloadNetwork": "Network error — the download could not be prepared.",
+      "checkoutFailed": "Could not start checkout.",
+      "checkoutNetwork": "Network error — checkout could not be started."
+    }
+  },
+  "Waiver": {
+    "checkbox": "I expressly agree that performance of the contract begins before the withdrawal period ends, and I confirm that I know I lose my 14-day right of withdrawal as a result (see the <terms>Terms</terms>). The contract language is German.",
+    "checkout": "I agree to the [Terms]({termsUrl}). I expressly agree that performance of the contract begins before the withdrawal period ends, and I confirm that I know I lose my 14-day right of withdrawal as a result. The contract language is German."
+  },
+  "Price": {
+    "free": "Free"
+  },
+  "SellerPage": {
+    "componentCount": "{count, plural, one {# component} other {# components}}",
+    "downloadCount": "{count, plural, one {# download} other {# downloads}}",
+    "starCount": "{count, plural, one {# star} other {# stars}}",
+    "published": "Published",
+    "empty": "No components published yet."
+  },
+  "StripeNudge": {
+    "message": "You have paid components, but payouts aren’t connected yet — buyers can’t purchase them until you finish Stripe onboarding.",
+    "connect": "Connect Stripe →"
+  },
+  "Engagement": {
+    "sellerBadge": "seller",
+    "you": "(you)",
+    "reply": "reply",
+    "edit": "edit",
+    "delete": "delete",
+    "cancel": "Cancel",
+    "posting": "Posting…",
+    "saving": "Saving…",
+    "saveChanges": "Save changes"
+  },
+  "Comments": {
+    "heading": "Comments",
+    "count": "{count, plural, one {# comment} other {# comments}}",
+    "intro": "Open discussion — ask questions before you download. Anyone can comment.",
+    "placeholder": "Ask a question or share a tip",
+    "post": "Post comment",
+    "signInPrompt": "<signIn>Sign in</signIn> to join the discussion.",
+    "empty": "No comments yet.",
+    "replyPlaceholder": "Reply to {name}",
+    "postReply": "Post reply",
+    "deleteConfirm": "{count, plural, one {Deleting this comment also deletes its # reply. Continue?} other {Deleting this comment also deletes its # replies. Continue?}}",
+    "errors": {
+      "required": "Comment text is required.",
+      "postFailed": "Could not post the comment. Try again.",
+      "postNetwork": "Network error — the comment was not posted.",
+      "deleteFailed": "Could not delete the comment. Try again.",
+      "deleteNetwork": "Network error — the comment was not deleted."
+    }
+  },
+  "Reviews": {
+    "heading": "Reviews",
+    "summary": "{average} · {count, plural, one {# verified review} other {# verified reviews}}",
+    "intro": "Every review comes from someone who downloaded or purchased this component.",
+    "starsLabel": "{value} out of 5 stars",
+    "ratingLabel": "Rating",
+    "starOption": "{count, plural, one {# star} other {# stars}}",
+    "select": "select",
+    "update": "update your review",
+    "write": "write a verified review",
+    "placeholder": "What worked, what didn't, how you used it (optional)",
+    "publish": "Publish review",
+    "signInPrompt": "<signIn>Sign in</signIn> and download this component to leave a verified review.",
+    "downloadPrompt": "Download this component to leave a verified review.",
+    "sellerNote": "Sellers can't review their own components — but you can respond to each review below.",
+    "empty": "No reviews yet.",
+    "verified": "verified",
+    "sellerResponse": "seller reply",
+    "updateResponse": "update your reply",
+    "writeResponse": "reply as the seller — this is public",
+    "responsePlaceholder": "Thank the reviewer, answer their question, or explain a fix",
+    "publishResponse": "Publish reply",
+    "errors": {
+      "ratingRequired": "Pick a star rating first.",
+      "replyRequired": "Reply text is required.",
+      "saveFailed": "Could not save the review. Try again.",
+      "saveNetwork": "Network error — the review was not saved.",
+      "deleteFailed": "Could not delete the review. Try again.",
+      "deleteNetwork": "Network error — the review was not deleted.",
+      "replySaveFailed": "Could not save the reply. Try again.",
+      "replySaveNetwork": "Network error — the reply was not saved.",
+      "replyDeleteFailed": "Could not delete the reply. Try again.",
+      "replyDeleteNetwork": "Network error — the reply was not deleted."
+    }
+  },
+  "NotFound": {
+    "title": "This page could not be found.",
+    "home": "Back to the home page"
+  },
+  "DownloadsPage": {
+    "eyebrow": "Your library",
+    "title": "My downloads",
+    "intro": "Everything you've acquired — open one to re-download anytime.",
+    "empty": "Nothing here yet.",
+    "browse": "Browse components →"
+  },
+  "PublishPage": {
+    "eyebrow": "Seller",
+    "title": "Publish a component",
+    "guide": "New here? Read the publishing guide →",
+    "publish": "Publish",
+    "publishing": "Publishing…",
+    "publishedEyebrow": "Published",
+    "publishedTitle": "{name} is live",
+    "publishedBody": "Your component is now in the catalog.",
+    "view": "View component",
+    "publishAnother": "Publish another"
+  },
+  "EditPage": {
+    "eyebrow": "Seller",
+    "title": "Edit component",
+    "intro": "Update details in place. Uploading a new zip is optional — <view>view your component</view>.",
+    "save": "Save changes",
+    "saving": "Saving…"
+  },
+  "StripePage": {
+    "eyebrow": "Seller",
+    "title": "Connect payouts",
+    "body": "AiBlocks routes payments directly to your Stripe account with a 0% platform fee. Connect once to start selling paid components.",
+    "guide": "Read the step-by-step onboarding guide →",
+    "connect": "Connect with Stripe"
+  },
+  "ComponentForm": {
+    "name": "Name",
+    "namePlaceholder": "Email Triage Agent",
+    "description": "Short description",
+    "descriptionPlaceholder": "One line buyers see on the card",
+    "ecosystems": "Ecosystems (comma separated)",
+    "ecosystemsPlaceholder": "claude, gpt, gemini",
+    "tags": "Tags (comma separated)",
+    "tagsPlaceholder": "agent, email, productivity",
+    "price": "Price in EUR (0 for free)",
+    "zip": "Component zip (max 10MB)",
+    "replaceZip": "Replace zip (optional — leave empty to keep current)",
+    "currentZip": "Current: {file}",
+    "readme": "README (markdown)",
+    "defaultReadme": "# Overview\n\nWhat it does, how to install…",
+    "uploading": "Uploading…",
+    "preview": "Preview",
+    "previewEmpty": "Your README preview appears here.",
+    "cancel": "Cancel",
+    "errors": {
+      "nameTooShort": "Name must be at least 3 characters.",
+      "descriptionTooShort": "Add a short description (10+ characters).",
+      "priceInvalid": "Price must be 0 or a positive amount such as 12.50 or 12,50, with no thousands separator.",
+      "sourceLanguageInvalid": "Choose the language the description and README are written in.",
+      "zipRequired": "Choose a zip file to upload.",
+      "zipTooLarge": "Zip exceeds the 10MB limit.",
+      "uploadPathMismatch": "Upload path mismatch. Upload the zip again.",
+      "uploadStartFailed": "Could not start upload.",
+      "uploadStartNetwork": "Network error — the upload could not be started.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "uploadNotFound": "Uploaded file not found. Try again.",
+      "publishFailed": "Could not publish.",
+      "publishNetwork": "Network error — the component was not published.",
+      "publishedTagsFailed": "Component published, but its tags could not be saved.",
+      "saveFailed": "Could not save changes.",
+      "saveNetwork": "Network error — the changes were not saved.",
+      "updatedTagsFailed": "Component updated, but its tags could not be saved.",
+      "notFound": "Component not found.",
+      "notOwner": "You can only edit your own components."
+    }
+  },
+  "ApiErrors": {
+    "signInRequired": "Sign in to continue.",
+    "invalidBody": "The request could not be read. Reload the page and try again.",
+    "componentNotFound": "Component not found.",
+    "commentRequired": "Comment text is required.",
+    "commentTooLong": "Comment text must be {max} characters or fewer.",
+    "parentCommentNotFound": "The comment you replied to was not found.",
+    "replyToReplyNotAllowed": "Replies can only be added to top-level comments.",
+    "commentPostFailed": "Could not post the comment. Try again.",
+    "commentDeleteFailed": "Could not delete the comment. Try again.",
+    "ratingInvalid": "Rating must be a whole number from 1 to 5.",
+    "reviewTooLong": "Review text must be {max} characters or fewer.",
+    "ownReviewNotAllowed": "You can't review your own component.",
+    "verifiedBuyerRequired": "Only verified buyers can review. Download this component first.",
+    "reviewSaveFailed": "Could not save the review. Try again.",
+    "reviewDeleteFailed": "Could not delete the review. Try again.",
+    "replyRequired": "Reply text is required.",
+    "replyTooLong": "Reply text must be {max} characters or fewer.",
+    "reviewNotFound": "Review not found.",
+    "sellerOnlyReply": "Only the seller of this component can reply to its reviews.",
+    "replySaveFailed": "Could not save the reply. Try again.",
+    "replyDeleteFailed": "Could not delete the reply. Try again.",
+    "componentRequired": "No component was given.",
+    "waiverRequired": "Please confirm the digital delivery notice before checking out.",
+    "componentIsFree": "This component is free — just download it.",
+    "ownComponentPurchase": "You can't buy your own component.",
+    "alreadyOwned": "You already own this — find it in My downloads.",
+    "sellerNotPayable": "The seller can't accept payments yet.",
+    "purchaseCreateFailed": "Could not create the purchase. Please try again.",
+    "checkoutFailed": "Could not start checkout.",
+    "componentUnavailable": "This component is not available.",
+    "purchaseRequired": "Buy this component to download it.",
+    "downloadFailed": "Could not prepare download."
+  },
+  "Metadata": {
+    "title": "AiBlocks: reusable AI components",
+    "description": "An open marketplace for reusable AI building blocks: prompts, skills, agents, MCP servers, CLAUDE.md configs, hooks, and more.",
+    "browse": {
+      "title": "Browse components",
+      "description": "Browse, search and filter reusable AI components by tag, ecosystem, downloads and stars."
+    },
+    "about": {
+      "title": "About",
+      "description": "Why AiBlocks exists and the decisions behind the marketplace."
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "How to get in touch with AiBlocks."
+    },
+    "impressum": {
+      "title": "Impressum",
+      "description": "Legal notice (Impressum) for AiBlocks, as required by § 5 DDG."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "What personal data AiBlocks collects, why, and your rights over it."
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "description": "The terms for buying and selling components on AiBlocks."
+    },
+    "sellerPublishGuide": {
+      "title": "Publish a component: seller guide",
+      "description": "Step-by-step: how to publish your AI component on AiBlocks."
+    },
+    "sellerStripeGuide": {
+      "title": "Connect Stripe to get paid: seller guide",
+      "description": "Step-by-step: onboard your Stripe connected account so buyers can pay you directly."
+    },
+    "search": {
+      "title": "Search",
+      "description": "Search results for AI components on AiBlocks and around the web."
+    },
+    "signIn": {
+      "title": "Sign in",
+      "description": "Sign in to AiBlocks."
+    },
+    "signUp": {
+      "title": "Sign up",
+      "description": "Create an AiBlocks account."
+    }
+  }
+}

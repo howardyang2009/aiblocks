@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 export type GuideStep = { title: string; body?: string; img: string; alt: string };
 
@@ -17,6 +18,8 @@ export function Guide({
   steps: GuideStep[];
   related?: { href: string; label: string };
 }) {
+  const t = useTranslations("Guide");
+
   return (
     <div className="mx-auto max-w-3xl px-5 py-12">
       <p className="eyebrow">{eyebrow}</p>
@@ -43,7 +46,7 @@ export function Guide({
 
       {related && (
         <div className="mt-14 border-t pt-6">
-          <p className="eyebrow mb-1.5">Next</p>
+          <p className="eyebrow mb-1.5">{t("next")}</p>
           <Link href={related.href} className="text-accent text-sm hover:underline">
             {related.label} →
           </Link>

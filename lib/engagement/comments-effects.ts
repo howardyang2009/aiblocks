@@ -1,4 +1,4 @@
-import { runClientAction } from "@/lib/client-action";
+import { runClientAction, type ClientActionMessages } from "@/lib/client-action";
 
 // The real effects behind PostCommentDeps/RemoveCommentDeps
 // (lib/engagement/comments-flow.ts) — the actual fetch calls the tested flow
@@ -15,13 +15,14 @@ export async function postCommentEffect(
   fetchImpl: typeof fetch,
   componentId: string,
   body: string,
-  parentId: string | null
+  parentId: string | null,
+  messages: ClientActionMessages
 ): Promise<PostCommentEffectResult> {
   const result = await runClientAction<{ id: string; body: string; created_at: string }>(
     fetchImpl,
     `/api/components/${componentId}/comments`,
     { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body, parentId }) },
-    { fallback: "Could not post the comment. Try again.", network: "Network error — the comment was not posted." }
+    messages
   );
   if (!result.ok) return result;
   return { ok: true, comment: result.data };
@@ -31,13 +32,14 @@ export type RemoveCommentEffectResult = { ok: true } | { ok: false; error: strin
 
 export async function removeCommentEffect(
   fetchImpl: typeof fetch,
-  commentId: string
+  commentId: string,
+  messages: ClientActionMessages
 ): Promise<RemoveCommentEffectResult> {
   const result = await runClientAction<object>(
     fetchImpl,
     `/api/comments/${commentId}`,
     { method: "DELETE" },
-    { fallback: "Could not delete the comment. Try again.", network: "Network error — the comment was not deleted." }
+    messages
   );
   if (!result.ok) return result;
   return { ok: true };

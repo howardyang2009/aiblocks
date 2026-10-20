@@ -15,6 +15,10 @@ export default defineConfig({
   globalSetup: "./e2e/global-setup.ts",
   use: {
     baseURL: BASE_URL,
+    // Pin the browser language so nothing depends on the host machine. The
+    // main suite still always visits explicit /en/... URLs and never relies
+    // on the unprefixed doorway redirect (#64).
+    locale: "en-US",
     trace: "on-first-retry",
   },
   webServer: {
@@ -33,10 +37,10 @@ export default defineConfig({
       testMatch: /auth\.setup\.ts/,
     },
     {
-      // Signed-out specs (browse.spec.ts) — independent of the auth
-      // harness entirely, so a Clerk outage doesn't block them.
+      // Signed-out specs (browse, locale-smoke, locale-switcher, seo) — independent
+      // of the auth harness entirely, so a Clerk outage doesn't block them.
       name: "signed-out",
-      testMatch: /browse\.spec\.ts/,
+      testMatch: /(browse|locale-smoke|locale-switcher|seo)\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
     {

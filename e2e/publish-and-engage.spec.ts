@@ -9,7 +9,7 @@ test.describe.serial("publish, download, and engage", () => {
   let componentId = "";
 
   test("publishes a free component", async ({ page }) => {
-    await page.goto("/dashboard/seller/new");
+    await page.goto("/en/dashboard/seller/new");
 
     await page.getByLabel("Name").fill(componentName);
     await page.getByLabel("Short description").fill("A component published end-to-end by Playwright.");
@@ -32,7 +32,7 @@ test.describe.serial("publish, download, and engage", () => {
   });
 
   test("downloads it — the paywall grants access and records the entitlement", async ({ page }) => {
-    await page.goto(`/components/${componentId}`);
+    await page.goto(`/en/components/${componentId}`);
 
     const [response] = await Promise.all([
       page.waitForResponse(
@@ -46,12 +46,12 @@ test.describe.serial("publish, download, and engage", () => {
     expect(typeof body.url).toBe("string");
     expect(body.url.length).toBeGreaterThan(0);
 
-    await page.goto("/dashboard/downloads");
+    await page.goto("/en/dashboard/downloads");
     await expect(page.getByRole("heading", { name: componentName })).toBeVisible();
   });
 
   test("stars the component", async ({ page }) => {
-    await page.goto(`/components/${componentId}`);
+    await page.goto(`/en/components/${componentId}`);
     const star = page.getByTestId("star-button");
 
     const [response] = await Promise.all([
@@ -64,7 +64,7 @@ test.describe.serial("publish, download, and engage", () => {
   });
 
   test("comments on the component", async ({ page }) => {
-    await page.goto(`/components/${componentId}`);
+    await page.goto(`/en/components/${componentId}`);
 
     const commentText = `Great component — e2e comment ${Date.now()}`;
     await page.getByTestId("comment-input").fill(commentText);
@@ -74,7 +74,7 @@ test.describe.serial("publish, download, and engage", () => {
   });
 
   test("does not offer a review form to the seller reviewing their own component", async ({ page }) => {
-    await page.goto(`/components/${componentId}`);
+    await page.goto(`/en/components/${componentId}`);
 
     // Sellers can't review their own components (CONTEXT.md, reviews-section.tsx)
     // — this test user published it, so the write form must not render, even
@@ -87,12 +87,12 @@ test.describe.serial("publish, download, and engage", () => {
 
   test("edits the component — the edit form saves and redirects to the live listing", async ({ page }) => {
     const editedName = `${componentName} (edited)`;
-    await page.goto(`/dashboard/seller/${componentId}/edit`);
+    await page.goto(`/en/dashboard/seller/${componentId}/edit`);
 
     await page.getByLabel("Name").fill(editedName);
     await page.getByRole("button", { name: "Save changes" }).click();
 
-    await expect(page).toHaveURL(`/components/${componentId}`);
+    await expect(page).toHaveURL(`/en/components/${componentId}`);
     await expect(page.getByRole("heading", { name: editedName })).toBeVisible();
   });
 });

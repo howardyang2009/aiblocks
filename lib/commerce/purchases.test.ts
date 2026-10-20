@@ -8,6 +8,7 @@ import {
 } from "@/lib/commerce/purchases";
 import type { Tables } from "@/types/database";
 import type Stripe from "stripe";
+import { APP_URL } from "@/lib/constants";
 
 const buyer: Tables<"profiles"> = {
   avatar_url: null,
@@ -81,7 +82,7 @@ const publishedComponent: ComponentRow = {
   id: "c1",
   name: "Widget",
   price_cents: 500,
-  currency: "usd",
+  currency: "eur",
   seller_id: "seller1",
   status: "published",
 };
@@ -92,46 +93,47 @@ describe("createCheckout", () => {
       buyer,
       componentId: "c1",
       withdrawalWaived: false,
+      locale: "de",
     });
     expect(result).toEqual({
       ok: false,
       status: 400,
-      error: "Please confirm the digital delivery notice before checking out.",
+      error: "waiverRequired",
     });
   });
 
   it("404s when the component doesn't exist or isn't published", async () => {
     const db = fakeCheckoutDb({ component: null });
-    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "missing", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 404, error: "Component not found." });
+    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "missing", withdrawalWaived: true, locale: "de" });
+    expect(result).toEqual({ ok: false, status: 404, error: "componentNotFound" });
   });
 
   it("rejects buying a free component", async () => {
     const db = fakeCheckoutDb({ component: { ...publishedComponent, price_cents: 0 } });
-    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 400, error: "This component is free — just download it." });
+    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true, locale: "de" });
+    expect(result).toEqual({ ok: false, status: 400, error: "componentIsFree" });
   });
 
   it("rejects buying your own component", async () => {
     const db = fakeCheckoutDb({ component: { ...publishedComponent, seller_id: buyer.id } });
-    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 400, error: "You can't buy your own component." });
+    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true, locale: "de" });
+    expect(result).toEqual({ ok: false, status: 400, error: "ownComponentPurchase" });
   });
 
   it("rejects when the buyer already owns the component", async () => {
     const db = fakeCheckoutDb({ component: publishedComponent, ownsAlready: true });
-    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true });
+    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true, locale: "de" });
     expect(result).toEqual({
       ok: false,
       status: 400,
-      error: "You already own this — find it in My downloads.",
+      error: "alreadyOwned",
     });
   });
 
   it("rejects when the seller can't accept payments", async () => {
     const db = fakeCheckoutDb({ component: publishedComponent, seller: { stripe_account_id: null } });
-    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 400, error: "Seller cannot accept payments yet." });
+    const result = await createCheckout(fakeStripe(), db, { buyer, componentId: "c1", withdrawalWaived: true, locale: "de" });
+    expect(result).toEqual({ ok: false, status: 400, error: "sellerNotPayable" });
   });
 
   it("does not call Stripe when the pending purchase insert fails", async () => {
@@ -141,11 +143,11 @@ describe("createCheckout", () => {
       seller: { stripe_account_id: "acct_1" },
       insertPurchase: { data: null, error: { message: "db down" } },
     });
-    const result = await createCheckout(fakeStripe(create), db, { buyer, componentId: "c1", withdrawalWaived: true });
+    const result = await createCheckout(fakeStripe(create), db, { buyer, componentId: "c1", withdrawalWaived: true, locale: "de" });
     expect(result).toEqual({
       ok: false,
       status: 500,
-      error: "Could not create purchase record. Please try again.",
+      error: "purchaseCreateFailed",
     });
     expect(create).not.toHaveBeenCalled();
   });
@@ -160,7 +162,7 @@ describe("createCheckout", () => {
       seller: { stripe_account_id: "acct_1" },
       insertPurchase: { data: { id: "purchase1" }, error: null },
     });
-    const result = await createCheckout(fakeStripe(create), db, { buyer, componentId: "c1", withdrawalWaived: true });
+    const result = await createCheckout(fakeStripe(create), db, { buyer, componentId: "c1", withdrawalWaived: true, locale: "de" });
     expect(result).toEqual({ ok: true, url: "https://stripe.example/session" });
     expect(create).toHaveBeenCalledTimes(1);
     const params = create.mock.calls[0][0];
@@ -170,6 +172,43 @@ describe("createCheckout", () => {
       buyer_id: buyer.id,
     });
     expect(params.payment_intent_data).toEqual({ transfer_data: { destination: "acct_1" } });
+    expect(params.line_items?.[0].price_data?.currency).toBe("eur");
+  });
+
+  // The Stripe session params createCheckout sends for a Buyer in `locale`.
+  async function checkoutParams(locale: "de" | "en" | "zh-CN") {
+    const create = vi.fn(
+      async (_params: Stripe.Checkout.SessionCreateParams) =>
+        ({ url: "https://stripe.example/session" }) as Stripe.Checkout.Session
+    );
+    const db = fakeCheckoutDb({
+      component: publishedComponent,
+      seller: { stripe_account_id: "acct_1" },
+      insertPurchase: { data: { id: "purchase1" }, error: null },
+    });
+    await createCheckout(fakeStripe(create), db, { buyer, componentId: "c1", withdrawalWaived: true, locale });
+    const params = create.mock.calls[0][0];
+    const waiver = (params.custom_text?.terms_of_service_acceptance as { message: string }).message;
+    return { params, waiver };
+  }
+
+  it("opens Checkout in the Buyer's Locale and returns to that Locale's pages", async () => {
+    const { params, waiver } = await checkoutParams("zh-CN");
+    expect(params.locale).toBe("zh");
+    expect(params.success_url).toBe(`${APP_URL}/zh/components/c1?paid=1`);
+    expect(params.cancel_url).toBe(`${APP_URL}/zh/components/c1?canceled=1`);
+    expect(waiver).toContain(`(${APP_URL}/zh/terms#refunds)`);
+    expect(waiver).toContain("合同语言为德语");
+  });
+
+  it.each([
+    ["de", "Vertragssprache ist Deutsch"],
+    ["en", "The contract language is German"],
+  ] as const)("shows the waiver in %s with the terms link and contract language", async (locale, contractLine) => {
+    const { params, waiver } = await checkoutParams(locale);
+    expect(params.locale).toBe(locale);
+    expect(waiver).toContain(`(${APP_URL}/${locale}/terms#refunds)`);
+    expect(waiver).toContain(contractLine);
   });
 
   it("500s when Stripe returns no session url", async () => {
@@ -179,8 +218,8 @@ describe("createCheckout", () => {
       seller: { stripe_account_id: "acct_1" },
       insertPurchase: { data: { id: "purchase1" }, error: null },
     });
-    const result = await createCheckout(fakeStripe(create), db, { buyer, componentId: "c1", withdrawalWaived: true });
-    expect(result).toEqual({ ok: false, status: 500, error: "Could not start checkout. Please try again." });
+    const result = await createCheckout(fakeStripe(create), db, { buyer, componentId: "c1", withdrawalWaived: true, locale: "de" });
+    expect(result).toEqual({ ok: false, status: 500, error: "checkoutFailed" });
   });
 });
 

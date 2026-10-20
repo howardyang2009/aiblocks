@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { formatDate } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDate, formatRating } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
@@ -19,6 +20,7 @@ import {
   removeReplyEffect,
 } from "@/lib/engagement/reviews-effects";
 import { useRowMutation } from "@/lib/use-row-mutation";
+import { Link } from "@/i18n/navigation";
 
 export type { Review } from "@/lib/engagement/reviews-section-state";
 
@@ -43,8 +45,9 @@ const COMPOSE = "review:compose";
 // The API re-checks every rule server-side — this is UX, not security.
 
 function Stars({ value, size = "text-sm" }: { value: number; size?: string }) {
+  const t = useTranslations("Reviews");
   return (
-    <span className={`${size} leading-none`} aria-label={`${value} out of 5 stars`}>
+    <span className={`${size} leading-none`} aria-label={t("starsLabel", { value })}>
       {[1, 2, 3, 4, 5].map((n) => (
         <span key={n} className={n <= value ? "text-accent" : "text-line"}>★</span>
       ))}
@@ -53,17 +56,18 @@ function Stars({ value, size = "text-sm" }: { value: number; size?: string }) {
 }
 
 function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const t = useTranslations("Reviews");
   const [hover, setHover] = useState(0);
   const shown = hover || value;
   return (
-    <div className="flex items-center gap-1" role="radiogroup" aria-label="Rating">
+    <div className="flex items-center gap-1" role="radiogroup" aria-label={t("ratingLabel")}>
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
           type="button"
           role="radio"
           aria-checked={value === n}
-          aria-label={`${n} star${n > 1 ? "s" : ""}`}
+          aria-label={t("starOption", { count: n })}
           onMouseEnter={() => setHover(n)}
           onMouseLeave={() => setHover(0)}
           onClick={() => onChange(n)}
@@ -75,7 +79,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
         </button>
       ))}
       <span className="ml-2 font-mono text-[11px] text-subtle">
-        {shown ? `${shown}/5` : "select"}
+        {shown ? `${shown}/5` : t("select")}
       </span>
     </div>
   );
@@ -96,6 +100,9 @@ export function ReviewsSection({
   isSeller: boolean;
   sellerUsername?: string | null;
 }) {
+  const t = useTranslations("Reviews");
+  const tEngagement = useTranslations("Engagement");
+  const locale = useLocale();
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const mine = reviews.find((r) => r.mine) ?? null;
 
@@ -121,8 +128,14 @@ export function ReviewsSection({
   async function saveReply(reviewId: string) {
     const result = await run(replyKey(reviewId), () =>
       runSaveReplyFlow(
-        { saveReply: (id, body) => saveReplyEffect(fetch, id, body) },
-        { reviews, reviewId, body: replyBody }
+        {
+          saveReply: (id, body) =>
+            saveReplyEffect(fetch, id, body, {
+              fallback: t("errors.replySaveFailed"),
+              network: t("errors.replySaveNetwork"),
+            }),
+        },
+        { reviews, reviewId, body: replyBody, messages: { required: t("errors.replyRequired") } }
       )
     );
     if (result.status === "error") return;
@@ -133,7 +146,16 @@ export function ReviewsSection({
 
   async function removeReply(reviewId: string) {
     const result = await run(replyKey(reviewId), () =>
-      runRemoveReplyFlow({ removeReply: (id) => removeReplyEffect(fetch, id) }, { reviews, reviewId })
+      runRemoveReplyFlow(
+        {
+          removeReply: (id) =>
+            removeReplyEffect(fetch, id, {
+              fallback: t("errors.replyDeleteFailed"),
+              network: t("errors.replyDeleteNetwork"),
+            }),
+        },
+        { reviews, reviewId }
+      )
     );
     if (result.status === "error") return;
     setReviews(result.reviews);
@@ -148,8 +170,14 @@ export function ReviewsSection({
   async function submit() {
     const result = await run(reviewFormKey, () =>
       runSubmitReviewFlow(
-        { submitReview: (r, b) => submitReviewEffect(fetch, componentId, r, b) },
-        { reviews, rating, body, mine }
+        {
+          submitReview: (r, b) =>
+            submitReviewEffect(fetch, componentId, r, b, {
+              fallback: t("errors.saveFailed"),
+              network: t("errors.saveNetwork"),
+            }),
+        },
+        { reviews, rating, body, mine, messages: { ratingRequired: t("errors.ratingRequired") } }
       )
     );
     if (result.status === "error") return;
@@ -159,7 +187,16 @@ export function ReviewsSection({
 
   async function remove() {
     const result = await run(reviewFormKey, () =>
-      runRemoveReviewFlow({ removeReview: () => removeReviewEffect(fetch, componentId) }, { reviews })
+      runRemoveReviewFlow(
+        {
+          removeReview: () =>
+            removeReviewEffect(fetch, componentId, {
+              fallback: t("errors.deleteFailed"),
+              network: t("errors.deleteNetwork"),
+            }),
+        },
+        { reviews }
+      )
     );
     if (result.status === "error") return;
     setReviews(result.reviews);
@@ -171,25 +208,25 @@ export function ReviewsSection({
   return (
     <section className="mt-10" id="reviews">
       <div className="flex items-baseline justify-between gap-4 flex-wrap">
-        <h2 className="font-display font-bold text-xl">Reviews</h2>
+        <h2 className="font-display font-bold text-xl">{t("heading")}</h2>
         {count > 0 && (
           <div className="flex items-center gap-2">
             <Stars value={Math.round(average)} />
             <span className="font-mono text-xs text-subtle">
-              {average.toFixed(1)} · {count} verified {count === 1 ? "review" : "reviews"}
+              {t("summary", { average: formatRating(average, locale), count })}
             </span>
           </div>
         )}
       </div>
       <p className="text-xs text-subtle mt-1">
-        Every review comes from someone who downloaded or purchased this component.
+        {t("intro")}
       </p>
 
       {/* ---- Write / edit form ---- */}
       {showForm && (
         <div className="mt-5 rounded-block border bg-surface p-4">
           <p className="font-mono text-[11px] text-subtle mb-3">
-            {mine ? "update your review" : "write a verified review"}
+            {mine ? t("update") : t("write")}
           </p>
           <StarPicker value={rating} onChange={setRating} />
           <textarea
@@ -197,7 +234,7 @@ export function ReviewsSection({
             onChange={(e) => setBody(e.target.value)}
             maxLength={MAX_BODY_LENGTH}
             rows={3}
-            placeholder="What worked, what didn't, how you used it (optional)"
+            placeholder={t("placeholder")}
             data-testid="review-body"
             className="mt-3 w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
           />
@@ -210,7 +247,7 @@ export function ReviewsSection({
               className="rounded-block bg-accent px-4 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
             >
               {isBusy(reviewFormKey) && <Spinner className="h-3.5 w-3.5" />}
-              {isBusy(reviewFormKey) ? "Saving…" : mine ? "Save changes" : "Publish review"}
+              {isBusy(reviewFormKey) ? tEngagement("saving") : mine ? tEngagement("saveChanges") : t("publish")}
             </button>
             {editing && (
               <button
@@ -222,7 +259,7 @@ export function ReviewsSection({
                 }}
                 className="text-sm text-subtle hover:text-muted"
               >
-                Cancel
+                {tEngagement("cancel")}
               </button>
             )}
           </div>
@@ -232,24 +269,29 @@ export function ReviewsSection({
       {/* ---- State hints ---- */}
       {!signedIn && (
         <p className="mt-5 text-sm text-subtle">
-          <a href="/sign-in" className="text-accent hover:underline">Sign in</a> and download this
-          component to leave a verified review.
+          {t.rich("signInPrompt", {
+            signIn: (chunks) => (
+              <Link href="/sign-in" className="text-accent hover:underline">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       )}
       {signedIn && !canReview && !isSeller && (
         <p className="mt-5 text-sm text-subtle">
-          Download this component to leave a verified review.
+          {t("downloadPrompt")}
         </p>
       )}
       {isSeller && (
         <p className="mt-5 font-mono text-[11px] text-subtle">
-          Sellers can't review their own components — but you can respond to each review below.
+          {t("sellerNote")}
         </p>
       )}
 
       {/* ---- Review list ---- */}
       {count === 0 ? (
-        <p className="mt-5 text-sm text-subtle">No reviews yet.</p>
+        <p className="mt-5 text-sm text-subtle">{t("empty")}</p>
       ) : (
         <ul className="mt-5 space-y-5">
           {reviews.map((r) => (
@@ -258,22 +300,22 @@ export function ReviewsSection({
                 <UserAvatar user={r.reviewer} />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <a
+                    <Link
                       href={`/sellers/${r.reviewer.username}`}
                       className="text-sm font-medium hover:text-accent truncate"
                     >
                       {r.reviewer.display_name ?? `@${r.reviewer.username}`}
-                    </a>
+                    </Link>
                     <span className="font-mono text-[10px] rounded-[3px] border px-1 py-0.5 text-free border-free">
-                      verified
+                      {t("verified")}
                     </span>
                     {r.mine && (
-                      <span className="font-mono text-[10px] text-subtle">(you)</span>
+                      <span className="font-mono text-[10px] text-subtle">{tEngagement("you")}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Stars value={r.rating} size="text-xs" />
-                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.created_at)}</span>
+                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.created_at, locale)}</span>
                   </div>
                 </div>
               </div>
@@ -284,12 +326,12 @@ export function ReviewsSection({
                 <div className="mt-3 ml-4 rounded-block border-l-2 border-accent bg-surface px-3 py-2.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-[10px] rounded-[3px] border px-1 py-0.5 text-accent">
-                      seller response
+                      {t("sellerResponse")}
                     </span>
                     {sellerUsername && (
                       <span className="font-mono text-[10px] text-subtle">@{sellerUsername}</span>
                     )}
-                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.reply.created_at)}</span>
+                    <span className="font-mono text-[10px] text-subtle">{formatDate(r.reply.created_at, locale)}</span>
                   </div>
                   <p className="mt-1.5 text-sm text-muted whitespace-pre-wrap">{r.reply.body}</p>
                   {isSeller && (
@@ -298,14 +340,14 @@ export function ReviewsSection({
                         onClick={() => openReplyEditor(r)}
                         className="font-mono text-[11px] text-subtle hover:text-accent"
                       >
-                        edit
+                        {tEngagement("edit")}
                       </button>
                       <button
                         onClick={() => removeReply(r.id)}
                         disabled={isBusy(replyKey(r.id))}
                         className="font-mono text-[11px] text-subtle hover:text-red-600"
                       >
-                        delete
+                        {tEngagement("delete")}
                       </button>
                     </div>
                   )}
@@ -318,20 +360,20 @@ export function ReviewsSection({
                   onClick={() => openReplyEditor(r)}
                   className="mt-2 font-mono text-[11px] text-subtle hover:text-accent"
                 >
-                  reply
+                  {tEngagement("reply")}
                 </button>
               )}
               {isSeller && replyingTo === r.id && (
                 <div className="mt-3 ml-4 rounded-block border bg-surface p-3">
                   <p className="font-mono text-[11px] text-subtle mb-2">
-                    {r.reply ? "update your response" : "respond as the seller — this is public"}
+                    {r.reply ? t("updateResponse") : t("writeResponse")}
                   </p>
                   <textarea
                     value={replyBody}
                     onChange={(e) => setReplyBody(e.target.value)}
                     maxLength={MAX_BODY_LENGTH}
                     rows={3}
-                    placeholder="Thank the reviewer, answer their question, or explain a fix"
+                    placeholder={t("responsePlaceholder")}
                     className="w-full rounded-block border bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
                   />
                   {errorFor(replyKey(r.id)) && (
@@ -344,7 +386,7 @@ export function ReviewsSection({
                       className="rounded-block bg-accent px-3 py-1.5 text-sm text-accent-ink disabled:opacity-50 inline-flex items-center gap-1.5"
                     >
                       {isBusy(replyKey(r.id)) && <Spinner className="h-3.5 w-3.5" />}
-                      {isBusy(replyKey(r.id)) ? "Saving…" : r.reply ? "Save changes" : "Publish response"}
+                      {isBusy(replyKey(r.id)) ? tEngagement("saving") : r.reply ? tEngagement("saveChanges") : t("publishResponse")}
                     </button>
                     <button
                       onClick={() => {
@@ -353,7 +395,7 @@ export function ReviewsSection({
                       }}
                       className="text-sm text-subtle hover:text-muted"
                     >
-                      Cancel
+                      {tEngagement("cancel")}
                     </button>
                   </div>
                 </div>
@@ -369,14 +411,14 @@ export function ReviewsSection({
                     }}
                     className="font-mono text-[11px] text-subtle hover:text-accent"
                   >
-                    edit
+                    {tEngagement("edit")}
                   </button>
                   <button
                     onClick={remove}
                     disabled={isBusy(reviewFormKey)}
                     className="font-mono text-[11px] text-subtle hover:text-red-600"
                   >
-                    delete
+                    {tEngagement("delete")}
                   </button>
                 </div>
               )}

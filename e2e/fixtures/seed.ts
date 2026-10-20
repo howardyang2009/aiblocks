@@ -47,6 +47,7 @@ export async function seedPublishedComponent(
       description: overrides.description ?? "Seeded directly for browse/search e2e coverage.",
       ecosystems: overrides.ecosystems ?? ["claude"],
       price_cents: overrides.priceCents ?? 0,
+      source_language: "en",
       status: "published",
     })
     .select("id, name, slug")

@@ -36,6 +36,10 @@ _Avoid_: Category, label
 An AI platform a Component works with, such as `claude`, `gpt` or `gemini`. Named by the Seller and shown as submitted in every Locale.
 _Avoid_: Platform, model
 
+**Price**:
+What a Buyer pays for a Component, set by its Seller. Always in euros, for every Component, and the same amount in every Locale: a Locale changes only how the number is written, never the currency or the amount. A Price of zero makes the Component free.
+_Avoid_: Cost, fee
+
 **Entitlement**:
 Whether someone has access to a Component. Free Components grant one on first download with no Purchase involved; paid Components grant one only once a Purchase succeeds.
 _Avoid_: Ownership, access, license
@@ -69,12 +73,20 @@ _Avoid_: Favorite, like
 ### Site
 
 **Locale**:
-One of the three language versions of the site: German (`de`, the default), English (`en`), and Simplified Chinese (`zh-CN`). Every page URL names its Locale; a URL without one is only a doorway that sends the visitor to a Locale. Covers the site's own copy only, never user-generated content.
+One of the three language versions of the site: German (`de`, the default), English (`en`), and Simplified Chinese (`zh-CN`). Every page URL names its Locale; a URL without one is only a doorway that sends the visitor to a Locale. Covers the site's own copy and Translations of Source text. Tags, Ecosystems, Component names, Comments and Reviews show as submitted in every Locale.
 _Avoid_: Language, region
 
 **Source copy**:
 The `en` version of the site's own copy, the text everything else is translated from. A new string is written in `en` first; the `de` and `zh-CN` versions are translations of it, drafted by Claude and reviewed afterwards by a native speaker. Legal pages are the one exception: there the `de` version is the master.
 _Avoid_: Original, base language
+
+**Source text**:
+A Component's `description` and `readme` exactly as its Seller wrote them, together with the language the Seller declares they are written in: one of the three Locales, or another language. Not detected automatically. Different from Source copy, which is the site's own text.
+_Avoid_: Original, user content
+
+**Translation**:
+The version of a Component's Source text in one Locale. Starts as a machine translation, which is redone every time the Source text changes. Once the Seller corrects it by hand it is hand-edited: it is no longer overwritten, and when the Source text changes afterwards it is flagged as stale to the Seller until they edit or re-translate it. The Locale the Source text is written in needs no Translation. Readers see a machine Translation labelled as machine-translated, with a way to show the Source text; a hand-edited Translation counts as the Seller's own words and is not labelled. Until a Translation exists, that Locale shows the Source text.
+_Avoid_: Localization, version
 
 **Legal page**:
 The Impressum, the privacy policy, or the terms. Only the `de` version is binding and it is the master text: every change lands in `de` first, and the `en` and `zh-CN` versions are full convenience translations derived from it that say so. A translation may lag behind `de`; each version carries its own last-updated date and says when it is behind. The Impressum needs no convenience-translation notice, since it states facts, not terms.

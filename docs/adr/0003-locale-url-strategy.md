@@ -7,4 +7,5 @@ Every page lives under a Locale prefix: `/de/...`, `/en/...`, `/zh/...` (the `zh
 **Consequences:**
 - `/sign-in`, `/sign-up` and `/dashboard` are not exceptions. Clerk gets per-Locale `signInUrl`/`signUpUrl` from the Locale layout. The protected-route matcher must cover `/:locale/dashboard(.*)`, or the dashboard becomes unprotected.
 - API routes and `/api/webhooks/stripe` stay unprefixed. An API route has no Locale of its own, so the client sends `locale` in the request body; the server checks it against the allowed Locales and falls back to `de`. That value prefixes Stripe's `success_url`/`cancel_url` and Connect `refresh_url`/`return_url`, and it sets the Checkout `locale`.
+- Each page sets its own canonical from the public prefix (`lib/seo.ts`), not the Locale layout: Next resolves a layout-level relative canonical against the internal route (`/zh-CN/...`), which is not a public URL (#68). A new indexable page must set one in its `generateMetadata`.
 - Changing the prefix mode after launch would break indexed URLs, so treat this decision as fixed.

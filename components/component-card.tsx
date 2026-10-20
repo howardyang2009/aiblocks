@@ -1,9 +1,12 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { ComponentSummary } from "@/types/database";
-import { formatPrice, isFreeComponent } from "@/lib/utils";
+import { useLocale } from "next-intl";
+import { formatNumber, isFreeComponent } from "@/lib/utils";
+import { Price } from "@/components/price";
 
 // A card in the browse grid. Metadata sits in monospace because it's data.
 export function ComponentCard({ c }: { c: ComponentSummary }) {
+  const locale = useLocale();
   return (
     <Link
       href={`/components/${c.id}`}
@@ -12,7 +15,7 @@ export function ComponentCard({ c }: { c: ComponentSummary }) {
       <div className="flex items-start justify-between gap-3">
         <h3 className="font-display font-medium leading-tight group-hover:text-accent">{c.name}</h3>
         <span className={`font-mono text-xs shrink-0 ${isFreeComponent(c.price_cents) ? "text-free" : "text-ink"}`}>
-          {formatPrice(c.price_cents, c.currency)}
+          <Price cents={c.price_cents} currency={c.currency} />
         </span>
       </div>
 
@@ -27,8 +30,8 @@ export function ComponentCard({ c }: { c: ComponentSummary }) {
       </div>
 
       <div className="mt-3 flex items-center gap-4 font-mono text-[11px] text-subtle">
-        <span>★ {c.star_count}</span>
-        <span>↓ {c.download_count}</span>
+        <span>★ {formatNumber(c.star_count, locale)}</span>
+        <span>↓ {formatNumber(c.download_count, locale)}</span>
       </div>
     </Link>
   );

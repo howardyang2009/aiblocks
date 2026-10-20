@@ -1,0 +1,85 @@
+import { cache } from "react";
+import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
+import { auth } from "@clerk/nextjs/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { getStripe } from "@/lib/commerce/stripe";
+import { shouldShowStripeNudge, type NudgeDb } from "@/lib/commerce/seller";
+import { listPublishedBySeller, type ListComponentsDb } from "@/lib/commerce/browse";
+import { narrowDb } from "@/lib/db-port";
+import { StripeNudge } from "@/components/stripe-nudge";
+import { ComponentCard } from "@/components/component-card";
+import { canonical, sellerPath } from "@/lib/seo";
+
+export const dynamic = "force-dynamic";
+
+// One lookup per request, shared by generateMetadata and the page.
+const getProfile = cache(async (username: string) => {
+  const { data } = await createServiceClient()
+    .from("profiles").select("*").eq("username", username).maybeSingle();
+  return data;
+});
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
+  const profile = await getProfile((await params).username);
+  if (!profile) return {};
+  return {
+    title: profile.username,
+    alternates: canonical(await getLocale(), sellerPath(profile.username)),
+  };
+}
+
+export default async function SellerProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = await params;
+  const supabase = createServiceClient();
+
+  const profile = await getProfile(username);
+  if (!profile) notFound();
+
+  const { components } = await listPublishedBySeller(narrowDb<ListComponentsDb>(supabase), profile.id);
+
+  const totalDownloads = components.reduce((a, c) => a + (c.download_count ?? 0), 0);
+  const totalStars = components.reduce((a, c) => a + (c.star_count ?? 0), 0);
+
+  // Owner-only Stripe nudge: only the signed-in owner of THIS profile sees it,
+  // and only if they have paid components but payouts aren't connected yet.
+  const t = await getTranslations("SellerPage");
+  const { userId } = await auth();
+  const isOwner = !!userId && profile.clerk_user_id === userId;
+  const showNudge = isOwner && await shouldShowStripeNudge(getStripe(), narrowDb<NudgeDb>(supabase), profile);
+
+  return (
+    <>
+      {showNudge && <StripeNudge />}
+      <div className="mx-auto max-w-shell px-5 py-10">
+        <header className="flex items-center gap-5">
+          {profile.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.avatar_url} alt="" className="w-16 h-16 rounded-block object-cover" />
+          ) : (
+            <div className="w-16 h-16 rounded-block bg-ink" aria-hidden />
+          )}
+          <div>
+            <h1 className="font-display font-bold text-2xl">@{profile.username}</h1>
+            {profile.bio && <p className="text-muted text-sm mt-1">{profile.bio}</p>}
+          </div>
+        </header>
+
+        <div className="mt-6 flex gap-8 font-mono text-xs text-subtle">
+          <span>{t("componentCount", { count: components.length })}</span>
+          <span>{t("downloadCount", { count: totalDownloads })}</span>
+          <span>{t("starCount", { count: totalStars })}</span>
+        </div>
+
+        <h2 className="font-display font-medium text-lg mt-10">{t("published")}</h2>
+        {components.length === 0 ? (
+          <p className="text-sm text-muted mt-4">{t("empty")}</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            {components.map((c) => <ComponentCard key={c.id} c={c} />)}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}

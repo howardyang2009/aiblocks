@@ -24,9 +24,15 @@ export type SubmitReviewResult =
 // {id, rating, body, created_at}.
 export async function runSubmitReviewFlow(
   deps: SubmitReviewDeps,
-  args: { reviews: Review[]; rating: number; body: string; mine: Review | null }
+  args: {
+    reviews: Review[];
+    rating: number;
+    body: string;
+    mine: Review | null;
+    messages: { ratingRequired: string };
+  }
 ): Promise<SubmitReviewResult> {
-  if (!args.rating) return { status: "error", error: "Pick a star rating first." };
+  if (!args.rating) return { status: "error", error: args.messages.ratingRequired };
 
   const result = await deps.submitReview(args.rating, args.body);
   if (!result.ok) return { status: "error", error: result.error };
@@ -67,9 +73,9 @@ export type SaveReplyResult = { status: "error"; error: string } | { status: "sa
 
 export async function runSaveReplyFlow(
   deps: SaveReplyDeps,
-  args: { reviews: Review[]; reviewId: string; body: string }
+  args: { reviews: Review[]; reviewId: string; body: string; messages: { required: string } }
 ): Promise<SaveReplyResult> {
-  if (!args.body.trim()) return { status: "error", error: "Reply text is required." };
+  if (!args.body.trim()) return { status: "error", error: args.messages.required };
 
   const result = await deps.saveReply(args.reviewId, args.body);
   if (!result.ok) return { status: "error", error: result.error };

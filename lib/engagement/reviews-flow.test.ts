@@ -42,11 +42,15 @@ function fakeSubmitDeps(
   return deps;
 }
 
+// Stand-ins for the translated copy the component passes in.
+const submitMessages = { ratingRequired: "RATING REQUIRED" };
+const replyMessages = { required: "REPLY REQUIRED" };
+
 describe("runSubmitReviewFlow", () => {
   it("rejects a missing rating without calling the effect", async () => {
     const deps = fakeSubmitDeps({ ok: true, review: { id: "r2", rating: 5, body: "", created_at: "" } });
-    const result = await runSubmitReviewFlow(deps, { reviews: [], rating: 0, body: "", mine: null });
-    expect(result).toEqual({ status: "error", error: "Pick a star rating first." });
+    const result = await runSubmitReviewFlow(deps, { messages: submitMessages, reviews: [], rating: 0, body: "", mine: null });
+    expect(result).toEqual({ status: "error", error: submitMessages.ratingRequired });
     expect(deps.calls).toEqual([]);
   });
 
@@ -58,6 +62,7 @@ describe("runSubmitReviewFlow", () => {
     const viewerReviewer: PublicProfile = { username: "bob", display_name: "Bob", avatar_url: null };
 
     const result = await runSubmitReviewFlow(deps, {
+      messages: submitMessages,
       reviews: [review({ id: "r1", mine: false })],
       rating: 5,
       body: "great",
@@ -84,6 +89,7 @@ describe("runSubmitReviewFlow", () => {
     });
 
     const result = await runSubmitReviewFlow(deps, {
+      messages: submitMessages,
       reviews: [existing],
       rating: 3,
       body: "updated",
@@ -98,7 +104,7 @@ describe("runSubmitReviewFlow", () => {
 
   it("surfaces the effect's error", async () => {
     const deps = fakeSubmitDeps({ ok: false, error: "Could not save the review. Try again." });
-    const result = await runSubmitReviewFlow(deps, { reviews: [], rating: 4, body: "", mine: null });
+    const result = await runSubmitReviewFlow(deps, { messages: submitMessages, reviews: [], rating: 4, body: "", mine: null });
     expect(result).toEqual({ status: "error", error: "Could not save the review. Try again." });
   });
 });
@@ -149,8 +155,8 @@ function fakeSaveReplyDeps(
 describe("runSaveReplyFlow", () => {
   it("rejects blank reply text without calling the effect", async () => {
     const deps = fakeSaveReplyDeps({ ok: true, reply: { body: "x", created_at: "" } });
-    const result = await runSaveReplyFlow(deps, { reviews: [review()], reviewId: "r1", body: "   " });
-    expect(result).toEqual({ status: "error", error: "Reply text is required." });
+    const result = await runSaveReplyFlow(deps, { messages: replyMessages, reviews: [review()], reviewId: "r1", body: "   " });
+    expect(result).toEqual({ status: "error", error: replyMessages.required });
     expect(deps.calls).toEqual([]);
   });
 
@@ -160,6 +166,7 @@ describe("runSaveReplyFlow", () => {
       reply: { body: "thanks for the feedback", created_at: "2026-03-01T00:00:00Z" },
     });
     const result = await runSaveReplyFlow(deps, {
+      messages: replyMessages,
       reviews: [review({ id: "r1" }), review({ id: "r2" })],
       reviewId: "r1",
       body: "thanks for the feedback",
@@ -176,7 +183,7 @@ describe("runSaveReplyFlow", () => {
 
   it("surfaces the effect's error", async () => {
     const deps = fakeSaveReplyDeps({ ok: false, error: "Could not save the reply. Try again." });
-    const result = await runSaveReplyFlow(deps, { reviews: [review()], reviewId: "r1", body: "hi" });
+    const result = await runSaveReplyFlow(deps, { messages: replyMessages, reviews: [review()], reviewId: "r1", body: "hi" });
     expect(result).toEqual({ status: "error", error: "Could not save the reply. Try again." });
   });
 });

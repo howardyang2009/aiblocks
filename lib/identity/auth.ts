@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/lib/identity/resolve-viewer";
 import type { Tables } from "@/types/database";
+import type { ApiError } from "@/lib/api-errors";
 
 export type AuthContext = {
   params: Record<string, string>;
@@ -38,7 +39,7 @@ export function withAuth(
     const { getViewer, createSupabase } = deps ?? (await realDeps());
     const { profile } = await getViewer();
     if (!profile) {
-      return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+      return NextResponse.json({ error: "signInRequired" satisfies ApiError }, { status: 401 });
     }
     const supabase = createSupabase();
     return await handler(req, { params: await params, profile, supabase });

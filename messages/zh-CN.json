@@ -1,0 +1,379 @@
+{
+  "Navbar": {
+    "byRheinWeg": "RheinWeg 出品",
+    "browse": "浏览",
+    "publish": "发布",
+    "myDownloads": "我的下载",
+    "signIn": "登录"
+  },
+  "Guide": {
+    "next": "下一步"
+  },
+  "Legal": {
+    "onThisPage": "本页目录",
+    "lastUpdated": "最后更新：{date}",
+    "draft": "草稿：本文本尚未经过审核，审核完成前仍可能修改。",
+    "binding": "本页为便于理解而提供的译文。仅<german>德语版本</german>具有法律约束力。",
+    "behind": "德语版本已于 {date} 更新，本译文尚未同步。以<german>德语版本</german>为准。"
+  },
+  "Footer": {
+    "byRheinWeg": "RheinWeg 出品",
+    "tagline": "可复用 AI 组件的开放市场",
+    "sell": "出售",
+    "publishingGuide": "发布指南",
+    "getPaid": "通过 Stripe 收款",
+    "aboutHeading": "关于",
+    "about": "关于我们",
+    "contact": "联系我们",
+    "impressum": "Impressum",
+    "terms": "服务条款",
+    "privacy": "隐私政策"
+  },
+  "LocaleSwitcher": {
+    "label": "语言",
+    "title": "选择语言",
+    "close": "关闭",
+    "names": {
+      "de": "德语",
+      "en": "英语",
+      "zh-CN": "中文"
+    }
+  },
+  "HomePage": {
+    "title": "在网络上查找 AI 组件",
+    "eyebrow": "开放市场 · 多生态",
+    "heroTitle": "可复用的 AI 组件<br></br>即插即用",
+    "heroBody": "发布和下载 AI 构建块：提示词、技能、子代理、MCP 服务器、CLAUDE.md 配置、钩子，适用于 Claude、ChatGPT、Gemini 等。免费或付费，价格由你定，收益归你。",
+    "browseComponents": "浏览组件",
+    "publishYours": "发布你的组件",
+    "gridCaption": "可复用 AI 组件的开放市场",
+    "steps": {
+      "publish": {
+        "title": "发布",
+        "body": "上传 zip 文件，撰写 README，设置价格，或免费提供。"
+      },
+      "discover": {
+        "title": "发现",
+        "body": "买家按标签和生态搜索筛选，找到所需的构建块。"
+      },
+      "earn": {
+        "title": "赚取",
+        "body": "付费下载的收入直接进入你的 Stripe 账户。上线期间平台费为 0%。"
+      }
+    },
+    "latest": "最新组件",
+    "browseAll": "浏览全部 →"
+  },
+  "BrowsePage": {
+    "eyebrow": "目录",
+    "title": "浏览组件",
+    "searchPlaceholder": "搜索组件…",
+    "sort": {
+      "newest": "最新",
+      "downloads": "下载最多",
+      "stars": "收藏最多"
+    },
+    "clear": "清除",
+    "resultsFor": "“{query}”的结果",
+    "empty": "暂无匹配的组件。",
+    "publishFirst": "发布第一个 →"
+  },
+  "SearchPage": {
+    "noResults": "没有找到“{query}”的结果。请尝试其他类型或其他关键词。",
+    "fromAiBlocks": "来自 AiBlocks",
+    "browseAll": "浏览全部 →",
+    "fromWeb": "来自网络",
+    "allSources": "全部",
+    "sourceStatus": {
+      "disabled": "已停用",
+      "error": "出错"
+    }
+  },
+  "ExternalSearch": {
+    "placeholder": "描述你要找的技能、子代理、提示词或 MCP 服务器…",
+    "search": "搜索",
+    "searching": "搜索中…",
+    "typeLabel": "组件类型",
+    "types": {
+      "skill": "技能",
+      "subagent": "子代理",
+      "prompt": "提示词",
+      "mcp": "MCP 服务器",
+      "hook": "钩子",
+      "slash-command": "/命令",
+      "claude-plugin": "Claude 插件",
+      "claude-md": "CLAUDE.md",
+      "llm": "LLM"
+    },
+    "readMore": "展开",
+    "showLess": "收起",
+    "noResults": "外部来源没有结果。"
+  },
+  "ComponentPage": {
+    "eyebrow": "组件",
+    "by": "卖家 <seller>@{username}</seller>",
+    "noReadme": "未提供 README。",
+    "purchased": "已购买",
+    "edit": "编辑此组件",
+    "downloads": "下载",
+    "stars": "收藏",
+    "rating": "评分"
+  },
+  "DownloadButton": {
+    "download": "下载",
+    "buyToDownload": "购买后下载",
+    "working": "处理中…",
+    "waiverTooltip": "请先勾选上方的放弃 14 天撤回权复选框，再开始付款。",
+    "errors": {
+      "signInRequired": "请登录后继续。",
+      "consentRequired": "购买前请勾选上方的复选框进行确认。",
+      "downloadFailed": "无法准备下载。",
+      "downloadNetwork": "网络错误：无法准备下载。",
+      "checkoutFailed": "无法开始付款。",
+      "checkoutNetwork": "网络错误：无法开始付款。"
+    }
+  },
+  "Waiver": {
+    "checkbox": "我明确同意在撤回期届满前开始履行合同，并确认我知道因此将丧失 14 天的撤回权（见<terms>服务条款</terms>）。合同语言为德语。",
+    "checkout": "我同意[服务条款]({termsUrl})。我明确同意在撤回期届满前开始履行合同，并确认我知道因此将丧失 14 天的撤回权。合同语言为德语。"
+  },
+  "Price": {
+    "free": "免费"
+  },
+  "SellerPage": {
+    "componentCount": "{count, plural, other {# 个组件}}",
+    "downloadCount": "{count, plural, other {# 次下载}}",
+    "starCount": "{count, plural, other {# 个收藏}}",
+    "published": "已发布",
+    "empty": "尚未发布任何组件。"
+  },
+  "StripeNudge": {
+    "message": "你有付费组件，但尚未连接收款。在你完成 Stripe 开通流程之前，买家无法购买这些组件。",
+    "connect": "连接 Stripe →"
+  },
+  "Engagement": {
+    "sellerBadge": "卖家",
+    "you": "（你）",
+    "reply": "回复",
+    "edit": "编辑",
+    "delete": "删除",
+    "cancel": "取消",
+    "posting": "发布中…",
+    "saving": "保存中…",
+    "saveChanges": "保存更改"
+  },
+  "Comments": {
+    "heading": "评论",
+    "count": "{count, plural, other {# 条评论}}",
+    "intro": "开放讨论：下载前可以先提问。任何人都可以评论。",
+    "placeholder": "提个问题或分享一个技巧",
+    "post": "发表评论",
+    "signInPrompt": "<signIn>登录</signIn>后参与讨论。",
+    "empty": "暂无评论。",
+    "replyPlaceholder": "回复 {name}",
+    "postReply": "发表回复",
+    "deleteConfirm": "{count, plural, other {删除此评论也会删除它的 # 条回复。是否继续？}}",
+    "errors": {
+      "required": "请输入评论内容。",
+      "postFailed": "评论发表失败，请重试。",
+      "postNetwork": "网络错误：评论未发表。",
+      "deleteFailed": "评论删除失败，请重试。",
+      "deleteNetwork": "网络错误：评论未删除。"
+    }
+  },
+  "Reviews": {
+    "heading": "评价",
+    "summary": "{average} · {count, plural, other {# 条已验证评价}}",
+    "intro": "每条评价都来自下载或购买过此组件的用户。",
+    "starsLabel": "{value} 星（满分 5 星）",
+    "ratingLabel": "评分",
+    "starOption": "{count, plural, other {# 星}}",
+    "select": "请选择",
+    "update": "更新你的评价",
+    "write": "撰写已验证评价",
+    "placeholder": "哪些有用、哪些不行、你是如何使用的（可选）",
+    "publish": "发布评价",
+    "signInPrompt": "<signIn>登录</signIn>并下载此组件后即可发表已验证评价。",
+    "downloadPrompt": "下载此组件后即可发表已验证评价。",
+    "sellerNote": "卖家不能评价自己的组件，但可以在下方回复每条评价。",
+    "empty": "暂无评价。",
+    "verified": "已验证",
+    "sellerResponse": "卖家回复",
+    "updateResponse": "更新你的回复",
+    "writeResponse": "以卖家身份回复：此回复公开可见",
+    "responsePlaceholder": "感谢评价者、回答对方的问题，或说明修复情况",
+    "publishResponse": "发布回复",
+    "errors": {
+      "ratingRequired": "请先选择星级评分。",
+      "replyRequired": "请输入回复内容。",
+      "saveFailed": "评价保存失败，请重试。",
+      "saveNetwork": "网络错误：评价未保存。",
+      "deleteFailed": "评价删除失败，请重试。",
+      "deleteNetwork": "网络错误：评价未删除。",
+      "replySaveFailed": "回复保存失败，请重试。",
+      "replySaveNetwork": "网络错误：回复未保存。",
+      "replyDeleteFailed": "回复删除失败，请重试。",
+      "replyDeleteNetwork": "网络错误：回复未删除。"
+    }
+  },
+  "NotFound": {
+    "title": "找不到此页面。",
+    "home": "返回首页"
+  },
+  "DownloadsPage": {
+    "eyebrow": "你的资源库",
+    "title": "我的下载",
+    "intro": "你获取过的所有组件都在这里，打开任意一个即可随时重新下载。",
+    "empty": "这里还没有内容。",
+    "browse": "浏览组件 →"
+  },
+  "PublishPage": {
+    "eyebrow": "卖家",
+    "title": "发布组件",
+    "guide": "第一次发布？阅读发布指南 →",
+    "publish": "发布",
+    "publishing": "发布中…",
+    "publishedEyebrow": "已发布",
+    "publishedTitle": "{name} 已上线",
+    "publishedBody": "你的组件已加入目录。",
+    "view": "查看组件",
+    "publishAnother": "再发布一个"
+  },
+  "EditPage": {
+    "eyebrow": "卖家",
+    "title": "编辑组件",
+    "intro": "直接在此更新信息。上传新的 zip 是可选的。<view>查看你的组件</view>。",
+    "save": "保存更改",
+    "saving": "保存中…"
+  },
+  "StripePage": {
+    "eyebrow": "卖家",
+    "title": "连接收款",
+    "body": "AiBlocks 将付款直接转入你的 Stripe 账户，平台费为 0%。只需连接一次，即可开始出售付费组件。",
+    "guide": "阅读分步接入指南 →",
+    "connect": "连接 Stripe"
+  },
+  "ComponentForm": {
+    "name": "名称",
+    "namePlaceholder": "邮件分拣智能体",
+    "description": "简短描述",
+    "descriptionPlaceholder": "买家在卡片上看到的一行说明",
+    "ecosystems": "生态（用逗号分隔）",
+    "ecosystemsPlaceholder": "claude, gpt, gemini",
+    "tags": "标签（用逗号分隔）",
+    "tagsPlaceholder": "agent, email, productivity",
+    "price": "价格（欧元，0 表示免费）",
+    "zip": "组件 zip（最大 10MB）",
+    "replaceZip": "替换 zip（可选，留空则保留当前文件）",
+    "currentZip": "当前：{file}",
+    "readme": "README（Markdown）",
+    "defaultReadme": "# 概述\n\n它能做什么，如何安装…",
+    "uploading": "上传中…",
+    "preview": "预览",
+    "previewEmpty": "README 预览将显示在这里。",
+    "cancel": "取消",
+    "errors": {
+      "nameTooShort": "名称至少需要 3 个字符。",
+      "descriptionTooShort": "请添加简短描述（至少 10 个字符）。",
+      "priceInvalid": "价格必须为 0 或正数，例如 12.50 或 12,50，不能使用千位分隔符。",
+      "sourceLanguageInvalid": "请选择描述和 README 所用的语言。",
+      "zipRequired": "请选择要上传的 zip 文件。",
+      "zipTooLarge": "zip 超过 10MB 上限。",
+      "uploadPathMismatch": "上传路径不匹配，请重新上传 zip。",
+      "uploadStartFailed": "无法开始上传。",
+      "uploadStartNetwork": "网络错误，无法开始上传。",
+      "uploadFailed": "上传失败，请重试。",
+      "uploadNotFound": "找不到已上传的文件，请重试。",
+      "publishFailed": "无法发布。",
+      "publishNetwork": "网络错误，组件未发布。",
+      "publishedTagsFailed": "组件已发布，但其标签未能保存。",
+      "saveFailed": "无法保存更改。",
+      "saveNetwork": "网络错误，更改未保存。",
+      "updatedTagsFailed": "组件已更新，但其标签未能保存。",
+      "notFound": "未找到该组件。",
+      "notOwner": "你只能编辑自己的组件。"
+    }
+  },
+  "ApiErrors": {
+    "signInRequired": "请登录后继续。",
+    "invalidBody": "无法读取请求，请刷新页面后重试。",
+    "componentNotFound": "未找到该组件。",
+    "commentRequired": "请输入评论内容。",
+    "commentTooLong": "评论内容不能超过 {max} 个字符。",
+    "parentCommentNotFound": "未找到你要回复的评论。",
+    "replyToReplyNotAllowed": "只能回复顶层评论。",
+    "commentPostFailed": "评论发表失败，请重试。",
+    "commentDeleteFailed": "评论删除失败，请重试。",
+    "ratingInvalid": "评分必须是 1 到 5 之间的整数。",
+    "reviewTooLong": "评价内容不能超过 {max} 个字符。",
+    "ownReviewNotAllowed": "你不能评价自己的组件。",
+    "verifiedBuyerRequired": "只有已验证的买家才能评价。请先下载此组件。",
+    "reviewSaveFailed": "评价保存失败，请重试。",
+    "reviewDeleteFailed": "评价删除失败，请重试。",
+    "replyRequired": "请输入回复内容。",
+    "replyTooLong": "回复内容不能超过 {max} 个字符。",
+    "reviewNotFound": "未找到该评价。",
+    "sellerOnlyReply": "只有该组件的卖家才能回复其评价。",
+    "replySaveFailed": "回复保存失败，请重试。",
+    "replyDeleteFailed": "回复删除失败，请重试。",
+    "componentRequired": "未指定组件。",
+    "waiverRequired": "结账前请确认数字内容交付说明。",
+    "componentIsFree": "此组件免费，直接下载即可。",
+    "ownComponentPurchase": "你不能购买自己的组件。",
+    "alreadyOwned": "你已拥有使用权，可在“我的下载”中找到。",
+    "sellerNotPayable": "该卖家暂时无法收款。",
+    "purchaseCreateFailed": "无法创建购买记录，请重试。",
+    "checkoutFailed": "无法开始付款。",
+    "componentUnavailable": "此组件不可用。",
+    "purchaseRequired": "购买此组件后即可下载。",
+    "downloadFailed": "无法准备下载。"
+  },
+  "Metadata": {
+    "title": "AiBlocks：可复用的 AI 组件",
+    "description": "可复用 AI 构建块的开放市场：提示词、技能、代理、MCP 服务器、CLAUDE.md 配置、钩子等。",
+    "browse": {
+      "title": "浏览组件",
+      "description": "浏览、搜索可复用的 AI 组件，并按标签、生态、下载量和收藏筛选。"
+    },
+    "about": {
+      "title": "关于",
+      "description": "AiBlocks 为什么存在，以及这个市场背后的设计决策。"
+    },
+    "contact": {
+      "title": "联系我们",
+      "description": "如何联系 AiBlocks。"
+    },
+    "impressum": {
+      "title": "Impressum",
+      "description": "AiBlocks 依据 § 5 DDG 公布的法律信息（Impressum）。"
+    },
+    "privacy": {
+      "title": "隐私政策",
+      "description": "AiBlocks 收集哪些个人数据、为什么收集，以及你对这些数据享有的权利。"
+    },
+    "terms": {
+      "title": "服务条款",
+      "description": "在 AiBlocks 上购买和出售组件的条款。"
+    },
+    "sellerPublishGuide": {
+      "title": "发布组件：卖家指南",
+      "description": "分步说明：如何在 AiBlocks 上发布你的 AI 组件。"
+    },
+    "sellerStripeGuide": {
+      "title": "连接 Stripe 以便收款：卖家指南",
+      "description": "分步说明：接入你的 Stripe 关联账户，让买家可以直接向你付款。"
+    },
+    "search": {
+      "title": "搜索",
+      "description": "AiBlocks 及全网 AI 组件的搜索结果。"
+    },
+    "signIn": {
+      "title": "登录",
+      "description": "登录 AiBlocks。"
+    },
+    "signUp": {
+      "title": "注册",
+      "description": "创建 AiBlocks 账户。"
+    }
+  }
+}

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { getDownloadState, runDownloadFlow } from "@/lib/commerce/download-flow";
 import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
 import { Spinner } from "@/components/ui/spinner";
+import { Link } from "@/i18n/navigation";
+import { useErrorMessage } from "@/lib/use-error-message";
 
 // Handles the three states of acquiring a component:
 //   free            -> POST /download, follow the signed URL
@@ -29,6 +32,10 @@ export function DownloadButton({
   owned: boolean;
   signedIn: boolean;
 }) {
+  const t = useTranslations("DownloadButton");
+  const tWaiver = useTranslations("Waiver");
+  const locale = useLocale();
+  const errorMessage = useErrorMessage();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [withdrawalWaived, setWithdrawalWaived] = useState(false);
@@ -40,14 +47,28 @@ export function DownloadButton({
     setMsg(null);
     const result = await runDownloadFlow(
       {
-        requestDownload: () => requestDownloadEffect(fetch, componentId),
-        requestCheckout: (waived) => requestCheckoutEffect(fetch, componentId, waived),
+        requestDownload: () =>
+          requestDownloadEffect(fetch, componentId, {
+            fallback: t("errors.downloadFailed"),
+            network: t("errors.downloadNetwork"),
+          }),
+        requestCheckout: (waived) =>
+          requestCheckoutEffect(fetch, componentId, waived, locale, {
+            fallback: t("errors.checkoutFailed"),
+            network: t("errors.checkoutNetwork"),
+          }),
       },
-      { signedIn, priceCents, owned, withdrawalWaived }
+      {
+        signedIn,
+        priceCents,
+        owned,
+        withdrawalWaived,
+        messages: { signInRequired: t("errors.signInRequired"), consentRequired: t("errors.consentRequired") },
+      }
     );
     setBusy(false);
     if (result.status === "error") {
-      setMsg(result.error);
+      setMsg(errorMessage(result.error));
       return;
     }
     window.location.href = result.url; // signed download URL or Stripe Checkout
@@ -67,13 +88,13 @@ export function DownloadButton({
             className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-ink"
           />
           <span>
-            I want immediate access to this digital component. I understand
-            this means I give up my 14-day EU/EEA right of withdrawal, per
-            the{" "}
-            <a href="/terms#refunds" className="underline underline-offset-2 hover:text-ink" target="_blank" rel="noopener noreferrer">
-              Terms
-            </a>
-            .
+            {tWaiver.rich("checkbox", {
+              terms: (chunks) => (
+                <Link href="/terms#refunds" className="underline underline-offset-2 hover:text-ink" target="_blank" rel="noopener noreferrer">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </span>
         </label>
       )}
@@ -87,8 +108,7 @@ export function DownloadButton({
             role="tooltip"
             className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max max-w-[260px] -translate-x-1/2 rounded-block bg-ink px-3 py-2 text-center text-xs leading-relaxed text-paper opacity-0 invisible transition-opacity duration-150 group-hover:visible group-hover:opacity-100"
           >
-            Please agree to and check the 14-day withdrawal policy checkbox
-            above to start the payment process.
+            {t("waiverTooltip")}
             <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-ink" />
           </div>
         )}
@@ -102,7 +122,7 @@ export function DownloadButton({
           className="w-full rounded-block bg-accent text-accent-ink py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5"
         >
           {busy && <Spinner className="h-4 w-4" />}
-          {busy ? "Working…" : label}
+          {busy ? t("working") : t(label)}
         </button>
       </div>
       {msg && <p className="text-sm text-accent mt-2">{msg}</p>}

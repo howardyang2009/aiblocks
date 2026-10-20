@@ -17,7 +17,7 @@ setup("authenticate", async ({ page }) => {
   }
 
   // Clerk must be loaded on the page before clerk.signIn can drive it.
-  await page.goto("/");
+  await page.goto("/en");
 
   // Email-based sign-in (not a strategy/password pair): the helper mints a
   // sign-in ticket via Clerk's Backend API and completes it with the
@@ -27,7 +27,7 @@ setup("authenticate", async ({ page }) => {
   // cover). No password needed — just an existing user with this email.
   await clerk.signIn({ page, emailAddress: email });
 
-  await page.goto("/dashboard/downloads");
+  await page.goto("/en/dashboard/downloads");
   await expect(page.getByRole("heading", { name: "My downloads" })).toBeVisible();
 
   await page.context().storageState({ path: AUTH_FILE });

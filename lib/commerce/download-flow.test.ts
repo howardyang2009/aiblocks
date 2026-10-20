@@ -7,7 +7,7 @@ describe("getDownloadState", () => {
       isFree: true,
       canDownload: true,
       needsConsent: false,
-      label: "Download",
+      label: "download",
     });
   });
 
@@ -16,7 +16,7 @@ describe("getDownloadState", () => {
       isFree: false,
       canDownload: true,
       needsConsent: false,
-      label: "Download",
+      label: "download",
     });
   });
 
@@ -25,7 +25,7 @@ describe("getDownloadState", () => {
       isFree: false,
       canDownload: false,
       needsConsent: true,
-      label: "Buy to download",
+      label: "buyToDownload",
     });
   });
 });
@@ -49,6 +49,9 @@ function fakeDeps(opts: {
   return deps;
 }
 
+// Stand-ins for the translated copy the component passes in.
+const messages = { signInRequired: "SIGN IN", consentRequired: "CHECK THE BOX" };
+
 describe("runDownloadFlow", () => {
   it("errors when signed out, without calling either effect", async () => {
     const deps = fakeDeps({});
@@ -57,8 +60,9 @@ describe("runDownloadFlow", () => {
       priceCents: 0,
       owned: false,
       withdrawalWaived: false,
+      messages,
     });
-    expect(result).toEqual({ status: "error", error: "Sign in to continue." });
+    expect(result).toEqual({ status: "error", error: messages.signInRequired });
     expect(deps.downloadCalls).toBe(0);
     expect(deps.checkoutCalls).toEqual([]);
   });
@@ -70,10 +74,11 @@ describe("runDownloadFlow", () => {
       priceCents: 500,
       owned: false,
       withdrawalWaived: false,
+      messages,
     });
     expect(result).toEqual({
       status: "error",
-      error: "Please check the box above to confirm before buying.",
+      error: messages.consentRequired,
     });
     expect(deps.downloadCalls).toBe(0);
     expect(deps.checkoutCalls).toEqual([]);
@@ -86,6 +91,7 @@ describe("runDownloadFlow", () => {
       priceCents: 0,
       owned: false,
       withdrawalWaived: false,
+      messages,
     });
     expect(result).toEqual({ status: "redirect", url: "https://storage.example/free" });
     expect(deps.downloadCalls).toBe(1);
@@ -98,6 +104,7 @@ describe("runDownloadFlow", () => {
       priceCents: 500,
       owned: true,
       withdrawalWaived: false,
+      messages,
     });
     expect(result).toEqual({ status: "redirect", url: "https://storage.example/owned" });
     expect(deps.downloadCalls).toBe(1);
@@ -110,6 +117,7 @@ describe("runDownloadFlow", () => {
       priceCents: 500,
       owned: false,
       withdrawalWaived: true,
+      messages,
     });
     expect(result).toEqual({ status: "redirect", url: "https://checkout.stripe.com/session" });
     expect(deps.checkoutCalls).toEqual([true]);
@@ -122,6 +130,7 @@ describe("runDownloadFlow", () => {
       priceCents: 0,
       owned: false,
       withdrawalWaived: false,
+      messages,
     });
     expect(result).toEqual({ status: "error", error: "Could not prepare download." });
   });
@@ -133,6 +142,7 @@ describe("runDownloadFlow", () => {
       priceCents: 500,
       owned: false,
       withdrawalWaived: true,
+      messages,
     });
     expect(result).toEqual({ status: "error", error: "Could not start checkout." });
   });

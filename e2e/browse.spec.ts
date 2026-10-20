@@ -18,7 +18,7 @@ test.describe("browse & search", () => {
   });
 
   test("home links into the browse catalog", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/en");
     await expect(page.getByRole("heading", { name: /Reusable AI components/i })).toBeVisible();
 
     await page.getByRole("link", { name: "Browse components" }).click();
@@ -27,7 +27,7 @@ test.describe("browse & search", () => {
   });
 
   test("searching for a real component finds it", async ({ page }) => {
-    await page.goto("/browse");
+    await page.goto("/en/browse");
     await page.getByPlaceholder("Search components…").fill(seeded.name);
     await page.getByPlaceholder("Search components…").press("Enter");
 
@@ -36,7 +36,7 @@ test.describe("browse & search", () => {
   });
 
   test("searching for a nonexistent component shows the empty state", async ({ page }) => {
-    await page.goto("/browse");
+    await page.goto("/en/browse");
     const nonsense = `no-such-component-${Date.now()}`;
     await page.getByPlaceholder("Search components…").fill(nonsense);
     await page.getByPlaceholder("Search components…").press("Enter");
@@ -45,7 +45,7 @@ test.describe("browse & search", () => {
   });
 
   test("sort links change the query string", async ({ page }) => {
-    await page.goto("/browse");
+    await page.goto("/en/browse");
     await page.getByRole("link", { name: "Most downloaded" }).click();
     await expect(page).toHaveURL(/sort=downloads/);
 
@@ -54,7 +54,7 @@ test.describe("browse & search", () => {
   });
 
   test("opening a component from the catalog shows its detail page", async ({ page }) => {
-    await page.goto(`/browse?q=${encodeURIComponent(seeded.name)}`);
+    await page.goto(`/en/browse?q=${encodeURIComponent(seeded.name)}`);
     await page.getByRole("link", { name: new RegExp(seeded.name) }).click();
 
     await expect(page).toHaveURL(new RegExp(`/components/${seeded.id}`));

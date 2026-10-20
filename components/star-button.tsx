@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
+import { formatNumber } from "@/lib/utils";
 import { applyOptimisticToggle, resolveToggle, type StarState } from "@/lib/engagement/star-button-state";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -14,6 +16,7 @@ export function StarButton({
   initialCount: number;
   initialStarred?: boolean;
 }) {
+  const locale = useLocale();
   const [state, setState] = useState<StarState>({ starred: initialStarred, count: initialCount });
   const [pending, setPending] = useState(false);
 
@@ -42,7 +45,7 @@ export function StarButton({
       }`}
     >
       {pending ? <Spinner className="h-3.5 w-3.5" /> : <span>★</span>}
-      <span className="font-mono text-xs">{state.count}</span>
+      <span className="font-mono text-xs">{formatNumber(state.count, locale)}</span>
     </button>
   );
 }
