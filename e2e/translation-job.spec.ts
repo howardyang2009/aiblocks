@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import path from "node:path";
 import de from "../messages/de.json";
 import { serviceClient } from "./fixtures/seed";
+import { refreshSession } from "./fixtures/session";
 
 // Signed-in: a Seller publishes, and the translation job's Claude calls go
 // to the mock Anthropic server (#70), which answers `[de] <source>`.
@@ -15,6 +16,7 @@ async function publish(page: Page, name: string, description: string, readme?: s
   if (readme !== undefined) await page.getByLabel("README (markdown)").fill(readme);
   await page.getByLabel("Ecosystems (comma separated)").fill("claude");
   await page.getByLabel("Component zip (max 10MB)").setInputFiles(path.join(__dirname, "fixtures", "test-component.zip"));
+  await refreshSession(page);
   await page.getByRole("button", { name: "Publish" }).click();
   await expect(page.getByRole("heading", { name: `${name} is live` })).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: "View component" }).click();
