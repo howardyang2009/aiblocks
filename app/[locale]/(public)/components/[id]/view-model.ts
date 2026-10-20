@@ -1,26 +1,29 @@
 import type { createServiceClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/database";
 import { getEntitlement, type EntitlementLookupDb } from "@/lib/commerce/entitlements";
-import { getPublishedComponent, getComponentTagNames, type PublishedComponentDb, type ComponentTagsDb } from "@/lib/commerce/components";
+import { getComponentTagNames, type ComponentTagsDb } from "@/lib/commerce/components";
 import { narrowDb } from "@/lib/db-port";
 import { toPublicProfile } from "@/lib/identity/public-profile";
+import type { Viewer } from "@/lib/identity/viewer";
 import type { Review } from "@/components/reviews-section";
 import type { CommentNode } from "@/components/comments-section";
 
 // The only part of this page that touches Supabase. Everything it returns
 // is a plain row (or already-resolved boolean) — no business logic lives
 // here, so nothing below needs a fake query builder to test.
+//
+// The published-component gate (Q1) is the caller's: page.tsx already has
+// the row from the same per-request lookup generateMetadata used, so it is
+// not fetched a second time here. The Viewer arrives as a promise, not a
+// value: resolving it costs a Clerk round trip (plus the profile bootstrap)
+// that nothing in tier 2 needs, so it runs alongside tier 2 and is only
+// awaited where a query first depends on who is looking.
 export async function fetchComponentRows(
   supabase: ReturnType<typeof createServiceClient>,
-  id: string,
-  viewerProfile: Tables<"profiles"> | null
+  component: Tables<"components">,
+  viewer: Promise<Viewer>
 ) {
-  // Q1 — gate: everything depends on the component existing and being published.
-  const component = await getPublishedComponent(narrowDb<PublishedComponentDb>(supabase), id);
-
-  if (!component) return null;
-
-  // Tier 2 — three queries independent of each other, all unblocked after Q1.
+  // Tier 2 — three queries independent of each other and of the Viewer.
   const [
     { data: seller },
     { data: reviewRows },
@@ -34,6 +37,9 @@ export async function fetchComponentRows(
   // Query-planning inputs for tier 3 — not business logic, just IDs to fetch.
   const reviewerIds  = [...new Set((reviewRows ?? []).map(r => r.buyer_id))];
   const commenterIds = [...new Set((commentRows ?? []).map(r => r.user_id))];
+
+  // First point where a query depends on the Viewer (entitlement, star).
+  const { profile: viewerProfile } = await viewer;
 
   // Dispatched here (not awaited yet) so it still fires in parallel with the
   // tier-3 Promise.all below. Kept as its own statement rather than inside
