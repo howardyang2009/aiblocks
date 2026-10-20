@@ -12,11 +12,12 @@ import s07 from "./screens/07.png";
 import s08 from "./screens/08.png";
 import s09 from "./screens/09.png";
 import s10 from "./screens/10.png";
+import s10De from "./screens/10.de.png";
 import s10ZhCN from "./screens/10.zh-CN.png";
 
 export const screenshots = [s01, s02, s03, s04, s05, s06, s07, s08, s09, s10] as const;
 
 // Steps 1 and 10 are our own page, so a Locale can get shots of its own UI.
 // Steps 2-9 are Stripe-hosted and stay shared.
-export const screenshotsDe = [s01De, s02, s03, s04, s05, s06, s07, s08, s09, s10] as const;
+export const screenshotsDe = [s01De, s02, s03, s04, s05, s06, s07, s08, s09, s10De] as const;
 export const screenshotsZhCN = [s01ZhCN, s02, s03, s04, s05, s06, s07, s08, s09, s10ZhCN] as const;
