@@ -9,6 +9,7 @@ Live: https://aiblocks.rheinwegde.de · A product by [RheinWeg](https://rheinweg
 Needs Node.js 24 and accounts for Clerk, Supabase, and Stripe.
 
 ```bash
+nvm use                      # Node 24, pinned in .nvmrc
 npm install
 cp .env.example .env.local   # fill in keys
 npm run dev                  # http://localhost:3000
