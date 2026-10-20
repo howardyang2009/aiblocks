@@ -10,6 +10,8 @@ import { routing } from "@/i18n/routing";
 import { APP_URL } from "@/lib/constants";
 import "../globals.css";
 
+// Every weight renders (#82). Mono 500 only via fallback: `code` in bold text
+// or a README heading. Each family is one variable woff2, so a weight costs no bytes.
 const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display", weight: ["500", "700"] });
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", weight: ["400", "500"] });
