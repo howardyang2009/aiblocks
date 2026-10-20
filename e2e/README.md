@@ -26,7 +26,10 @@ Chromium browser against the app running with `NODE_ENV=test` (so it loads
 - **`translation-job.spec.ts`** — signed in: the real translation job, answered by the
   mock Anthropic server. A published `en` Component shows its `de` Translation with the
   machine-translated note, and "Show original" swaps in place; a failed Translation
-  falls back to the Source text until the retry route produces a ready one.
+  falls back to the Source text until the retry route produces a ready one. On the `/de`
+  edit page the Seller corrects the `de` Translation by hand (readers see it with no note),
+  then changes the Source text: the hand edit shows as stale, and "Re-translate" brings
+  back a machine Translation (#71).
 
 **Not covered yet** (deliberately deferred):
 - Paid checkout + the Stripe webhook — needs the Stripe CLI forwarding events to

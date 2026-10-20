@@ -4,6 +4,7 @@ import {
   validateEditForm,
   runPublishFlow,
   runEditFlow,
+  changedTranslation,
   type PublishFormFields,
   type EditFormFields,
   type PublishFlowDeps,
@@ -22,6 +23,7 @@ function validPublishFields(overrides: Partial<PublishFormFields> = {}): Publish
     ecosystems: "claude, gpt",
     tags: "agent, email",
     price: "9.99",
+    sourceLanguage: "en",
     file: smallFile(),
     ...overrides,
   };
@@ -97,6 +99,7 @@ describe("runPublishFlow", () => {
       ecosystems: "claude, gpt",
       tags: "agent, email",
       price: "9.99",
+      sourceLanguage: "en",
       zipPath: "seller1/widget.zip",
     });
   });
@@ -157,6 +160,7 @@ function validEditFields(overrides: Partial<EditFormFields> = {}): EditFormField
     ecosystems: "claude, gpt",
     tags: "agent, email",
     price: "9.99",
+    sourceLanguage: "en",
     file: null, // <- key difference from publish: null is the DEFAULT
     ...overrides,
   };
@@ -205,9 +209,51 @@ function fakeEditDeps(overrides: Partial<EditFlowDeps> = {}): EditFlowDeps {
     requestUploadUrl: vi.fn(async () => ({ ok: true as const, path: "seller1/new.zip", token: "tok", bucket: "component-zips" })),
     uploadZip: vi.fn(async () => ({ ok: true as const })),
     updateComponent: vi.fn(async () => ({ ok: true as const, id: "comp1" })),
+    saveTranslation: vi.fn(async () => ({ ok: true as const })),
     ...overrides,
   };
 }
+
+describe("runEditFlow with a Translation", () => {
+  const translation = { locale: "de" as const, texts: { description: "Sortiert Ihren Posteingang." } };
+
+  it("saves the shared fields, then the changed Translation fields", async () => {
+    const deps = fakeEditDeps();
+    const result = await runEditFlow(deps, "comp1", validEditFields({ translation }));
+
+    expect(result).toEqual({ status: "done", id: "comp1" });
+    expect(deps.updateComponent).toHaveBeenCalledOnce();
+    expect(deps.saveTranslation).toHaveBeenCalledWith("comp1", { locale: "de", description: "Sortiert Ihren Posteingang." });
+  });
+
+  it("saves no Translation once the Seller declares this Locale the source language", async () => {
+    const deps = fakeEditDeps();
+    await runEditFlow(deps, "comp1", validEditFields({ sourceLanguage: "de", translation }));
+    expect(deps.updateComponent).toHaveBeenCalledOnce();
+    expect(deps.saveTranslation).not.toHaveBeenCalled();
+  });
+
+  it("saves no Translation when none of its fields changed", async () => {
+    const deps = fakeEditDeps();
+    await runEditFlow(deps, "comp1", validEditFields({ translation: { locale: "de", texts: {} } }));
+    expect(deps.saveTranslation).not.toHaveBeenCalled();
+  });
+
+  it("holds a translated description to the same rule before saving anything", async () => {
+    const deps = fakeEditDeps();
+    const result = await runEditFlow(deps, "comp1", validEditFields({ translation: { locale: "de", texts: { description: "kurz" } } }));
+    expect(result).toEqual({ status: "error", error: "descriptionTooShort" });
+    expect(deps.updateComponent).not.toHaveBeenCalled();
+  });
+
+  it("reports a failed Translation save", async () => {
+    const deps = fakeEditDeps({ saveTranslation: vi.fn(async () => ({ ok: false as const, error: "translationSaveFailed" })) });
+    expect(await runEditFlow(deps, "comp1", validEditFields({ translation }))).toEqual({
+      status: "error",
+      error: "translationSaveFailed",
+    });
+  });
+});
 
 describe("runEditFlow", () => {
   it("SKIPS upload entirely when no new file is provided", async () => {
@@ -225,6 +271,7 @@ describe("runEditFlow", () => {
       ecosystems: "claude, gpt",
       tags: "agent, email",
       price: "9.99",
+      sourceLanguage: "en",
     });
   });
 
@@ -242,6 +289,7 @@ describe("runEditFlow", () => {
       ecosystems: "claude, gpt",
       tags: "agent, email",
       price: "9.99",
+      sourceLanguage: "en",
       zipPath: "seller1/new.zip",
     });
   });
@@ -301,5 +349,26 @@ describe("runEditFlow", () => {
     await runEditFlow(deps, "comp1", validEditFields({ name: "ab" }));
 
     expect(stages).toEqual([]);
+  });
+});
+
+describe("changedTranslation", () => {
+  const current = { description: "Sortiert Ihren Posteingang.", readme: "# Hallo" };
+
+  it("keeps only fields the Seller changed", () => {
+    expect(changedTranslation(current, { description: "Sortiert Ihren Posteingang.", readme: "# Hallo Welt" })).toEqual({
+      readme: "# Hallo Welt",
+    });
+    expect(changedTranslation(current, current)).toEqual({});
+  });
+
+  it("ignores whitespace around a description and drops emptied fields", () => {
+    expect(changedTranslation(current, { description: " Sortiert Ihren Posteingang. ", readme: "  " })).toEqual({});
+  });
+
+  it("takes a first Translation of a field that had none", () => {
+    expect(changedTranslation({ description: "", readme: "" }, { description: "Neu geschrieben, von Hand.", readme: "" })).toEqual({
+      description: "Neu geschrieben, von Hand.",
+    });
   });
 });

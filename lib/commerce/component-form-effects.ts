@@ -6,7 +6,11 @@ import type {
   CreateComponentResult,
   UpdateComponentPayload,
   UpdateComponentClientResult,
+  SaveTranslationPayload,
+  TranslationActionResult,
 } from "@/lib/commerce/component-form-flow";
+import type { Locale } from "@/i18n/routing";
+import type { TranslatedField } from "@/lib/translation/plan";
 
 // The real effects behind PublishFlowDeps/EditFlowDeps (lib/commerce/component-form-flow.ts)
 // — the actual fetch calls and Storage upload the tested flow logic calls
@@ -88,4 +92,40 @@ export async function updateComponentEffect(
   );
   if (!result.ok) return result;
   return { ok: true, id: result.data.id };
+}
+
+// The Translation actions on the edit page (#71) answer with no payload.
+async function translationAction(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+  fallback: "translationSaveFailed" | "translationActionFailed"
+): Promise<TranslationActionResult> {
+  const result = await runClientAction(fetchImpl, url, init, { fallback, network: "translationNetwork" });
+  return result.ok ? { ok: true } : result;
+}
+
+const json = (method: string, body: unknown): RequestInit => ({
+  method,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+// Save the Seller's own Translation of one Locale: only changed fields.
+export function saveTranslationEffect(fetchImpl: typeof fetch, id: string, payload: SaveTranslationPayload) {
+  return translationAction(fetchImpl, `/api/components/${id}/translations`, json("PUT", payload), "translationSaveFailed");
+}
+
+// Discard a hand edit and queue a fresh machine Translation of that field.
+export function resetTranslationEffect(
+  fetchImpl: typeof fetch,
+  id: string,
+  target: { locale: Locale; field: TranslatedField }
+) {
+  return translationAction(fetchImpl, `/api/components/${id}/translations/reset`, json("POST", target), "translationActionFailed");
+}
+
+// Redo the Component's failed machine Translations.
+export function retryTranslationsEffect(fetchImpl: typeof fetch, id: string) {
+  return translationAction(fetchImpl, `/api/components/${id}/translations/retry`, { method: "POST" }, "translationActionFailed");
 }

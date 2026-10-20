@@ -1,5 +1,7 @@
 import { exceedsZipSizeLimit } from "@/lib/constants";
 import { validateComponentName, validateComponentDescription, parseComponentPrice } from "@/lib/commerce/components-write";
+import type { Locale } from "@/i18n/routing";
+import type { SourceLanguage } from "@/lib/translation/source-language";
 
 // The publish and edit client flows — validate, (conditionally) upload,
 // save — as one module. Kept as two exported flows (runPublishFlow /
@@ -15,6 +17,7 @@ export type PublishFormFields = {
   ecosystems: string;
   tags: string;
   price: string;
+  sourceLanguage: SourceLanguage;
   file: File | null;
 };
 
@@ -40,18 +43,15 @@ export function validatePublishForm(fields: PublishFormFields): PublishFormValid
   return { ok: true };
 }
 
-// Same field set as PublishFormFields, with one difference: `file` is
-// OPTIONAL. `null` means "keep the current zip" — the seller may edit
-// only metadata without re-uploading.
-export type EditFormFields = {
-  name: string;
-  description: string;
-  readme: string;
-  ecosystems: string;
-  tags: string;
-  price: string;
-  file: File | null;
-};
+/** The Translation fields a Seller changed on the edit page of one Locale (#71). */
+export type TranslationChanges = { locale: Locale; texts: { description?: string; readme?: string } };
+
+// Same field set as PublishFormFields, with two differences: `file` is
+// OPTIONAL — `null` means "keep the current zip", so the seller may edit
+// only metadata without re-uploading — and on a Locale other than the
+// source language `translation` carries the changed Translation fields,
+// while description/readme carry the unchanged Source text.
+export type EditFormFields = PublishFormFields & { translation?: TranslationChanges };
 
 export type EditFormValidation = { ok: true } | { ok: false; error: string };
 
@@ -65,6 +65,10 @@ export function validateEditForm(fields: EditFormFields): EditFormValidation {
 
   const descriptionError = validateComponentDescription(fields.description);
   if (descriptionError) return { ok: false, error: descriptionError };
+
+  const translated = fields.translation?.texts.description;
+  const translatedError = translated === undefined ? null : validateComponentDescription(translated);
+  if (translatedError) return { ok: false, error: translatedError };
 
   if (fields.file && exceedsZipSizeLimit(fields.file.size)) {
     return { ok: false, error: "zipTooLarge" };
@@ -115,6 +119,7 @@ export type CreateComponentPayload = {
   ecosystems: string;
   tags: string;
   price: string;
+  sourceLanguage: SourceLanguage;
   zipPath: string;
 };
 
@@ -149,6 +154,7 @@ export async function runPublishFlow(
     ecosystems: fields.ecosystems,
     tags: fields.tags,
     price: fields.price,
+    sourceLanguage: fields.sourceLanguage,
     zipPath: uploaded.zipPath,
   });
   if (!created.ok) return { status: "error", error: created.error };
@@ -163,6 +169,7 @@ export type UpdateComponentPayload = {
   ecosystems: string;
   tags: string;
   price: string;
+  sourceLanguage: SourceLanguage;
   // Omitted when the seller kept the existing zip; a string when they
   // uploaded a replacement.
   zipPath?: string;
@@ -175,15 +182,20 @@ export type UpdateComponentClientResult =
 // The narrow set of effects the edit flow needs. `updateComponent` takes
 // the component id up front because the flow itself doesn't need to know
 // where it came from — the page provides it once.
+export type SaveTranslationPayload = { locale: Locale } & TranslationChanges["texts"];
+
+export type TranslationActionResult = { ok: true } | { ok: false; error: string };
+
 export type EditFlowDeps = UploadDeps & {
   updateComponent: (id: string, payload: UpdateComponentPayload) => Promise<UpdateComponentClientResult>;
+  saveTranslation: (id: string, payload: SaveTranslationPayload) => Promise<TranslationActionResult>;
 };
 
 export type EditFlowResult = { status: "error"; error: string } | { status: "done"; id: string };
 
-// Validate → (optional) upload → update. When there's no new file, the
-// upload step (and the "uploading" stage) is skipped entirely — server
-// receives no zipPath and keeps the existing one.
+// Validate → (optional) upload → update → (optional) save the Translation.
+// When there's no new file, the upload step (and the "uploading" stage) is
+// skipped entirely — server receives no zipPath and keeps the existing one.
 export async function runEditFlow(
   deps: EditFlowDeps,
   componentId: string,
@@ -207,9 +219,34 @@ export async function runEditFlow(
     ecosystems: fields.ecosystems,
     tags: fields.tags,
     price: fields.price,
+    sourceLanguage: fields.sourceLanguage,
     ...(zipPath ? { zipPath } : {}),
   });
   if (!updated.ok) return { status: "error", error: updated.error };
 
+  // Once this Locale is declared the source language, the text in the form
+  // is no longer a Translation of anything: only the shared fields save.
+  const translation = fields.translation;
+  if (translation && translation.locale !== fields.sourceLanguage && Object.keys(translation.texts).length) {
+    const saved = await deps.saveTranslation(componentId, { locale: translation.locale, ...translation.texts });
+    if (!saved.ok) return { status: "error", error: saved.error };
+  }
+
   return { status: "done", id: updated.id };
+}
+
+/**
+ * The Translation fields the Seller changed and left non-empty, compared
+ * with the text the edit page loaded. Only these are saved, and saving one
+ * makes it a hand Translation (#71).
+ */
+export function changedTranslation(
+  current: { description: string; readme: string },
+  edited: { description: string; readme: string }
+): TranslationChanges["texts"] {
+  const texts: TranslationChanges["texts"] = {};
+  const description = edited.description.trim();
+  if (description && description !== current.description) texts.description = description;
+  if (edited.readme.trim() && edited.readme !== current.readme) texts.readme = edited.readme;
+  return texts;
 }

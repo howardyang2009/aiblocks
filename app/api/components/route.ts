@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/components — create a listing AFTER the zip has been uploaded
 // via a signed upload URL. Body:
-//   { name, description, readme, ecosystems[], tags[], price, zipPath }
+//   { name, description, readme, ecosystems[], tags[], price, zipPath, sourceLanguage }
 export const POST = withAuth(async (req, { profile, supabase }) => {
   const body = await parseBody<{
     name?: unknown; description?: unknown; readme?: unknown;

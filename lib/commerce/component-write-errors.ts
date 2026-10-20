@@ -23,6 +23,12 @@ export const COMPONENT_WRITE_ERRORS = [
   "updatedTagsFailed",
   "notFound",
   "notOwner",
+  "translationLocaleInvalid",
+  "translationFieldInvalid",
+  "translationEmpty",
+  "translationSaveFailed",
+  "translationNetwork",
+  "translationActionFailed",
 ] as const;
 
 export type ComponentWriteError = (typeof COMPONENT_WRITE_ERRORS)[number];

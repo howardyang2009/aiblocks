@@ -4,6 +4,9 @@ import {
   uploadZip,
   createComponentEffect,
   updateComponentEffect,
+  saveTranslationEffect,
+  resetTranslationEffect,
+  retryTranslationsEffect,
   type UploadZipStorage,
 } from "@/lib/commerce/component-form-effects";
 
@@ -78,6 +81,7 @@ const publishPayload = {
   ecosystems: "claude",
   tags: "agent",
   price: "0",
+  sourceLanguage: "en" as const,
   zipPath: "seller1/x.zip",
 };
 
@@ -103,6 +107,7 @@ const editPayload = {
   ecosystems: "claude",
   tags: "agent",
   price: "0",
+  sourceLanguage: "en" as const,
 };
 
 describe("updateComponentEffect", () => {
@@ -141,5 +146,48 @@ describe("failure message keys", () => {
   it("updateComponentEffect falls back to saveFailed / saveNetwork", async () => {
     expect(await updateComponentEffect(failing, "comp1", editPayload)).toEqual({ ok: false, error: "saveFailed" });
     expect(await updateComponentEffect(offline, "comp1", editPayload)).toEqual({ ok: false, error: "saveNetwork" });
+  });
+});
+
+describe("Translation effects", () => {
+  it("saveTranslationEffect PUTs the changed fields of one Locale", async () => {
+    const fetchImpl = fakeFetch({ ok: true, body: { ok: true } });
+    const payload = { locale: "de" as const, readme: "# Hallo" };
+
+    expect(await saveTranslationEffect(fetchImpl, "comp1", payload)).toEqual({ ok: true });
+    expect(fetchImpl).toHaveBeenCalledWith("/api/components/comp1/translations", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  });
+
+  it("resetTranslationEffect POSTs the Locale and field to reset", async () => {
+    const fetchImpl = fakeFetch({ ok: true, body: { queued: true } });
+
+    expect(await resetTranslationEffect(fetchImpl, "comp1", { locale: "de", field: "readme" })).toEqual({ ok: true });
+    expect(fetchImpl).toHaveBeenCalledWith("/api/components/comp1/translations/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale: "de", field: "readme" }),
+    });
+  });
+
+  it("retryTranslationsEffect POSTs to the retry route", async () => {
+    const fetchImpl = fakeFetch({ ok: true, body: { queued: true } });
+
+    expect(await retryTranslationsEffect(fetchImpl, "comp1")).toEqual({ ok: true });
+    expect(fetchImpl).toHaveBeenCalledWith("/api/components/comp1/translations/retry", { method: "POST" });
+  });
+
+  it("fall back to translationSaveFailed / translationActionFailed and translationNetwork", async () => {
+    const failing = fakeFetch({ ok: false, body: {} });
+    const offline = vi.fn(async () => {
+      throw new TypeError("Failed to fetch");
+    }) as unknown as typeof fetch;
+
+    expect(await saveTranslationEffect(failing, "comp1", { locale: "de" })).toEqual({ ok: false, error: "translationSaveFailed" });
+    expect(await resetTranslationEffect(failing, "comp1", { locale: "de", field: "readme" })).toEqual({ ok: false, error: "translationActionFailed" });
+    expect(await retryTranslationsEffect(offline, "comp1")).toEqual({ ok: false, error: "translationNetwork" });
   });
 });

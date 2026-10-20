@@ -175,6 +175,19 @@ describe("runTranslationJob", () => {
     expect(find(state.rows, "de", "readme")).toMatchObject({ status: "ready" });
   });
 
+  it("drops every result when the declared source language changed while it was translating", async () => {
+    const { db, state } = fakeDb(component);
+    const { client } = fakeClient({
+      onCall: () => {
+        state.component = { ...component, source_language: "de" };
+      },
+    });
+    await runTranslationJob(db, client, "c1");
+
+    // Made from the wrong language: the job for the new language redoes them.
+    expect(state.rows.filter((r) => r.status === "ready")).toEqual([]);
+  });
+
   it("stores a failed row when Claude keeps failing", async () => {
     const { db, state } = fakeDb(component);
     await runTranslationJob(db, fakeClient({ fail: (text) => text === "# Agent tool" }).client, "c1");

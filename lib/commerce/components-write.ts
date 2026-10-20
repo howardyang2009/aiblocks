@@ -90,8 +90,8 @@ export function parsePublishInput(
   const price = parseComponentPrice(String(body.price ?? "0"));
   if (!price.ok) return { ok: false, status: 400, error: price.error };
 
-  // Until the form asks for it (#71), a missing source language means `en`,
-  // the same default the backfill uses when unsure.
+  // The form always sends it (#71); an API client that leaves it out gets
+  // `en`, the same default the backfill uses when unsure.
   const sourceLanguage = body.sourceLanguage === undefined ? "en" : parseSourceLanguage(body.sourceLanguage);
   if (!sourceLanguage) return { ok: false, status: 400, error: "sourceLanguageInvalid" };
 
@@ -396,7 +396,7 @@ export async function publishComponent(
   return { ok: true, id: component.id, slug };
 }
 
-export type OwnedComponent = Pick<Tables<"components">, "id" | "seller_id" | "zip_path">;
+export type OwnedComponent = Pick<Tables<"components">, "id" | "seller_id" | "zip_path" | "source_language">;
 
 // The one rule for "does this seller own this component" — shared by
 // updateComponent's own check below and by the edit page's pre-render check
@@ -424,7 +424,7 @@ export type UpdateComponentDb = RelinkTagsDb & {
 };
 
 export type UpdateComponentResult =
-  | { ok: true; id: string; oldZipPath: string | null; newZipPath: string | null }
+  | { ok: true; id: string; oldZipPath: string | null; newZipPath: string | null; sourceLanguageChanged: boolean }
   | { ok: false; status: number; error: string };
 
 // Load the component, verify ownership, update the mutable fields, then
@@ -434,7 +434,8 @@ export type UpdateComponentResult =
 // the fetched row were somehow reused between the check and the write).
 //
 // Returns oldZipPath/newZipPath so the caller can clean up the previous
-// storage object when the zip was replaced.
+// storage object when the zip was replaced, and sourceLanguageChanged so it
+// can mark the Translations as made from a different source (#71).
 export async function updateComponent(
   supabase: UpdateComponentDb,
   args: EditInput & { componentId: string; sellerId: string; sizeBytes?: number | null }
@@ -445,7 +446,7 @@ export async function updateComponent(
   // when the id doesn't belong to them.
   const { data: existing } = await supabase
     .from("components")
-    .select("id, seller_id, zip_path")
+    .select("id, seller_id, zip_path, source_language")
     .eq("id", args.componentId)
     .maybeSingle();
 
@@ -492,5 +493,6 @@ export async function updateComponent(
     id: args.componentId,
     oldZipPath: existing.zip_path ?? null,
     newZipPath: args.zipPath ?? null,
+    sourceLanguageChanged: !!args.sourceLanguage && args.sourceLanguage !== existing.source_language,
   };
 }

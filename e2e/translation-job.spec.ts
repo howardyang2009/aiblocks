@@ -85,3 +85,47 @@ test("a failed Translation shows the Source text, and Retry produces a ready Tra
   await expect(page.getByText(`[de] ${description}`)).toBeVisible();
   await expect(page.getByTestId("machine-translation-note").first()).toBeVisible();
 });
+
+// A Seller corrects the de Translation by hand, then changes the Source text
+// (#71). One Component for both steps: the second depends on the first.
+test.describe.serial("Seller edits a Translation", () => {
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const handText = `Von Hand übersetzt ${stamp}`;
+  let id = "";
+
+  test("a hand-edited de Translation shows to readers with no machine-translated note", async ({ page }) => {
+    // No readme, so the description is the only translated field.
+    id = await publish(page, `E2E Hand ${stamp}`, `Written in English ${stamp}`, "");
+
+    await page.goto(`/de/dashboard/seller/${id}/edit`);
+    await expect(page.getByTestId("edit-view")).toHaveText(de.TranslationEdit.translationIntro);
+    await page.getByLabel(de.ComponentForm.description).fill(handText);
+    await page.getByRole("button", { name: de.EditPage.save }).click();
+
+    await expect(page).toHaveURL(new RegExp(`/de/components/${id}$`));
+    await expect(page.getByText(handText)).toBeVisible();
+    await expect(page.getByTestId("machine-translation-note")).toHaveCount(0);
+  });
+
+  test("after a Source text change the hand edit is stale, and Re-translate brings back a machine Translation", async ({ page }) => {
+    const newSource = `Rewritten in English ${stamp}`;
+    await page.goto(`/en/dashboard/seller/${id}/edit`);
+    await page.getByLabel("Short description").fill(newSource);
+    await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page).toHaveURL(new RegExp(`/en/components/${id}$`));
+
+    await page.goto(`/de/dashboard/seller/${id}/edit`);
+    const status = page.getByTestId("translation-status-description");
+    await expect(status).toContainText(de.TranslationEdit.stale);
+    // Wait for the reset to land before navigating away from the page.
+    await Promise.all([
+      page.waitForResponse((res) => res.url().endsWith(`/api/components/${id}/translations/reset`) && res.status() === 202),
+      status.getByRole("button", { name: de.TranslationEdit.retranslate }).click(),
+    ]);
+
+    await expectAfterReload(page, `/de/components/${id}`, async () => {
+      await expect(page.getByText(`[de] ${newSource}`)).toBeVisible({ timeout: 1_000 });
+    });
+    await expect(page.getByTestId("machine-translation-note")).toBeVisible();
+  });
+});

@@ -5,6 +5,7 @@ import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
 import { queueTranslations } from "@/lib/translation/queue";
+import { markSourceLanguageChanged, type SellerTranslationsDb } from "@/lib/translation/seller-edit";
 import {
   verifyUploadedZip,
   parseEditInput,
@@ -24,7 +25,7 @@ export const maxDuration = 300;
 export const PATCH = withAuth(async (req, { params, profile, supabase }) => {
   const body = await parseBody<{
     name?: unknown; description?: unknown; readme?: unknown;
-    zipPath?: unknown; price?: unknown;
+    zipPath?: unknown; price?: unknown; sourceLanguage?: unknown;
     ecosystems?: string | string[]; tags?: string | string[];
   }>(req);
   if (body instanceof NextResponse) return body;
@@ -52,6 +53,9 @@ export const PATCH = withAuth(async (req, { params, profile, supabase }) => {
     sizeBytes,
   });
   if (!updated.ok) return toResponse(updated);
+  if (updated.sourceLanguageChanged) {
+    await markSourceLanguageChanged(narrowDb<SellerTranslationsDb>(supabase), updated.id);
+  }
   queueTranslations(updated.id);
 
   // Best-effort cleanup: if the seller replaced the zip, delete the old

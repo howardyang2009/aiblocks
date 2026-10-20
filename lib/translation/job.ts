@@ -140,9 +140,13 @@ export async function runTranslationJob(
   const current = await loadSource(supabase, componentId);
   if (!current) return;
 
+  // A result made from text or a source language that changed meanwhile is
+  // dropped: the job queued by that change writes its own.
+  const stillCurrent = (task: TranslationTask) =>
+    sourceLanguageOf(current) === from && sourceHash(current[task.field] ?? "") === task.sourceHash;
   await Promise.all(
     results
-      .filter(([task]) => sourceHash(current[task.field] ?? "") === task.sourceHash)
+      .filter(([task]) => stillCurrent(task))
       .map(([task, result]) =>
         Promise.resolve(
           machineRow(supabase, componentId, task, (t) =>

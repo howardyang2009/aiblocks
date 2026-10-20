@@ -10,6 +10,7 @@ import { formatFileSize } from "@/lib/utils";
 import {
   runPublishFlow,
   runEditFlow,
+  changedTranslation,
   type PublishFlowDeps,
   type EditFlowDeps,
   type FormFlowStage,
@@ -19,9 +20,16 @@ import {
   uploadZip,
   createComponentEffect,
   updateComponentEffect,
+  saveTranslationEffect,
+  resetTranslationEffect,
+  retryTranslationsEffect,
 } from "@/lib/commerce/component-form-effects";
 import { isComponentWriteError } from "@/lib/commerce/component-write-errors";
 import { useErrorMessage } from "@/lib/use-error-message";
+import { routing, type Locale } from "@/i18n/routing";
+import { parseSourceLanguage, type SourceLanguage } from "@/lib/translation/source-language";
+import type { FieldState } from "@/lib/translation/seller-edit";
+import type { TranslatedField } from "@/lib/translation/plan";
 
 // PublishForm and EditForm — the two things a Seller does to submit a
 // Component — share one interactive form (IntakeForm) and one upload
@@ -41,8 +49,24 @@ export type ComponentFormInitial = {
   ecosystems: string;
   tags: string;
   price: string;
+  sourceLanguage: SourceLanguage;
   currentZipPath: string | null;
 };
+
+/**
+ * On a Locale other than the source language, the edit page edits that
+ * Locale's Translation of description and readme instead of the Source
+ * text (#71). Each field carries its current text and what to tell the
+ * Seller about it.
+ */
+export type TranslationEditing = {
+  locale: Locale;
+  fields: Record<TranslatedField, { text: string; state: FieldState }>;
+};
+
+const SOURCE_LANGUAGES: SourceLanguage[] = [...routing.locales, "other"];
+// ICU-style message keys cannot hold a hyphen, so zh-CN is `zh`.
+const languageKey = (language: SourceLanguage) => (language === "zh-CN" ? "zh" : language);
 
 
 // Real wiring: injects the true `fetch`/browser Supabase client into the
@@ -58,12 +82,21 @@ const editDeps: Omit<EditFlowDeps, "onStage"> = {
   requestUploadUrl: (sizeBytes) => requestUploadUrl(fetch, sizeBytes),
   uploadZip: (bucket, path, token, file) => uploadZip(createBrowserClient(), bucket, path, token, file),
   updateComponent: (id, payload) => updateComponentEffect(fetch, id, payload),
+  saveTranslation: (id, payload) => saveTranslationEffect(fetch, id, payload),
 };
+
+// Form errors are ComponentWriteError keys or shared API error keys.
+function useFormErrorMessage() {
+  const t = useTranslations("ComponentForm");
+  const errorMessage = useErrorMessage();
+  return (error: string) => (isComponentWriteError(error) ? t(`errors.${error}`) : errorMessage(error));
+}
 
 function IntakeForm({
   mode,
   componentId,
   initial,
+  translation,
   labels,
   onDone,
   onCancel,
@@ -71,19 +104,24 @@ function IntakeForm({
   mode: Mode;
   componentId?: string;
   initial: ComponentFormInitial;
+  translation?: TranslationEditing;
   labels: { idle: string; saving: string };
   onDone: (id: string, name: string) => void;
   onCancel?: () => void;
 }) {
   const t = useTranslations("ComponentForm");
+  const tEdit = useTranslations("TranslationEdit");
   const locale = useLocale();
-  const errorMessage = useErrorMessage();
+  const formError = useFormErrorMessage();
   const [name, setName] = useState(initial.name);
-  const [description, setDescription] = useState(initial.description);
+  // In a Translation, description and readme hold the Translation; the
+  // Source text in `initial` is sent back unchanged.
+  const [description, setDescription] = useState(translation?.fields.description.text ?? initial.description);
   const [ecosystems, setEcosystems] = useState(initial.ecosystems);
   const [tags, setTags] = useState(initial.tags);
   const [price, setPrice] = useState(initial.price);
-  const [readme, setReadme] = useState(initial.readme);
+  const [readme, setReadme] = useState(translation?.fields.readme.text ?? initial.readme);
+  const [sourceLanguage, setSourceLanguage] = useState(initial.sourceLanguage);
   const [file, setFile] = useState<File | null>(null);
 
   const [status, setStatus] = useState<Status>("idle");
@@ -94,7 +132,21 @@ function IntakeForm({
 
   async function handleSubmit() {
     setError(null);
-    const fields = { name, description, readme, ecosystems, tags, price, file };
+    const shared = { name, ecosystems, tags, price, sourceLanguage, file };
+    const fields = translation
+      ? {
+          ...shared,
+          description: initial.description,
+          readme: initial.readme,
+          translation: {
+            locale: translation.locale,
+            texts: changedTranslation(
+              { description: translation.fields.description.text, readme: translation.fields.readme.text },
+              { description, readme }
+            ),
+          },
+        }
+      : { ...shared, description, readme };
 
     const result =
       mode === "create"
@@ -103,7 +155,7 @@ function IntakeForm({
 
     if (result.status === "error") {
       setStatus("error");
-      setError(isComponentWriteError(result.error) ? t(`errors.${result.error}`) : errorMessage(result.error));
+      setError(formError(result.error));
       return;
     }
 
@@ -126,10 +178,23 @@ function IntakeForm({
             placeholder={t("namePlaceholder")} />
         </Field>
 
+        <Field label={tEdit("sourceLanguage")}>
+          <select className="field" value={sourceLanguage}
+            onChange={(e) => setSourceLanguage(parseSourceLanguage(e.target.value) ?? "other")}>
+            {SOURCE_LANGUAGES.map((language) => (
+              <option key={language} value={language}>{tEdit(`languages.${languageKey(language)}`)}</option>
+            ))}
+          </select>
+        </Field>
+
         <Field label={t("description")}>
           <input className="field" value={description} onChange={(e) => setDescription(e.target.value)}
             placeholder={t("descriptionPlaceholder")} />
         </Field>
+        {translation && componentId && (
+          <TranslationStatus componentId={componentId} locale={translation.locale} field="description"
+            state={translation.fields.description.state} onReset={() => setDescription("")} />
+        )}
 
         <Field label={t("ecosystems")}>
           <input className="field" value={ecosystems} onChange={(e) => setEcosystems(e.target.value)}
@@ -164,6 +229,10 @@ function IntakeForm({
           <textarea className="field min-h-48 font-mono text-[13px]" value={readme}
             onChange={(e) => setReadme(e.target.value)} />
         </Field>
+        {translation && componentId && (
+          <TranslationStatus componentId={componentId} locale={translation.locale} field="readme"
+            state={translation.fields.readme.state} onReset={() => setReadme("")} />
+        )}
 
         {error && <p className="text-sm text-accent">{error}</p>}
 
@@ -202,6 +271,67 @@ function IntakeForm({
   );
 }
 
+// What the Seller is told about one Translation field, with the action
+// that fixes it. Actions reload the page's data for the new state; a reset
+// also empties the field, since the hand edit it showed is gone.
+function TranslationStatus({
+  componentId,
+  locale,
+  field,
+  state,
+  onReset,
+}: {
+  componentId: string;
+  locale: Locale;
+  field: TranslatedField;
+  state: FieldState;
+  onReset: () => void;
+}) {
+  const t = useTranslations("TranslationEdit");
+  const formError = useFormErrorMessage();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function act(run: () => Promise<{ ok: true } | { ok: false; error: string }>, then?: () => void) {
+    setBusy(true);
+    setError(null);
+    const result = await run();
+    setBusy(false);
+    if (!result.ok) {
+      setError(formError(result.error));
+      return;
+    }
+    then?.();
+    router.refresh();
+  }
+  const retry = () => act(() => retryTranslationsEffect(fetch, componentId));
+  const reset = () => act(() => resetTranslationEffect(fetch, componentId, { locale, field }), onReset);
+
+  const action = (label: string, onClick: () => void) => (
+    <button type="button" disabled={busy} onClick={onClick} className="text-accent hover:underline disabled:opacity-50">
+      {label}
+    </button>
+  );
+  const status: Record<FieldState, React.ReactNode> = {
+    empty: null,
+    pending: t("pending"),
+    failed: <>{t("failed")} · {action(t("retry"), retry)}</>,
+    tooLong: t("tooLong"),
+    machine: t("machine"),
+    hand: action(t("reset"), reset),
+    stale: <>{t("stale")} · {action(t("retranslate"), reset)} · {action(t("reset"), reset)}</>,
+  };
+  if (!status[state] && !error) return null;
+
+  return (
+    <p className="font-mono text-[11px] text-subtle -mt-3" data-testid={`translation-status-${field}`}>
+      {status[state]}
+      {error && <span className="text-accent"> {error}</span>}
+    </p>
+  );
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
@@ -213,6 +343,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 export function PublishForm() {
   const t = useTranslations("PublishPage");
+  const locale = useLocale();
   const tForm = useTranslations("ComponentForm");
   const router = useRouter();
   const [published, setPublished] = useState<{ id: string; name: string } | null>(null);
@@ -258,6 +389,7 @@ export function PublishForm() {
           ecosystems: "",
           tags: "",
           price: "0",
+          sourceLanguage: locale,
           currentZipPath: null,
         }}
         labels={{ idle: t("publish"), saving: t("publishing") }}
@@ -270,9 +402,11 @@ export function PublishForm() {
 export function EditForm({
   componentId,
   initial,
+  translation,
 }: {
   componentId: string;
   initial: ComponentFormInitial;
+  translation?: TranslationEditing;
 }) {
   const t = useTranslations("EditPage");
   const router = useRouter();
@@ -282,6 +416,7 @@ export function EditForm({
       mode="update"
       componentId={componentId}
       initial={initial}
+      translation={translation}
       labels={{ idle: t("save"), saving: t("saving") }}
       onDone={(id) => {
         // Refresh so the detail page reflects the new values, then send the
