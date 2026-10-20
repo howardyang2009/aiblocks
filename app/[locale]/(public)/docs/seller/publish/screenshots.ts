@@ -7,6 +7,7 @@ import s02De from "./screens/02.de.png";
 import s03 from "./screens/03.png";
 import s04 from "./screens/04.png";
 import s04De from "./screens/04.de.png";
+import s04ZhCN from "./screens/04.zh-CN.png";
 import s05 from "./screens/05.png";
 import s05De from "./screens/05.de.png";
 import s05ZhCN from "./screens/05.zh-CN.png";
@@ -15,4 +16,4 @@ export const screenshots = [s01, s02, s03, s04, s05] as const;
 
 // A Locale can get shots of its own UI where one exists.
 export const screenshotsDe = [s01De, s02De, s03, s04De, s05De] as const;
-export const screenshotsZhCN = [s01, s02, s03, s04, s05ZhCN] as const;
+export const screenshotsZhCN = [s01, s02, s03, s04ZhCN, s05ZhCN] as const;
