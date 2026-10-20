@@ -1,7 +1,11 @@
+import Image, { type StaticImageData } from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
-export type GuideStep = { title: string; body?: string; img: string; alt: string };
+export type GuideStep = { title: string; body?: string; img: StaticImageData; alt: string };
+
+// The screenshot column: max-w-3xl minus the page padding and the step number.
+const SCREENSHOT_SIZES = "(min-width: 768px) 684px, calc(100vw - 84px)";
 
 // Renders a step-by-step seller guide: numbered steps, each with an optional
 // description and a screenshot. Matches the AiBlocks visual language.
@@ -36,8 +40,13 @@ export function Guide({
               <h2 className="font-display font-medium text-lg leading-snug">{step.title}</h2>
               {step.body && <p className="text-sm text-muted mt-1.5">{step.body}</p>}
               <div className="mt-4 rounded-block border bg-surface overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={step.img} alt={step.alt} className="w-full h-auto block" />
+                <Image
+                  src={step.img}
+                  alt={step.alt}
+                  sizes={SCREENSHOT_SIZES}
+                  preload={i === 0}
+                  className="w-full h-auto block"
+                />
               </div>
             </div>
           </li>

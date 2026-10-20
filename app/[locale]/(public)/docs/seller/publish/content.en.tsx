@@ -1,34 +1,35 @@
 import { Guide, type GuideStep } from "@/components/guide";
+import { screens } from "./screens";
 
 const steps: GuideStep[] = [
   {
     title: "Start the publish flow",
     body: "From the seller dashboard, press the “Publish” button to begin.",
-    img: "/guides/publish/01.png",
+    img: screens[0],
     alt: "The Publish button to start the publish process",
   },
   {
     title: "Fill in the publish form, then press “Publish”",
     body: "Add the name, description, ecosystems, tags, price (0 for free), README, and your component zip (max 10MB). Then submit.",
-    img: "/guides/publish/02.png",
+    img: screens[1],
     alt: "The publish form filled in",
   },
   {
     title: "Your component is created",
     body: "Once submitted, the component is published to the catalog.",
-    img: "/guides/publish/03.png",
+    img: screens[2],
     alt: "Confirmation that the new component is created",
   },
   {
     title: "Review the component detail page",
     body: "The detail page shows the full information for your component — README, metadata, price, and download.",
-    img: "/guides/publish/04.png",
+    img: screens[3],
     alt: "The component detail page",
   },
   {
     title: "Find it on your seller page",
     body: "All of your published components are listed on your seller profile.",
-    img: "/guides/publish/05.png",
+    img: screens[4],
     alt: "The seller page listing published components",
   },
 ];
