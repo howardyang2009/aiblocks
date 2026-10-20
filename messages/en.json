@@ -119,6 +119,12 @@
     "stars": "stars",
     "rating": "rating"
   },
+  "MachineTranslation": {
+    "note": "{language, select, de {Machine-translated from German} en {Machine-translated from English} zh {Machine-translated from Chinese} other {Machine-translated from another language}}",
+    "label": "Machine-translated",
+    "showOriginal": "Show original",
+    "showTranslation": "Show translation"
+  },
   "DownloadButton": {
     "download": "Download",
     "buyToDownload": "Buy to download",
@@ -246,6 +252,27 @@
     "save": "Save changes",
     "saving": "Saving…"
   },
+  "TranslationEdit": {
+    "sourceLanguage": "Language of your description and README",
+    "languages": {
+      "de": "Deutsch",
+      "en": "English",
+      "zh": "中文",
+      "other": "Other language"
+    },
+    "translationIntro": "You are editing the translation shown on this language's pages. Name, price, tags, ecosystems and the zip are shared by every language.",
+    "sourceIntro": "You are editing the original text.",
+    "editSource": "Edit the original",
+    "editTranslation": "Edit the translation",
+    "pending": "Translating…",
+    "failed": "Translation failed",
+    "retry": "Retry",
+    "tooLong": "Not translated: README too long",
+    "stale": "Original changed since your edit",
+    "retranslate": "Re-translate",
+    "machine": "Machine-translated",
+    "reset": "Reset to machine translation"
+  },
   "StripePage": {
     "eyebrow": "Seller",
     "title": "Connect payouts",
@@ -291,7 +318,13 @@
       "saveNetwork": "Network error — the changes were not saved.",
       "updatedTagsFailed": "Component updated, but its tags could not be saved.",
       "notFound": "Component not found.",
-      "notOwner": "You can only edit your own components."
+      "notOwner": "You can only edit your own components.",
+      "translationLocaleInvalid": "This language takes no translation.",
+      "translationFieldInvalid": "Unknown translation field.",
+      "translationEmpty": "Enter a translation to save.",
+      "translationSaveFailed": "Could not save the translation.",
+      "translationNetwork": "Network error — the translation was not changed.",
+      "translationActionFailed": "Could not change the translation."
     }
   },
   "ApiErrors": {

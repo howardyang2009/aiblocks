@@ -5,6 +5,7 @@ import { ComponentCard } from "@/components/component-card";
 import { listPublishedComponents, type ListComponentsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
 import { pageMetadata } from "@/i18n/metadata";
+import { localizeSummaries, type DisplayDb } from "@/lib/translation/display";
 
 // Reads real published components. Dynamic because results depend on the
 // query string and change as people publish.
@@ -31,11 +32,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const sort = resolvedSearchParams.sort || "newest";
   const tag = resolvedSearchParams.tag?.trim().toLowerCase() || undefined;
 
-  const { components } = await listPublishedComponents(narrowDb<ListComponentsDb>(createServiceClient()), {
-    q,
-    sort,
-    tag,
-  });
+  const supabase = createServiceClient();
+  const locale = await getLocale();
+  const { components: found } = await listPublishedComponents(narrowDb<ListComponentsDb>(supabase), { q, sort, tag });
+  const components = await localizeSummaries(narrowDb<DisplayDb>(supabase), found, locale);
 
   const t = await getTranslations("BrowsePage");
   const sorts = ["newest", "downloads", "stars"] as const;
@@ -47,7 +47,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
           <p className="eyebrow">{t("eyebrow")}</p>
           <h1 className="font-display font-bold text-3xl mt-2">{t("title")}</h1>
         </div>
-        <form action={getPathname({ href: "/browse", locale: await getLocale() })} className="w-full sm:w-72">
+        <form action={getPathname({ href: "/browse", locale })} className="w-full sm:w-72">
           <input
             type="search"
             name="q"

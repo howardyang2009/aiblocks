@@ -18,7 +18,7 @@ export type ListPublishedComponentsResult = {
 // step), since q/tag/sort each conditionally add one link in the chain.
 type ComponentsQuery = PromiseLike<{ data: ComponentSummary[] | null; error: { message: string } | null }> & {
   eq(column: string, value: string): ComponentsQuery;
-  textSearch(column: string, query: string, opts: { type: "websearch" }): ComponentsQuery;
+  textSearch(column: string, query: string, opts: { type: "websearch"; config: "simple" }): ComponentsQuery;
   in(column: string, values: string[]): ComponentsQuery;
   order(column: string, opts: { ascending: boolean }): ComponentsQuery;
   limit(n: number): ComponentsQuery;
@@ -51,7 +51,9 @@ const NO_MATCH_ID = "00000000-0000-0000-0000-000000000000";
 
 // Browse + search + sort + tag-filter, shared by the Browse page and the
 // public API route so neither can drift from the other. Uses Postgres
-// full-text search on the generated search_tsv column.
+// full-text search on search_tsv, which covers name, Source description and
+// every ready description Translation (migration 0010). The `simple` config
+// does no stemming, so one index serves queries in every language.
 export async function listPublishedComponents(
   supabase: ListComponentsDb,
   args: ListPublishedComponentsArgs
@@ -72,7 +74,7 @@ export async function listPublishedComponents(
 
   let query = supabase.from("components").select(COMPONENT_SUMMARY_COLS).eq("status", "published");
 
-  if (args.q) query = query.textSearch("search_tsv", args.q, { type: "websearch" });
+  if (args.q) query = query.textSearch("search_tsv", args.q, { type: "websearch", config: "simple" });
   if (componentIds) query = query.in("id", componentIds.length ? componentIds : [NO_MATCH_ID]);
 
   const orderCol = args.sort === "downloads" ? "download_count" : args.sort === "stars" ? "star_count" : "created_at";

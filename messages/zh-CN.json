@@ -119,6 +119,12 @@
     "stars": "收藏",
     "rating": "评分"
   },
+  "MachineTranslation": {
+    "note": "{language, select, de {机器翻译自德语} en {机器翻译自英语} zh {机器翻译自中文} other {机器翻译自其他语言}}",
+    "label": "机器翻译",
+    "showOriginal": "显示原文",
+    "showTranslation": "显示翻译"
+  },
   "DownloadButton": {
     "download": "下载",
     "buyToDownload": "购买后下载",
@@ -246,6 +252,27 @@
     "save": "保存更改",
     "saving": "保存中…"
   },
+  "TranslationEdit": {
+    "sourceLanguage": "描述和 README 的语言",
+    "languages": {
+      "de": "Deutsch",
+      "en": "English",
+      "zh": "中文",
+      "other": "其他语言"
+    },
+    "translationIntro": "你正在编辑此语言页面上显示的翻译。名称、价格、标签、生态和 zip 文件在所有语言中共用。",
+    "sourceIntro": "你正在编辑原文。",
+    "editSource": "编辑原文",
+    "editTranslation": "编辑翻译",
+    "pending": "翻译中…",
+    "failed": "翻译失败",
+    "retry": "重试",
+    "tooLong": "未翻译：README 过长",
+    "stale": "你编辑后原文已更改",
+    "retranslate": "重新翻译",
+    "machine": "机器翻译",
+    "reset": "恢复为机器翻译"
+  },
   "StripePage": {
     "eyebrow": "卖家",
     "title": "连接收款",
@@ -291,7 +318,13 @@
       "saveNetwork": "网络错误，更改未保存。",
       "updatedTagsFailed": "组件已更新，但其标签未能保存。",
       "notFound": "未找到该组件。",
-      "notOwner": "你只能编辑自己的组件。"
+      "notOwner": "你只能编辑自己的组件。",
+      "translationLocaleInvalid": "该语言无需翻译。",
+      "translationFieldInvalid": "未知的翻译字段。",
+      "translationEmpty": "请输入翻译后再保存。",
+      "translationSaveFailed": "无法保存翻译。",
+      "translationNetwork": "网络错误，翻译未更改。",
+      "translationActionFailed": "无法更改翻译。"
     }
   },
   "ApiErrors": {

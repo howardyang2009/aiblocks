@@ -10,6 +10,7 @@ import { narrowDb } from "@/lib/db-port";
 import { StripeNudge } from "@/components/stripe-nudge";
 import { ComponentCard } from "@/components/component-card";
 import { canonical, sellerPath } from "@/lib/seo";
+import { localizeSummaries, type DisplayDb } from "@/lib/translation/display";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,8 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
   const profile = await getProfile(username);
   if (!profile) notFound();
 
-  const { components } = await listPublishedBySeller(narrowDb<ListComponentsDb>(supabase), profile.id);
+  const { components: published } = await listPublishedBySeller(narrowDb<ListComponentsDb>(supabase), profile.id);
+  const components = await localizeSummaries(narrowDb<DisplayDb>(supabase), published, await getLocale());
 
   const totalDownloads = components.reduce((a, c) => a + (c.download_count ?? 0), 0);
   const totalStars = components.reduce((a, c) => a + (c.star_count ?? 0), 0);

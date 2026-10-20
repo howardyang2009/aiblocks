@@ -1,6 +1,7 @@
+import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
-function serviceClient() {
+export function serviceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("Supabase env vars are missing — check .env.test.local");
@@ -21,7 +22,14 @@ function serviceClient() {
 // carries a random suffix so two workers seeding in the same millisecond
 // don't collide on `components_slug_key`.
 export async function seedPublishedComponent(
-  overrides: Partial<{ name: string; description: string; priceCents: number; ecosystems: string[] }> = {}
+  overrides: Partial<{
+    name: string;
+    description: string;
+    readme: string;
+    sourceLanguage: string;
+    priceCents: number;
+    ecosystems: string[];
+  }> = {}
 ) {
   const supabase = serviceClient();
   const stamp = Date.now();
@@ -45,9 +53,10 @@ export async function seedPublishedComponent(
       name: overrides.name ?? `E2E Seed Component ${stamp}`,
       slug: `e2e-seed-${stamp}-${Math.random().toString(36).slice(2, 8)}`,
       description: overrides.description ?? "Seeded directly for browse/search e2e coverage.",
+      readme: overrides.readme ?? null,
       ecosystems: overrides.ecosystems ?? ["claude"],
       price_cents: overrides.priceCents ?? 0,
-      source_language: "en",
+      source_language: overrides.sourceLanguage ?? "en",
       status: "published",
     })
     .select("id, name, slug")
@@ -55,4 +64,28 @@ export async function seedPublishedComponent(
   if (error || !component) throw new Error(`Could not seed the component: ${error?.message}`);
 
   return component;
+}
+
+// Inserts a ready Translation directly, the way the translation job would
+// leave it, for specs about what readers see rather than about the job.
+export async function seedTranslation(
+  componentId: string,
+  { locale, field, text, sourceText, kind = "machine" }: {
+    locale: string;
+    field: "description" | "readme";
+    text: string;
+    sourceText: string;
+    kind?: "machine" | "hand";
+  }
+) {
+  const { error } = await serviceClient().from("component_translations").insert({
+    component_id: componentId,
+    locale,
+    field,
+    text,
+    kind,
+    source_hash: createHash("sha256").update(sourceText).digest("hex"),
+    status: "ready",
+  });
+  if (error) throw new Error(`Could not seed the translation: ${error.message}`);
 }

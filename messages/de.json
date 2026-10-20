@@ -119,6 +119,12 @@
     "stars": "Sterne",
     "rating": "Wertung"
   },
+  "MachineTranslation": {
+    "note": "{language, select, de {Maschinell übersetzt aus dem Deutschen} en {Maschinell übersetzt aus dem Englischen} zh {Maschinell übersetzt aus dem Chinesischen} other {Maschinell übersetzt aus einer anderen Sprache}}",
+    "label": "Maschinell übersetzt",
+    "showOriginal": "Original anzeigen",
+    "showTranslation": "Übersetzung anzeigen"
+  },
   "DownloadButton": {
     "download": "Herunterladen",
     "buyToDownload": "Kaufen und herunterladen",
@@ -246,6 +252,27 @@
     "save": "Änderungen speichern",
     "saving": "Wird gespeichert…"
   },
+  "TranslationEdit": {
+    "sourceLanguage": "Sprache Ihrer Beschreibung und README",
+    "languages": {
+      "de": "Deutsch",
+      "en": "English",
+      "zh": "中文",
+      "other": "Andere Sprache"
+    },
+    "translationIntro": "Sie bearbeiten die Übersetzung, die auf den Seiten dieser Sprache erscheint. Name, Preis, Tags, Ökosysteme und das Zip gelten für alle Sprachen.",
+    "sourceIntro": "Sie bearbeiten den Originaltext.",
+    "editSource": "Original bearbeiten",
+    "editTranslation": "Übersetzung bearbeiten",
+    "pending": "Wird übersetzt…",
+    "failed": "Übersetzung fehlgeschlagen",
+    "retry": "Erneut versuchen",
+    "tooLong": "Nicht übersetzt: README zu lang",
+    "stale": "Original seit Ihrer Bearbeitung geändert",
+    "retranslate": "Neu übersetzen",
+    "machine": "Maschinell übersetzt",
+    "reset": "Auf maschinelle Übersetzung zurücksetzen"
+  },
   "StripePage": {
     "eyebrow": "Verkäufer",
     "title": "Auszahlungen verbinden",
@@ -291,7 +318,13 @@
       "saveNetwork": "Netzwerkfehler: Die Änderungen wurden nicht gespeichert.",
       "updatedTagsFailed": "Die Komponente wurde aktualisiert, aber ihre Tags konnten nicht gespeichert werden.",
       "notFound": "Komponente nicht gefunden.",
-      "notOwner": "Sie können nur Ihre eigenen Komponenten bearbeiten."
+      "notOwner": "Sie können nur Ihre eigenen Komponenten bearbeiten.",
+      "translationLocaleInvalid": "Für diese Sprache gibt es keine Übersetzung.",
+      "translationFieldInvalid": "Unbekanntes Übersetzungsfeld.",
+      "translationEmpty": "Geben Sie eine Übersetzung ein, um sie zu speichern.",
+      "translationSaveFailed": "Die Übersetzung konnte nicht gespeichert werden.",
+      "translationNetwork": "Netzwerkfehler: Die Übersetzung wurde nicht geändert.",
+      "translationActionFailed": "Die Übersetzung konnte nicht geändert werden."
     }
   },
   "ApiErrors": {

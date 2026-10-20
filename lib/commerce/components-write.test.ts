@@ -341,7 +341,7 @@ describe("publishComponent", () => {
 });
 
 type FakeUpdateOpts = {
-  existing?: { id: string; seller_id: string; zip_path: string | null } | null;
+  existing?: { id: string; seller_id: string; zip_path: string | null; source_language: string } | null;
   updateError?: { message: string } | null;
   unlinkError?: { message: string } | null;
   upsertTags?: { data: { id: string; name: string }[] | null; error: { message: string } | null };
@@ -365,7 +365,7 @@ function fakeUpdateDb(opts: FakeUpdateOpts): UpdateComponentDb & {
             eq: () => ({
               maybeSingle: async () => ({
                 data: opts.existing === undefined
-                  ? { id: "comp1", seller_id: "seller1", zip_path: "seller1/old.zip" }
+                  ? { id: "comp1", seller_id: "seller1", zip_path: "seller1/old.zip", source_language: "en" }
                   : opts.existing,
               }),
             }),
@@ -425,7 +425,7 @@ describe("updateComponent", () => {
 
   it("403s when the caller is not the seller", async () => {
     const db = fakeUpdateDb({
-      existing: { id: "comp1", seller_id: "someone-else", zip_path: null },
+      existing: { id: "comp1", seller_id: "someone-else", zip_path: null, source_language: "en" },
     });
     const result = await updateComponent(db, editArgs);
     expect(result).toEqual({
@@ -444,6 +444,7 @@ describe("updateComponent", () => {
       id: "comp1",
       oldZipPath: "seller1/old.zip",
       newZipPath: null,
+      sourceLanguageChanged: false,
     });
     expect(db._componentUpdate).toHaveBeenCalledOnce();
   });
@@ -460,6 +461,17 @@ describe("updateComponent", () => {
       id: "comp1",
       oldZipPath: "seller1/old.zip",
       newZipPath: "seller1/new.zip",
+      sourceLanguageChanged: false,
+    });
+  });
+
+  it("says when the declared source language changed, so Translations can be redone", async () => {
+    expect(await updateComponent(fakeUpdateDb({}), { ...editArgs, sourceLanguage: "de" })).toMatchObject({
+      ok: true,
+      sourceLanguageChanged: true,
+    });
+    expect(await updateComponent(fakeUpdateDb({}), { ...editArgs, sourceLanguage: "en" })).toMatchObject({
+      sourceLanguageChanged: false,
     });
   });
 

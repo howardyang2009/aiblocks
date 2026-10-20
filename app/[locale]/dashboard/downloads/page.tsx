@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { ComponentCard } from "@/components/component-card";
@@ -6,7 +6,7 @@ import { listEntitlements, type EntitlementListDb } from "@/lib/commerce/entitle
 import { listComponentsByIds, type ListByIdsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
 import { getViewer } from "@/lib/identity/viewer";
-import type { ComponentSummary } from "@/types/database";
+import { localizeSummaries, type DisplayDb, type LocalizedSummary } from "@/lib/translation/display";
 
 // My Downloads — the buyer's library. Reads the `downloads` table (the
 // entitlement record created on a free download or after a paid purchase),
@@ -18,13 +18,14 @@ export default async function MyDownloadsPage() {
   const { profile } = await getViewer();
   const supabase = createServiceClient();
 
-  let components: ComponentSummary[] = [];
+  let components: LocalizedSummary[] = [];
 
   if (profile) {
     // Library entries, newest first.
     const dl = await listEntitlements(narrowDb<EntitlementListDb>(supabase), profile.id);
     const ids = dl.map((r) => r.component_id);
-    ({ components } = await listComponentsByIds(narrowDb<ListByIdsDb>(supabase), ids));
+    const { components: acquired } = await listComponentsByIds(narrowDb<ListByIdsDb>(supabase), ids);
+    components = await localizeSummaries(narrowDb<DisplayDb>(supabase), acquired, await getLocale());
   }
 
   return (
