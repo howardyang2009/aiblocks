@@ -1,5 +1,5 @@
 import { Guide, type GuideStep } from "@/components/guide";
-import { screenshots } from "./screenshots";
+import { screenshotsZhCN as screenshots } from "./screenshots";
 import { Link } from "@/i18n/navigation";
 
 const steps: GuideStep[] = [
