@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
 import { LegalSection as Section, LegalToc } from "@/components/legal/legal-page";
 import { Link } from "@/i18n/navigation";
-
-export const metadata: Metadata = {
-  title: "Allgemeine Geschäftsbedingungen — AiBlocks",
-  description: "Die Bedingungen für den Kauf und Verkauf von Komponenten auf AiBlocks.",
-};
 
 export const lastUpdated = "2026-10-19";
 

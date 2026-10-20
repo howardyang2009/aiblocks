@@ -326,5 +326,53 @@
     "componentUnavailable": "This component is not available.",
     "purchaseRequired": "Buy this component to download it.",
     "downloadFailed": "Could not prepare download."
+  },
+  "Metadata": {
+    "title": "AiBlocks: reusable AI components",
+    "description": "An open marketplace for reusable AI building blocks: prompts, skills, agents, MCP servers, CLAUDE.md configs, hooks, and more.",
+    "browse": {
+      "title": "Browse components",
+      "description": "Browse, search and filter reusable AI components by tag, ecosystem, downloads and stars."
+    },
+    "about": {
+      "title": "About",
+      "description": "Why AiBlocks exists and the decisions behind the marketplace."
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "How to get in touch with AiBlocks."
+    },
+    "impressum": {
+      "title": "Impressum",
+      "description": "Legal notice (Impressum) for AiBlocks, as required by § 5 DDG."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "What personal data AiBlocks collects, why, and your rights over it."
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "description": "The terms for buying and selling components on AiBlocks."
+    },
+    "sellerPublishGuide": {
+      "title": "Publish a component: seller guide",
+      "description": "Step-by-step: how to publish your AI component on AiBlocks."
+    },
+    "sellerStripeGuide": {
+      "title": "Connect Stripe to get paid: seller guide",
+      "description": "Step-by-step: onboard your Stripe connected account so buyers can pay you directly."
+    },
+    "search": {
+      "title": "Search",
+      "description": "Search results for AI components on AiBlocks and around the web."
+    },
+    "signIn": {
+      "title": "Sign in",
+      "description": "Sign in to AiBlocks."
+    },
+    "signUp": {
+      "title": "Sign up",
+      "description": "Create an AiBlocks account."
+    }
   }
 }

@@ -1,11 +1,5 @@
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
 import { LegalSection as Section } from "@/components/legal/legal-page";
-
-export const metadata: Metadata = {
-  title: "Impressum — AiBlocks",
-  description: "Impressum von AiBlocks gemäß § 5 DDG.",
-};
 
 export const lastUpdated = "2026-10-19";
 

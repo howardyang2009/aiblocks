@@ -12,10 +12,16 @@ import { createAdapters, selectAdapters } from "@/lib/external-search/adapters";
 import { getConfig } from "@/lib/external-search/config";
 import { runSearch } from "@/lib/external-search/search/orchestrator";
 import { selectExternalResults } from "@/lib/external-search/search/by-source";
+import { pageMetadata } from "@/i18n/metadata";
 
 export const dynamic = "force-dynamic";
 
 type Search = { q?: string; type?: string; source?: string };
+
+// Search results stay out of the index; Browse is the indexed listing (#68).
+export function generateMetadata() {
+  return pageMetadata("search");
+}
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Search> }) {
   const resolved = await searchParams;

@@ -1,12 +1,12 @@
 import type { ComponentType } from "react";
-import type { Metadata } from "next";
 import { routing, type Locale } from "./routing";
 
 /**
  * A long-form page's copy in one Locale: `content.{locale}.tsx` next to the
- * route's `page.tsx`, exporting the page body and its metadata (#44).
+ * route's `page.tsx`, exporting the page body (#44). Its title and
+ * description live in the `Metadata` messages (#68).
  */
-export type PageContent = { default: ComponentType; metadata: Metadata };
+export type PageContent = { default: ComponentType };
 
 /** One content file per Locale, so a missing Locale fails typecheck. */
 export type LocalizedPage = Record<Locale, PageContent>;

@@ -10,9 +10,25 @@ import { CommentsSection } from "@/components/comments-section";
 import { Price } from "@/components/price";
 import { formatNumber, formatRating } from "@/lib/utils";
 import { getViewer } from "@/lib/identity/viewer";
+import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce/components";
+import { narrowDb } from "@/lib/db-port";
+import { canonical, componentPath, truncateDescription } from "@/lib/seo";
 import { fetchComponentRows, buildComponentView } from "./view-model";
 
 export const dynamic = "force-dynamic";
+
+// The Component's own name and description, as submitted, in every Locale
+// until Translations land (#50).
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const component = await getPublishedComponent(narrowDb<PublishedComponentDb>(createServiceClient()), id);
+  if (!component) return {};
+  return {
+    title: component.name,
+    description: truncateDescription(component.description),
+    alternates: canonical(await getLocale(), componentPath(component.id)),
+  };
+}
 
 export default async function ComponentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

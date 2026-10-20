@@ -1,4 +1,9 @@
 import { SignUp } from "@clerk/nextjs";
+import { pageMetadata } from "@/i18n/metadata";
+
+export function generateMetadata() {
+  return pageMetadata("signUp");
+}
 
 // Prerender the bare /{locale}/sign-up page; Clerk's own sub-steps
 // (e.g. /sign-up/factor-one) still render on demand.

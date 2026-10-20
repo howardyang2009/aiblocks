@@ -1,23 +1,29 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { clerkProviderProps } from "@/i18n/clerk";
 import { routing } from "@/i18n/routing";
+import { APP_URL } from "@/lib/constants";
 import "../globals.css";
 
 const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display", weight: ["500", "700"] });
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", weight: ["400", "500"] });
 
-export const metadata: Metadata = {
-  title: "AiBlocks — reusable AI components",
-  description:
-    "An open marketplace for reusable AI building blocks: prompts, skills, agents, MCP servers, CLAUDE.md configs, hooks, and more.",
-};
+// Absolute URLs resolve against APP_URL. Each page sets its own canonical
+// (lib/seo.ts); hreflang comes from next-intl's `Link` headers (#68).
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Metadata");
+  return {
+    metadataBase: new URL(APP_URL),
+    title: { template: "%s · AiBlocks", default: t("title") },
+    description: t("description"),
+  };
+}
 
 // Prerender every Locale; the Locale reaches rendering via next/root-params
 // (see i18n/request.ts), so pages need no setRequestLocale.

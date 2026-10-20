@@ -326,5 +326,53 @@
     "componentUnavailable": "此组件不可用。",
     "purchaseRequired": "购买此组件后即可下载。",
     "downloadFailed": "无法准备下载。"
+  },
+  "Metadata": {
+    "title": "AiBlocks：可复用的 AI 组件",
+    "description": "可复用 AI 构建块的开放市场：提示词、技能、代理、MCP 服务器、CLAUDE.md 配置、钩子等。",
+    "browse": {
+      "title": "浏览组件",
+      "description": "浏览、搜索可复用的 AI 组件，并按标签、生态、下载量和收藏筛选。"
+    },
+    "about": {
+      "title": "关于",
+      "description": "AiBlocks 为什么存在，以及这个市场背后的设计决策。"
+    },
+    "contact": {
+      "title": "联系我们",
+      "description": "如何联系 AiBlocks。"
+    },
+    "impressum": {
+      "title": "Impressum",
+      "description": "AiBlocks 依据 § 5 DDG 公布的法律信息（Impressum）。"
+    },
+    "privacy": {
+      "title": "隐私政策",
+      "description": "AiBlocks 收集哪些个人数据、为什么收集，以及你对这些数据享有的权利。"
+    },
+    "terms": {
+      "title": "服务条款",
+      "description": "在 AiBlocks 上购买和出售组件的条款。"
+    },
+    "sellerPublishGuide": {
+      "title": "发布组件：卖家指南",
+      "description": "分步说明：如何在 AiBlocks 上发布你的 AI 组件。"
+    },
+    "sellerStripeGuide": {
+      "title": "连接 Stripe 以便收款：卖家指南",
+      "description": "分步说明：接入你的 Stripe 关联账户，让买家可以直接向你付款。"
+    },
+    "search": {
+      "title": "搜索",
+      "description": "AiBlocks 及全网 AI 组件的搜索结果。"
+    },
+    "signIn": {
+      "title": "登录",
+      "description": "登录 AiBlocks。"
+    },
+    "signUp": {
+      "title": "注册",
+      "description": "创建 AiBlocks 账户。"
+    }
   }
 }

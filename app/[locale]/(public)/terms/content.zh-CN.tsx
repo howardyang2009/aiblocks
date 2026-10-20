@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
 import { LegalSection as Section, LegalToc } from "@/components/legal/legal-page";
 import { Link } from "@/i18n/navigation";
-
-export const metadata: Metadata = {
-  title: "服务条款 — AiBlocks",
-  description: "在 AiBlocks 上购买和出售组件的条款。",
-};
 
 export const lastUpdated = "2026-10-19";
 

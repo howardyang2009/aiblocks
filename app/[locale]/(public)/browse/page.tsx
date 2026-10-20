@@ -4,12 +4,17 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { ComponentCard } from "@/components/component-card";
 import { listPublishedComponents, type ListComponentsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
+import { pageMetadata } from "@/i18n/metadata";
 
 // Reads real published components. Dynamic because results depend on the
 // query string and change as people publish.
 export const dynamic = "force-dynamic";
 
 type Search = { q?: string; sort?: string; tag?: string };
+
+export function generateMetadata() {
+  return pageMetadata("browse");
+}
 
 function qs(next: Search) {
   const p = new URLSearchParams();

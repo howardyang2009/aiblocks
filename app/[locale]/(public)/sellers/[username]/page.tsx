@@ -1,5 +1,6 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@clerk/nextjs/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/commerce/stripe";
@@ -8,15 +9,31 @@ import { listPublishedBySeller, type ListComponentsDb } from "@/lib/commerce/bro
 import { narrowDb } from "@/lib/db-port";
 import { StripeNudge } from "@/components/stripe-nudge";
 import { ComponentCard } from "@/components/component-card";
+import { canonical, sellerPath } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+// One lookup per request, shared by generateMetadata and the page.
+const getProfile = cache(async (username: string) => {
+  const { data } = await createServiceClient()
+    .from("profiles").select("*").eq("username", username).maybeSingle();
+  return data;
+});
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
+  const profile = await getProfile((await params).username);
+  if (!profile) return {};
+  return {
+    title: profile.username,
+    alternates: canonical(await getLocale(), sellerPath(profile.username)),
+  };
+}
 
 export default async function SellerProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const supabase = createServiceClient();
 
-  const { data: profile } = await supabase
-    .from("profiles").select("*").eq("username", username).maybeSingle();
+  const profile = await getProfile(username);
   if (!profile) notFound();
 
   const { components } = await listPublishedBySeller(narrowDb<ListComponentsDb>(supabase), profile.id);

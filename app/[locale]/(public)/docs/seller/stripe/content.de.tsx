@@ -1,11 +1,5 @@
-import type { Metadata } from "next";
 import { Guide, type GuideStep } from "@/components/guide";
 import { Link } from "@/i18n/navigation";
-
-export const metadata: Metadata = {
-  title: "Stripe verbinden und bezahlt werden — AiBlocks-Anleitung für Verkäufer",
-  description: "Schritt für Schritt: Richten Sie Ihr verbundenes Stripe-Konto ein, damit Käufer Sie direkt bezahlen können.",
-};
 
 const steps: GuideStep[] = [
   {

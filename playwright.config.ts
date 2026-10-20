@@ -37,10 +37,10 @@ export default defineConfig({
       testMatch: /auth\.setup\.ts/,
     },
     {
-      // Signed-out specs (browse, locale-smoke, locale-switcher) — independent
+      // Signed-out specs (browse, locale-smoke, locale-switcher, seo) — independent
       // of the auth harness entirely, so a Clerk outage doesn't block them.
       name: "signed-out",
-      testMatch: /(browse|locale-smoke|locale-switcher)\.spec\.ts/,
+      testMatch: /(browse|locale-smoke|locale-switcher|seo)\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
     {

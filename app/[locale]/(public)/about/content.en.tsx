@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { AssemblyGrid } from "@/components/brand/assembly-grid";
 
@@ -12,11 +11,6 @@ const PRINCIPLES: [string, string][] = [
   ["Always the latest version", "No version sprawl. Sellers update their listing in place; changelog lives in the README."],
   ["Profiles, not storefronts", "Seller pages are modeled on GitHub — bio, stats, and a grid of what they've shipped."],
 ];
-
-export const metadata: Metadata = {
-  title: "About — AiBlocks",
-  description: "Why AiBlocks exists and the decisions behind the marketplace.",
-};
 
 export default function AboutContent() {
   return (

@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
 import { LegalSection as Section, LegalCallout as Callout, LegalToc } from "@/components/legal/legal-page";
 import { Link } from "@/i18n/navigation";
-
-export const metadata: Metadata = {
-  title: "Privacy Policy — AiBlocks",
-  description: "What personal data AiBlocks collects, why, and your rights over it.",
-};
 
 export const lastUpdated = "2026-10-19";
 

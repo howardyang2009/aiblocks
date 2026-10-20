@@ -326,5 +326,53 @@
     "componentUnavailable": "Diese Komponente ist nicht verfügbar.",
     "purchaseRequired": "Kaufen Sie diese Komponente, um sie herunterzuladen.",
     "downloadFailed": "Der Download konnte nicht vorbereitet werden."
+  },
+  "Metadata": {
+    "title": "AiBlocks: wiederverwendbare KI-Komponenten",
+    "description": "Ein offener Marktplatz für wiederverwendbare KI-Bausteine: Prompts, Skills, Agents, MCP-Server, CLAUDE.md-Konfigurationen, Hooks und mehr.",
+    "browse": {
+      "title": "Komponenten durchsuchen",
+      "description": "Wiederverwendbare KI-Komponenten durchsuchen und nach Tag, Ökosystem, Downloads und Sternen filtern."
+    },
+    "about": {
+      "title": "Über uns",
+      "description": "Warum es AiBlocks gibt und welche Entscheidungen hinter dem Marktplatz stehen."
+    },
+    "contact": {
+      "title": "Kontakt",
+      "description": "So erreichen Sie AiBlocks."
+    },
+    "impressum": {
+      "title": "Impressum",
+      "description": "Impressum von AiBlocks gemäß § 5 DDG."
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "description": "Welche personenbezogenen Daten AiBlocks erhebt, warum, und welche Rechte Sie daran haben."
+    },
+    "terms": {
+      "title": "Allgemeine Geschäftsbedingungen",
+      "description": "Die Bedingungen für den Kauf und Verkauf von Komponenten auf AiBlocks."
+    },
+    "sellerPublishGuide": {
+      "title": "Eine Komponente veröffentlichen: Anleitung für Verkäufer",
+      "description": "Schritt für Schritt: So veröffentlichen Sie Ihre KI-Komponente auf AiBlocks."
+    },
+    "sellerStripeGuide": {
+      "title": "Stripe verbinden und bezahlt werden: Anleitung für Verkäufer",
+      "description": "Schritt für Schritt: Richten Sie Ihr verbundenes Stripe-Konto ein, damit Käufer Sie direkt bezahlen können."
+    },
+    "search": {
+      "title": "Suche",
+      "description": "Suchergebnisse für KI-Komponenten auf AiBlocks und im Web."
+    },
+    "signIn": {
+      "title": "Anmelden",
+      "description": "Bei AiBlocks anmelden."
+    },
+    "signUp": {
+      "title": "Registrieren",
+      "description": "Ein AiBlocks-Konto erstellen."
+    }
   }
 }

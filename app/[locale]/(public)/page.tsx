@@ -1,8 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { listLatestPublished, type ListComponentsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
+import { canonical } from "@/lib/seo";
 import { ComponentCard } from "@/components/component-card";
 import { AssemblyGrid } from "@/components/brand/assembly-grid";
 import { ExternalSearchForm } from "@/components/external-search/ExternalSearchForm";
@@ -10,6 +11,11 @@ import { ExternalSearchForm } from "@/components/external-search/ExternalSearchF
 // Home. A Google-style search is the first thing a visitor sees; the
 // assembly-grid hero (the brand signature) follows right below it.
 export const dynamic = "force-dynamic";
+
+// Title and description come from the Locale layout's defaults.
+export async function generateMetadata() {
+  return { alternates: canonical(await getLocale(), "") };
+}
 
 const PRIMARY_TAGS = [
   "mcp-server",

@@ -1,4 +1,5 @@
 import { getLocale } from "next-intl/server";
+import { pageMetadata } from "@/i18n/metadata";
 import type { LocalizedPage } from "@/i18n/page-content";
 import * as de from "./content.de";
 import * as en from "./content.en";
@@ -6,8 +7,8 @@ import * as zhCN from "./content.zh-CN";
 
 const content: LocalizedPage = { de, en, "zh-CN": zhCN };
 
-export async function generateMetadata() {
-  return content[await getLocale()].metadata;
+export function generateMetadata() {
+  return pageMetadata("sellerPublishGuide");
 }
 
 export default async function PublishGuidePage() {

@@ -1,10 +1,3 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Contact — AiBlocks",
-  description: "How to get in touch with AiBlocks.",
-};
-
 export default function ContactContent() {
   return (
     <div className="mx-auto max-w-2xl px-5 py-16">

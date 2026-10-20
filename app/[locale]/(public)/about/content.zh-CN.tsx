@@ -1,10 +1,4 @@
-import type { Metadata } from "next";
 import { AssemblyGrid } from "@/components/brand/assembly-grid";
-
-export const metadata: Metadata = {
-  title: "关于 — AiBlocks",
-  description: "AiBlocks 为什么存在，以及这个市场背后的设计决策。",
-};
 
 const ECOSYSTEMS = ["claude", "chatgpt", "gemini", "deepseek", "以及更多"];
 

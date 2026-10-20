@@ -3,6 +3,7 @@ import { keyDifferences } from "@/i18n/message-keys";
 import { routing } from "@/i18n/routing";
 import { COMPONENT_WRITE_ERRORS } from "@/lib/commerce/component-write-errors";
 import { API_ERRORS } from "@/lib/api-errors";
+import { METADATA_PAGES } from "@/lib/seo";
 import en from "./en.json";
 import de from "./de.json";
 import zhCN from "./zh-CN.json";
@@ -33,5 +34,24 @@ describe("shared API error messages", () => {
   it("has an en message for every shared API error key", () => {
     const errors = en.ApiErrors as Record<string, string>;
     expect(API_ERRORS.filter((key) => !errors[key])).toEqual([]);
+  });
+});
+
+describe("page metadata messages", () => {
+  const metadata = en.Metadata as Record<string, { title?: string; description?: string } | string>;
+
+  it("has a default title and description for the Locale layout", () => {
+    expect(metadata.title).toBeTruthy();
+    expect(metadata.description).toBeTruthy();
+  });
+
+  it.each(METADATA_PAGES)("has an en title and description for %s", (page) => {
+    expect(metadata[page]).toMatchObject({ title: expect.any(String), description: expect.any(String) });
+  });
+
+  it("keeps the Impressum's German name in every Locale", () => {
+    for (const messages of Object.values(byLocale) as (typeof en)[]) {
+      expect(messages.Metadata.impressum.title).toBe("Impressum");
+    }
   });
 });

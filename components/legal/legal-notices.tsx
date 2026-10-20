@@ -1,5 +1,4 @@
 import type { ComponentType, ReactNode } from "react";
-import type { Metadata } from "next";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -8,12 +7,11 @@ import { LegalCallout } from "./legal-page";
 
 /**
  * A Legal page's copy in one Locale: `content.{locale}.tsx` next to the
- * route, exporting its body, metadata and version (ADR 0004). The body
+ * route, exporting its body and version (ADR 0004). The body
  * places `notices` under its heading.
  */
 export type LegalContent = LegalVersion & {
   default: ComponentType<{ notices: ReactNode }>;
-  metadata: Metadata;
 };
 
 /**

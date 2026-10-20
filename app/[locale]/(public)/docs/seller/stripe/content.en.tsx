@@ -1,11 +1,5 @@
-import type { Metadata } from "next";
 import { Guide, type GuideStep } from "@/components/guide";
 import { Link } from "@/i18n/navigation";
-
-export const metadata: Metadata = {
-  title: "Connect Stripe to get paid — AiBlocks seller guide",
-  description: "Step-by-step: onboard your Stripe connected account so buyers can pay you directly.",
-};
 
 const steps: GuideStep[] = [
   {

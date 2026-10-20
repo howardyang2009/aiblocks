@@ -1,10 +1,4 @@
-import type { Metadata } from "next";
 import { Guide, type GuideStep } from "@/components/guide";
-
-export const metadata: Metadata = {
-  title: "Publish a component — AiBlocks seller guide",
-  description: "Step-by-step: how to publish your AI component on AiBlocks.",
-};
 
 const steps: GuideStep[] = [
   {
