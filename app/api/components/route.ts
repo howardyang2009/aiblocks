@@ -13,6 +13,11 @@ import {
 import { listPublishedComponents, type ListComponentsDb } from "@/lib/commerce/browse";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
+import { queueTranslations } from "@/lib/translation/queue";
+
+// The translation job runs in after() within this route's time limit; a
+// long readme in three Locales needs more than the platform default.
+export const maxDuration = 300;
 
 // GET /api/components?q=&sort=&tag=  — browse + search.
 export async function GET(req: NextRequest) {
@@ -56,6 +61,7 @@ export const POST = withAuth(async (req, { profile, supabase }) => {
     sizeBytes: verified.sizeBytes,
   });
   if (!published.ok) return toResponse(published);
+  queueTranslations(published.id);
 
   return NextResponse.json({ id: published.id, slug: published.slug });
 });

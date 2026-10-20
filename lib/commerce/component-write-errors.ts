@@ -7,6 +7,7 @@ export const COMPONENT_WRITE_ERRORS = [
   "nameTooShort",
   "descriptionTooShort",
   "priceInvalid",
+  "sourceLanguageInvalid",
   "zipRequired",
   "zipTooLarge",
   "uploadPathMismatch",

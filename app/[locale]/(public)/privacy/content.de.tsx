@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { LegalSection as Section, LegalToc } from "@/components/legal/legal-page";
 import { Link } from "@/i18n/navigation";
 
-export const lastUpdated = "2026-10-19";
+export const lastUpdated = "2026-10-20";
 
 // Drafted by Claude; stays a draft until the lawyer review is done (ADR 0004).
 export const draft = true;
@@ -62,6 +62,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
         <ul className="list-disc pl-5 space-y-1">
           <li>um Ihr Konto anzulegen und abzusichern und Ihnen die Anmeldung zu ermöglichen</li>
           <li>um Käufe abzuwickeln und Auszahlungen an Verkäufer über Stripe Connect zu leiten</li>
+          <li>um Beschreibung und README einer Komponente maschinell in die anderen Sprachen der Website zu übersetzen</li>
           <li>um Ihr öffentliches Verkäuferprofil und Ihre veröffentlichten Komponenten anzuzeigen</li>
           <li>um kostenpflichtige Downloads nur Käufern freizugeben, die tatsächlich bezahlt haben</li>
           <li>um Supportanfragen zu beantworten und die AGB durchzusetzen</li>
@@ -91,6 +92,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
           <li><strong className="text-ink">Supabase</strong>: Datenbank und Dateispeicher (Komponenten-ZIPs, Metadaten).</li>
           <li><strong className="text-ink">Stripe</strong> (Stripe Connect): Zahlungsabwicklung, Identitätsprüfung der Verkäufer (KYC) und Auszahlungen. Stripe speichert Ihre Zahlungs- und Bankdaten direkt; vollständige Kartennummern sehen wir nie.</li>
           <li><strong className="text-ink">Vercel</strong>: Hosting der Anwendung und Server-Logs.</li>
+          <li><strong className="text-ink">Anthropic</strong> (Claude): maschinelle Übersetzung der von Verkäufern eingereichten Komponententexte (Beschreibung und README) in die anderen Sprachen der Website.</li>
         </ul>
         <p>
           Ihr öffentliches Verkäuferprofil (Name, Bio, Links, veröffentlichte
@@ -105,7 +107,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
 
       <Section id="transfers" title="6. Übermittlung in Drittländer">
         <p>
-          Clerk, Supabase, Stripe und Vercel können Daten außerhalb Ihres
+          Clerk, Supabase, Stripe, Vercel und Anthropic können Daten außerhalb Ihres
           Landes verarbeiten, auch in den Vereinigten Staaten. Soweit dies
           Daten aus der EU bzw. dem EWR betrifft, sollten die Übermittlungen
           durch die Standardvertragsklauseln (SCCs) des jeweiligen Anbieters

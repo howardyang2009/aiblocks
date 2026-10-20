@@ -118,6 +118,56 @@ export type Database = {
           },
         ]
       }
+      component_translations: {
+        Row: {
+          component_id: string
+          created_at: string
+          failure_reason: string | null
+          field: string
+          id: string
+          kind: string
+          locale: string
+          source_hash: string
+          status: string
+          text: string | null
+          updated_at: string
+        }
+        Insert: {
+          component_id: string
+          created_at?: string
+          failure_reason?: string | null
+          field: string
+          id?: string
+          kind?: string
+          locale: string
+          source_hash: string
+          status?: string
+          text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          component_id?: string
+          created_at?: string
+          failure_reason?: string | null
+          field?: string
+          id?: string
+          kind?: string
+          locale?: string
+          source_hash?: string
+          status?: string
+          text?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "component_translations_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       components: {
         Row: {
           created_at: string
@@ -131,6 +181,7 @@ export type Database = {
           readme: string | null
           search_tsv: unknown
           seller_id: string
+          source_language: string
           slug: string | null
           star_count: number
           status: string
@@ -150,6 +201,7 @@ export type Database = {
           readme?: string | null
           search_tsv?: unknown
           seller_id: string
+          source_language: string
           slug?: string | null
           star_count?: number
           status?: string
@@ -169,6 +221,7 @@ export type Database = {
           readme?: string | null
           search_tsv?: unknown
           seller_id?: string
+          source_language?: string
           slug?: string | null
           star_count?: number
           status?: string

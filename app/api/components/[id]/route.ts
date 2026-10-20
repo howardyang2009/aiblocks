@@ -4,6 +4,7 @@ import { parseBody } from "@/lib/request";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
+import { queueTranslations } from "@/lib/translation/queue";
 import {
   verifyUploadedZip,
   parseEditInput,
@@ -11,6 +12,10 @@ import {
   type VerifyUploadedZipStorage,
   type UpdateComponentDb,
 } from "@/lib/commerce/components-write";
+
+// The translation job runs in after() within this route's time limit; a
+// long readme in three Locales needs more than the platform default.
+export const maxDuration = 300;
 
 // PATCH /api/components/[id] — edit an existing listing. Body mirrors POST
 // /api/components with one relaxation: zipPath is OPTIONAL. When present
@@ -47,6 +52,7 @@ export const PATCH = withAuth(async (req, { params, profile, supabase }) => {
     sizeBytes,
   });
   if (!updated.ok) return toResponse(updated);
+  queueTranslations(updated.id);
 
   // Best-effort cleanup: if the seller replaced the zip, delete the old
   // storage object so it doesn't linger. A failure here doesn't fail the

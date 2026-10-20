@@ -36,8 +36,19 @@ describe("parsePublishInput", () => {
         priceCents: 999,
         ecosystems: ["claude", "gpt"],
         tagNames: ["agent", "email"],
+        sourceLanguage: "en",
       },
     });
+  });
+
+  it("takes the declared source language", () => {
+    const result = parsePublishInput({ ...validPublishBody, sourceLanguage: "zh-CN" }, "seller1");
+    expect(result.ok && result.data.sourceLanguage).toBe("zh-CN");
+  });
+
+  it("rejects a source language that is not a Locale or other", () => {
+    const result = parsePublishInput({ ...validPublishBody, sourceLanguage: "fr" }, "seller1");
+    expect(result).toEqual({ ok: false, status: 400, error: "sourceLanguageInvalid" });
   });
 
   it("rejects a name under 3 characters", () => {
@@ -113,7 +124,18 @@ describe("parseEditInput", () => {
         ecosystems: ["claude", "gpt"],
         tagNames: ["agent", "email"],
         zipPath: undefined,
+        sourceLanguage: undefined,
       },
+    });
+  });
+
+  it("keeps the current source language unless a new one is declared", () => {
+    const result = parseEditInput({ ...validEditBody, sourceLanguage: "other" }, "seller1");
+    expect(result.ok && result.data.sourceLanguage).toBe("other");
+    expect(parseEditInput({ ...validEditBody, sourceLanguage: "xx" }, "seller1")).toEqual({
+      ok: false,
+      status: 400,
+      error: "sourceLanguageInvalid",
     });
   });
 
@@ -263,6 +285,7 @@ const publishArgs = {
   tagNames: ["agent"],
   sellerId: "seller1",
   sizeBytes: 1024,
+  sourceLanguage: "en" as const,
 };
 
 describe("publishComponent", () => {
@@ -278,6 +301,13 @@ describe("publishComponent", () => {
     const db = fakePublishDb({ onInsertComponent: (row) => (inserted = row) });
     await publishComponent(db, publishArgs);
     expect(inserted).toMatchObject({ price_cents: 500, currency: "eur" });
+  });
+
+  it("saves the declared source language", async () => {
+    let inserted: unknown;
+    const db = fakePublishDb({ onInsertComponent: (row) => (inserted = row) });
+    await publishComponent(db, { ...publishArgs, sourceLanguage: "de" });
+    expect(inserted).toMatchObject({ source_language: "de" });
   });
 
   it("fails when the component insert fails", async () => {

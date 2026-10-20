@@ -3,6 +3,7 @@ import type { Tables, TablesInsert, TablesUpdate } from "@/types/database";
 import { slugify, parseList } from "@/lib/utils";
 import { exceedsZipSizeLimit } from "@/lib/constants";
 import type { ComponentWriteError } from "@/lib/commerce/component-write-errors";
+import { parseSourceLanguage, type SourceLanguage } from "@/lib/translation/source-language";
 
 // A Seller submitting a Component — publish (create) and edit (update) —
 // as one module. The two operations differ in real ways (edit's zipPath is
@@ -19,6 +20,7 @@ export type PublishInput = {
   priceCents: number;
   ecosystems: string[];
   tagNames: string[];
+  sourceLanguage: SourceLanguage;
 };
 
 export type PublishInputResult =
@@ -61,7 +63,7 @@ export function parseComponentPrice(raw: string): ParsedComponentPrice {
 export function parsePublishInput(
   body: {
     name?: unknown; description?: unknown; readme?: unknown;
-    zipPath?: unknown; price?: unknown;
+    zipPath?: unknown; price?: unknown; sourceLanguage?: unknown;
     ecosystems?: string | string[]; tags?: string | string[];
   },
   sellerId: string
@@ -88,6 +90,11 @@ export function parsePublishInput(
   const price = parseComponentPrice(String(body.price ?? "0"));
   if (!price.ok) return { ok: false, status: 400, error: price.error };
 
+  // Until the form asks for it (#71), a missing source language means `en`,
+  // the same default the backfill uses when unsure.
+  const sourceLanguage = body.sourceLanguage === undefined ? "en" : parseSourceLanguage(body.sourceLanguage);
+  if (!sourceLanguage) return { ok: false, status: 400, error: "sourceLanguageInvalid" };
+
   return {
     ok: true,
     data: {
@@ -98,6 +105,7 @@ export function parsePublishInput(
       priceCents: price.cents,
       ecosystems: parseList(body.ecosystems),
       tagNames: parseList(body.tags),
+      sourceLanguage,
     },
   };
 }
@@ -114,6 +122,8 @@ export type EditInput = {
   tagNames: string[];
   priceCents: number;
   zipPath?: string;
+  // Undefined keeps the current source language.
+  sourceLanguage?: SourceLanguage;
 };
 
 export type EditInputResult =
@@ -128,7 +138,7 @@ export type EditInputResult =
 export function parseEditInput(
   body: {
     name?: unknown; description?: unknown; readme?: unknown;
-    zipPath?: unknown; price?: unknown;
+    zipPath?: unknown; price?: unknown; sourceLanguage?: unknown;
     ecosystems?: string | string[]; tags?: string | string[];
   },
   sellerId: string
@@ -159,6 +169,13 @@ export function parseEditInput(
     zipPath = candidate;
   }
 
+  let sourceLanguage: SourceLanguage | undefined;
+  if (body.sourceLanguage !== undefined) {
+    const parsed = parseSourceLanguage(body.sourceLanguage);
+    if (!parsed) return { ok: false, status: 400, error: "sourceLanguageInvalid" };
+    sourceLanguage = parsed;
+  }
+
   return {
     ok: true,
     data: {
@@ -169,6 +186,7 @@ export function parseEditInput(
       ecosystems: parseList(body.ecosystems),
       tagNames: parseList(body.tags),
       zipPath,
+      sourceLanguage,
     },
   };
 }
@@ -357,6 +375,7 @@ export async function publishComponent(
       currency: "eur",
       zip_path: args.zipPath,
       zip_size_bytes: args.sizeBytes,
+      source_language: args.sourceLanguage,
       status: "published",
     })
     .select("id")
@@ -444,6 +463,7 @@ export async function updateComponent(
     ecosystems: args.ecosystems,
     price_cents: args.priceCents,
   };
+  if (args.sourceLanguage) patch.source_language = args.sourceLanguage;
   if (args.zipPath) {
     patch.zip_path = args.zipPath;
     patch.zip_size_bytes = args.sizeBytes ?? null;

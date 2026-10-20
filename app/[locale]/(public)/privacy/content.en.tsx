@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { LegalSection as Section, LegalCallout as Callout, LegalToc } from "@/components/legal/legal-page";
 import { Link } from "@/i18n/navigation";
 
-export const lastUpdated = "2026-10-19";
+export const lastUpdated = "2026-10-20";
 
 const sections = [
   { id: "overview", label: "1. Overview" },
@@ -58,6 +58,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
         <ul className="list-disc pl-5 space-y-1">
           <li>To create and secure your account, and let you sign in</li>
           <li>To process purchases and route seller payouts via Stripe Connect</li>
+          <li>To machine-translate a component's description and README into the site's other languages</li>
           <li>To display your public seller profile and published components</li>
           <li>To gate paid downloads to buyers who've actually paid</li>
           <li>To respond to support requests and enforce the Terms of Service</li>
@@ -87,6 +88,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
           <li><strong className="text-ink">Supabase</strong> — database and file storage (component zips, metadata).</li>
           <li><strong className="text-ink">Stripe</strong> (Stripe Connect) — payment processing, seller identity verification (KYC), and payouts. Stripe holds your payment and banking details directly; we never see full card numbers.</li>
           <li><strong className="text-ink">Vercel</strong> — application hosting and server logs.</li>
+          <li><strong className="text-ink">Anthropic</strong> (Claude) — machine translation of component text submitted by sellers (description and README) into the site's other languages.</li>
         </ul>
         <p>
           Your public seller profile (name, bio, links, published components,
@@ -100,7 +102,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
 
       <Section id="transfers" title="6. International Data Transfers">
         <p>
-          Clerk, Supabase, Stripe, and Vercel may process data outside your
+          Clerk, Supabase, Stripe, Vercel, and Anthropic may process data outside your
           country, including in the United States. Where that applies to
           EU/EEA data, transfers should be covered by each vendor's Standard
           Contractual Clauses (SCCs) or equivalent safeguard — this needs to

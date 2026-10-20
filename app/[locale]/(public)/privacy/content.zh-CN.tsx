@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { LegalSection as Section, LegalToc } from "@/components/legal/legal-page";
 import { Link } from "@/i18n/navigation";
 
-export const lastUpdated = "2026-10-19";
+export const lastUpdated = "2026-10-20";
 
 const sections = [
   { id: "overview", label: "1. 概述" },
@@ -53,6 +53,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
         <ul className="list-disc pl-5 space-y-1">
           <li>创建并保护你的账户，让你能够登录</li>
           <li>通过 Stripe Connect 处理购买并向卖家转款</li>
+          <li>将组件的描述和 README 机器翻译为本网站的其他语言</li>
           <li>展示你的公开卖家个人资料和已发布组件</li>
           <li>仅向已付款的买家开放付费下载</li>
           <li>回复支持请求并执行服务条款</li>
@@ -81,6 +82,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
           <li><strong className="text-ink">Supabase</strong>：数据库和文件存储（组件 zip 文件、元数据）。</li>
           <li><strong className="text-ink">Stripe</strong>（Stripe Connect）：支付处理、卖家身份验证（KYC）和转款。Stripe 直接保存你的支付和银行信息，我们从不会看到完整的银行卡号。</li>
           <li><strong className="text-ink">Vercel</strong>：应用托管和服务器日志。</li>
+          <li><strong className="text-ink">Anthropic</strong>（Claude）：将卖家提交的组件文本（描述和 README）机器翻译为本网站的其他语言。</li>
         </ul>
         <p>
           你的公开卖家个人资料（姓名、简介、链接、已发布组件、数据统计）对所有访问 AiBlocks
@@ -92,7 +94,7 @@ export default function PrivacyContent({ notices }: { notices: ReactNode }) {
 
       <Section id="transfers" title="6. 跨境数据传输">
         <p>
-          Clerk、Supabase、Stripe 和 Vercel 可能在你所在国家以外（包括美国）处理数据。
+          Clerk、Supabase、Stripe、Vercel 和 Anthropic 可能在你所在国家以外（包括美国）处理数据。
           如果涉及欧盟/欧洲经济区的数据，这些传输应受各服务商的标准合同条款（SCC）或同等保障措施保护。
           这需要对照各服务商当前的数据处理协议（DPA）加以确认，并在此具体列出，而不是想当然地假定。
         </p>

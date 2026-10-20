@@ -27,6 +27,7 @@ function component(overrides: Partial<Tables<"components">> = {}): Tables<"compo
     readme: null,
     search_tsv: null,
     seller_id: "seller1",
+    source_language: "en",
     slug: "widget",
     star_count: 0,
     status: "published",

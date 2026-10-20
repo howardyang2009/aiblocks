@@ -276,6 +276,7 @@
       "nameTooShort": "Name must be at least 3 characters.",
       "descriptionTooShort": "Add a short description (10+ characters).",
       "priceInvalid": "Price must be 0 or a positive amount such as 12.50 or 12,50, with no thousands separator.",
+      "sourceLanguageInvalid": "Choose the language the description and README are written in.",
       "zipRequired": "Choose a zip file to upload.",
       "zipTooLarge": "Zip exceeds the 10MB limit.",
       "uploadPathMismatch": "Upload path mismatch. Upload the zip again.",

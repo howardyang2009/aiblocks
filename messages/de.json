@@ -276,6 +276,7 @@
       "nameTooShort": "Der Name muss mindestens 3 Zeichen lang sein.",
       "descriptionTooShort": "Fügen Sie eine Kurzbeschreibung hinzu (mindestens 10 Zeichen).",
       "priceInvalid": "Der Preis muss 0 oder ein positiver Betrag wie 12,50 oder 12.50 sein, ohne Tausendertrennzeichen.",
+      "sourceLanguageInvalid": "Wählen Sie die Sprache, in der Beschreibung und README geschrieben sind.",
       "zipRequired": "Wählen Sie eine ZIP-Datei zum Hochladen aus.",
       "zipTooLarge": "Das ZIP überschreitet das Limit von 10 MB.",
       "uploadPathMismatch": "Der Upload-Pfad stimmt nicht. Laden Sie das ZIP erneut hoch.",

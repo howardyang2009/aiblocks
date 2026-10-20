@@ -276,6 +276,7 @@
       "nameTooShort": "名称至少需要 3 个字符。",
       "descriptionTooShort": "请添加简短描述（至少 10 个字符）。",
       "priceInvalid": "价格必须为 0 或正数，例如 12.50 或 12,50，不能使用千位分隔符。",
+      "sourceLanguageInvalid": "请选择描述和 README 所用的语言。",
       "zipRequired": "请选择要上传的 zip 文件。",
       "zipTooLarge": "zip 超过 10MB 上限。",
       "uploadPathMismatch": "上传路径不匹配，请重新上传 zip。",
