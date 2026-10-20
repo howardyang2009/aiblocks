@@ -37,7 +37,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   // Started before the catalog query so both run in parallel, but only the
   // Suspense boundary below waits on it (#80).
-  const external = getConfig().then((config) => runSearch(selectAdapters(createAdapters(config), type), q, type));
+  const search = getConfig().then((config) => runSearch(selectAdapters(createAdapters(config), type), q, type));
   const supabase = createServiceClient();
   const { components } = await listPublishedComponents(narrowDb<ListComponentsDb>(supabase), { q, tag });
   const catalogMatches = await localizeSummaries(narrowDb<DisplayDb>(supabase), components.slice(0, 6), locale);
@@ -73,7 +73,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <ExternalResultsSection
           q={q}
           type={type}
-          external={external}
+          search={search}
           activeSource={resolved.source}
           catalogCount={catalogMatches.length}
         />

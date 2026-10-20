@@ -67,8 +67,8 @@ test.describe("browse & search", () => {
     await page.goto(`/en/search?q=${nonsense}`);
 
     await expect(page.locator(`input[value="${nonsense}"]`)).toBeVisible();
+    // The skeleton carries aria-busy; it is gone once the Suspense boundary resolved (#80).
+    await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
     await expect(page.getByRole("heading", { name: "From around the web" })).toBeVisible();
-    // The per-source status line only exists once the Suspense boundary resolved (#80).
-    await expect(page.getByText(/^github: /)).toBeVisible({ timeout: 15_000 });
   });
 });

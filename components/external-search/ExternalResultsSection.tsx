@@ -9,15 +9,15 @@ import { selectExternalResults } from "@/lib/external-search/search/by-source";
 type Props = {
   q: string;
   type: ComponentType;
-  external: Promise<SearchResponse>;
+  search: Promise<SearchResponse>;
   activeSource?: string;
   catalogCount: number;
 };
 
 // Waits on every external source, so /search renders it inside <Suspense>: the
 // form and the AiBlocks matches stream first and this fills in after (#80).
-export async function ExternalResultsSection({ q, type, external: pending, activeSource, catalogCount }: Props) {
-  const external = await pending;
+export async function ExternalResultsSection({ q, type, search, activeSource, catalogCount }: Props) {
+  const external = await search;
   const locale = await getLocale();
   const { results, availableSources } = selectExternalResults(external, activeSource);
   const t = await getTranslations("SearchPage");
@@ -28,6 +28,7 @@ export async function ExternalResultsSection({ q, type, external: pending, activ
     return `/search?${p.toString()}`;
   }
 
+  // Lives here, not in the page, because it needs the external count too.
   return (
     <>
       {catalogCount === 0 && results.length === 0 && (
