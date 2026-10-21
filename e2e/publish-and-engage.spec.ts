@@ -35,6 +35,7 @@ test.describe.serial("publish, download, and engage", () => {
 
   test("downloads it — the paywall grants access and records the entitlement", async ({ page }) => {
     await page.goto(`/en/components/${componentId}`);
+    await refreshSession(page);
 
     const [response] = await Promise.all([
       page.waitForResponse(
@@ -55,13 +56,14 @@ test.describe.serial("publish, download, and engage", () => {
   test("stars the component", async ({ page }) => {
     await page.goto(`/en/components/${componentId}`);
     const star = page.getByTestId("star-button");
+    await refreshSession(page);
 
     const [response] = await Promise.all([
       page.waitForResponse((res) => res.url().includes(`/api/components/${componentId}/star`)),
       star.click(),
     ]);
 
-    expect(response.ok()).toBe(true);
+    expect(response.status()).toBe(200);
     await expect(star).toHaveClass(/border-accent/);
   });
 
@@ -70,6 +72,7 @@ test.describe.serial("publish, download, and engage", () => {
 
     const commentText = `Great component — e2e comment ${Date.now()}`;
     await page.getByTestId("comment-input").fill(commentText);
+    await refreshSession(page);
     await page.getByTestId("comment-submit").click();
 
     await expect(page.getByText(commentText)).toBeVisible();
@@ -92,6 +95,7 @@ test.describe.serial("publish, download, and engage", () => {
     await page.goto(`/en/dashboard/seller/${componentId}/edit`);
 
     await page.getByLabel("Name").fill(editedName);
+    await refreshSession(page);
     await page.getByRole("button", { name: "Save changes" }).click();
 
     await expect(page).toHaveURL(`/en/components/${componentId}`);
