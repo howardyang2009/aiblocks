@@ -1,41 +1,29 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/identity/auth";
-import type { ApiError } from "@/lib/api-errors";
+import { toResponse } from "@/lib/result";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { getEntitlement, grantEntitlement, type EntitlementLookupDb, type EntitlementGrantDb } from "@/lib/commerce/entitlements";
 import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce/components";
+import { authorizeDownload } from "@/lib/commerce/downloads";
 import { narrowDb } from "@/lib/db-port";
-import { isFreeComponent } from "@/lib/utils";
 
-// ============================================================
-// THE PAYWALL. Releases a short-lived signed URL for a component's zip
-// ONLY after confirming the requester is entitled to it.
-//   Free component -> any signed-in user (and we record a library entry).
-//   Paid component -> requires a `downloads` row (created after purchase).
-// Never returns zip_path directly; the bucket stays private.
-// ============================================================
+// The paywall itself lives in lib/commerce/downloads.ts; this route only
+// wires the Supabase-backed dependencies into it.
 export const POST = withAuth(async (_req, { params, profile, supabase }) => {
-  const component = await getPublishedComponent(narrowDb<PublishedComponentDb>(supabase), params.id);
-
-  if (!component || !component.zip_path) {
-    return NextResponse.json({ error: "componentUnavailable" satisfies ApiError }, { status: 404 });
-  }
-
-  if (!isFreeComponent(component.price_cents)) {
-    // Paid: require an existing entitlement.
-    if (!(await getEntitlement(narrowDb<EntitlementLookupDb>(supabase), profile.id, component.id))) {
-      return NextResponse.json({ error: "purchaseRequired" satisfies ApiError }, { status: 402 });
-    }
-  } else {
-    // Free: ensure a library entry (idempotent; trigger bumps download_count).
-    await grantEntitlement(narrowDb<EntitlementGrantDb>(supabase), { userId: profile.id, componentId: component.id });
-  }
-
-  const bucket = ACTIVE_ZIP_BUCKET;
-  const { data: signed, error } = await supabase.storage.from(bucket).createSignedUrl(component.zip_path, 60);
-  if (error || !signed) {
-    return NextResponse.json({ error: "downloadFailed" satisfies ApiError }, { status: 500 });
-  }
-
-  return NextResponse.json({ url: signed.signedUrl });
+  const result = await authorizeDownload(
+    {
+      findComponent: (id) => getPublishedComponent(narrowDb<PublishedComponentDb>(supabase), id),
+      hasEntitlement: (userId, componentId) =>
+        getEntitlement(narrowDb<EntitlementLookupDb>(supabase), userId, componentId),
+      grantEntitlement: (userId, componentId) =>
+        grantEntitlement(narrowDb<EntitlementGrantDb>(supabase), { userId, componentId }),
+      signZipUrl: async (zipPath) => {
+        const { data, error } = await supabase.storage.from(ACTIVE_ZIP_BUCKET).createSignedUrl(zipPath, 60);
+        return error || !data ? null : data.signedUrl;
+      },
+    },
+    { profileId: profile.id, componentId: params.id }
+  );
+  if (!result.ok) return toResponse(result);
+  return NextResponse.json({ url: result.url });
 });
