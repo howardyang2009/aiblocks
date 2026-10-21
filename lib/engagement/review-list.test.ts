@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   buildReviewList,
+  ratingSummary,
+  unloadedRatings,
   submitReview,
   deleteReview,
   saveReply,
@@ -141,5 +143,24 @@ describe("concurrent requests", () => {
     list = edit.apply(list);
     list = reply.apply(list);
     expect(list.map((r) => [r.id, r.reply?.body ?? null])).toEqual([["mine", null], ["a", "hi"]]);
+  });
+});
+
+describe("rating summary", () => {
+  it("adds the unlisted Reviews to the listed ones", () => {
+    const listed = [review({ rating: 5 }), review({ id: "r2", rating: 3 })];
+    const unloaded = unloadedRatings([5, 3, 1, 1], listed);
+    expect(unloaded).toEqual({ count: 2, sum: 2 });
+    expect(ratingSummary(unloaded, listed)).toEqual({ count: 4, average: 2.5 });
+  });
+
+  it("follows the viewer's own Review as the list changes", () => {
+    const unloaded = { count: 2, sum: 2 };
+    expect(ratingSummary(unloaded, [review({ rating: 5, mine: true })])).toEqual({ count: 3, average: 7 / 3 });
+    expect(ratingSummary(unloaded, [])).toEqual({ count: 2, average: 1 });
+  });
+
+  it("has no average without Reviews", () => {
+    expect(ratingSummary({ count: 0, sum: 0 }, [])).toEqual({ count: 0, average: null });
   });
 });

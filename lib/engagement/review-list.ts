@@ -46,6 +46,25 @@ export function buildReviewList(
   });
 }
 
+// The page loads at most a page of Reviews, but the summary counts all of
+// them. `unloaded` totals the Reviews not in the list, so the summary stays
+// right as the viewer adds, edits or deletes their own Review.
+export type RatingTotals = { count: number; sum: number };
+
+export function unloadedRatings(allRatings: number[], loaded: Review[]): RatingTotals {
+  const sum = (ratings: number[]) => ratings.reduce((total, r) => total + r, 0);
+  return {
+    count: Math.max(0, allRatings.length - loaded.length),
+    sum: sum(allRatings) - sum(loaded.map((r) => r.rating)),
+  };
+}
+
+export function ratingSummary(unloaded: RatingTotals, reviews: Review[]): { count: number; average: number | null } {
+  const count = unloaded.count + reviews.length;
+  const sum = unloaded.sum + reviews.reduce((total, r) => total + r.rating, 0);
+  return { count, average: count ? sum / count : null };
+}
+
 // One Review per Buyer per Component (the POST upserts). The saved Review
 // goes first and replaces whichever entry was the viewer's before; its
 // reviewer identity and Seller reply carry over, since the response only

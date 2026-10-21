@@ -45,12 +45,14 @@ function profile(overrides: Partial<Tables<"profiles">> = {}): Tables<"profiles"
   };
 }
 
+// `ratings` defaults to the listed Reviews' ratings: no unlisted Reviews.
 function rows(overrides: Partial<ComponentRows> = {}): ComponentRows {
   return {
     component: component(),
     seller: { username: "seller", display_name: "Seller" },
     tags: [],
     reviewRows: [],
+    ratings: (overrides.reviewRows ?? []).map((r) => r.rating),
     commentRows: [],
     starRow: null,
     owned: false,
@@ -136,6 +138,7 @@ describe("buildComponentView", () => {
 
   it("reports a null average rating with no reviews", () => {
     const view = buildComponentView(rows({ reviewRows: [] }), null);
+    expect(view.unloadedRatings).toEqual({ count: 0, sum: 0 });
     expect(view.reviewCount).toBe(0);
     expect(view.avgRating).toBeNull();
   });
@@ -165,5 +168,18 @@ describe("buildComponentView", () => {
   it("returns no viewer public profile when signed out", () => {
     const view = buildComponentView(rows(), null);
     expect(view.viewer).toBeNull();
+  });
+
+  it("counts and averages every Review, not just the listed ones", () => {
+    const view = buildComponentView(
+      rows({
+        reviewRows: [{ id: "r1", buyer_id: "buyer1", rating: 5, body: null, created_at: "" }],
+        ratings: [5, 1, 1, 1],
+      }),
+      null
+    );
+    expect(view.reviewCount).toBe(4);
+    expect(view.avgRating).toBe(2);
+    expect(view.unloadedRatings).toEqual({ count: 3, sum: 3 });
   });
 });

@@ -5,7 +5,7 @@ import { getComponentTagNames, type ComponentTagsDb } from "@/lib/commerce/compo
 import { narrowDb } from "@/lib/db-port";
 import { toPublicProfile } from "@/lib/identity/public-profile";
 import type { Viewer } from "@/lib/identity/viewer";
-import { buildReviewList } from "@/lib/engagement/review-list";
+import { buildReviewList, ratingSummary, unloadedRatings } from "@/lib/engagement/review-list";
 import { buildCommentTree } from "@/lib/engagement/comment-thread";
 
 // The only part of this page that touches Supabase. Everything it returns
@@ -23,15 +23,20 @@ export async function fetchComponentRows(
   component: Tables<"components">,
   viewer: Promise<Viewer>
 ) {
-  // Tier 2 — three queries independent of each other and of the Viewer.
+  // Tier 2 — four queries independent of each other and of the Viewer.
+  // `ratingRows` is every Review's rating, so the count and average aren't
+  // limited to the 100 Reviews listed (PostgREST still caps a response at
+  // its max-rows setting, 1000 by default).
   const [
     { data: seller },
     { data: reviewRows },
     { data: commentRows },
+    { data: ratingRows },
   ] = await Promise.all([
     supabase.from("profiles").select("username, display_name").eq("id", component.seller_id).maybeSingle(),
     supabase.from("reviews").select("id, buyer_id, rating, body, created_at").eq("component_id", component.id).order("created_at", { ascending: false }).limit(100),
     supabase.from("comments").select("id, user_id, parent_id, body, created_at").eq("component_id", component.id).order("created_at", { ascending: true }).limit(200),
+    supabase.from("reviews").select("rating").eq("component_id", component.id),
   ]);
 
   // Query-planning inputs for tier 3 — not business logic, just IDs to fetch.
@@ -80,7 +85,9 @@ export async function fetchComponentRows(
   const owned = await ownedPromise;
   const tags = await tagsPromise;
 
-  return { component, seller, tags, reviewRows, commentRows, starRow, owned, reviewers, replyRows, commenters };
+  const ratings = (ratingRows ?? []).map((r) => r.rating);
+
+  return { component, seller, tags, reviewRows, ratings, commentRows, starRow, owned, reviewers, replyRows, commenters };
 }
 
 export type ComponentRows = NonNullable<Awaited<ReturnType<typeof fetchComponentRows>>>;
@@ -88,7 +95,7 @@ export type ComponentRows = NonNullable<Awaited<ReturnType<typeof fetchComponent
 // Everything the page needs to render, computed from already-fetched rows.
 // No Supabase, no network — test this with plain object literals.
 export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"profiles"> | null) {
-  const { component, seller, tags, reviewRows, commentRows, starRow, owned, reviewers, replyRows, commenters } = rows;
+  const { component, seller, tags, reviewRows, ratings, commentRows, starRow, owned, reviewers, replyRows, commenters } = rows;
 
   const viewerProfileId = viewerProfile?.id ?? null;
   const viewer = viewerProfile ? toPublicProfile(viewerProfile) : null;
@@ -102,10 +109,8 @@ export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"p
     viewerId: viewerProfileId,
   });
 
-  const reviewCount = reviews.length;
-  const avgRating   = reviewCount
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
-    : null;
+  const unloaded = unloadedRatings(ratings, reviews);
+  const { count: reviewCount, average: avgRating } = ratingSummary(unloaded, reviews);
 
   const commentTree = buildCommentTree(commentRows ?? [], {
     authors: commenters ?? [],
@@ -124,6 +129,7 @@ export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"p
     reviews,
     reviewCount,
     avgRating,
+    unloadedRatings: unloaded,
     commentTree,
   };
 }

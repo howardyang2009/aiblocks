@@ -11,6 +11,8 @@ import {
   deleteReview,
   saveReply as saveReplyRequest,
   deleteReply,
+  ratingSummary,
+  type RatingTotals,
   type Review,
 } from "@/lib/engagement/review-list";
 import { useRowMutation } from "@/lib/use-row-mutation";
@@ -80,6 +82,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
 export function ReviewsSection({
   componentId,
   initialReviews,
+  unloadedRatings,
   canReview,
   signedIn,
   isSeller,
@@ -87,6 +90,8 @@ export function ReviewsSection({
 }: {
   componentId: string;
   initialReviews: Review[];
+  // The Reviews not in initialReviews, so the summary counts all of them.
+  unloadedRatings: RatingTotals;
   canReview: boolean;
   signedIn: boolean;
   isSeller: boolean;
@@ -151,8 +156,9 @@ export function ReviewsSection({
     setReplyingTo(null);
   }
 
-  const count = reviews.length;
-  const average = count ? reviews.reduce((sum, r) => sum + r.rating, 0) / count : 0;
+  const summary = ratingSummary(unloadedRatings, reviews);
+  const count = summary.count;
+  const average = summary.average ?? 0;
 
   const showForm = canReview && (!mine || editing);
 
