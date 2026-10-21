@@ -4,7 +4,6 @@ import { isOwnedBySeller, validateComponentDescription } from "@/lib/commerce/co
 import type { ComponentWriteError } from "@/lib/commerce/component-write-errors";
 import {
   TRANSLATED_FIELDS,
-  isStale,
   sourceHash,
   sourceLanguageOf,
   targetLocales,
@@ -34,22 +33,9 @@ export function editView(language: SourceLanguage, locale: Locale, sourceViewReq
 /** A `component_translations` row as the edit page reads it. */
 export type EditableRow = TranslationRow & { text: string | null };
 
-/** What the Seller is told about one field of one Translation. */
-export type FieldState = "empty" | "pending" | "failed" | "tooLong" | "machine" | "hand" | "stale";
-
-export function fieldState(row: EditableRow | undefined, sourceText: string): FieldState {
-  if (!sourceText.trim()) return "empty";
-  if (!row) return "pending";
-  if (row.kind === "hand") return isStale(row, sourceText) ? "stale" : "hand";
-  // A machine row made from an older Source text is about to be redone.
-  if (row.status === "pending" || row.source_hash !== sourceHash(sourceText)) return "pending";
-  if (row.status === "failed") return row.failure_reason === "too_long" ? "tooLong" : "failed";
-  return "machine";
-}
-
 type Failure = { ok: false; status: number; error: ComponentWriteError };
 
-const parseLocale = (value: unknown): Locale | null => routing.locales.find((l) => l === value) ?? null;
+const localeOrNull = (value: unknown): Locale | null => routing.locales.find((l) => l === value) ?? null;
 
 export type HandTranslationInput = { locale: Locale; texts: Partial<Record<TranslatedField, string>> };
 
@@ -59,7 +45,7 @@ export function parseHandTranslationInput(body: {
   description?: unknown;
   readme?: unknown;
 }): { ok: true; data: HandTranslationInput } | Failure {
-  const locale = parseLocale(body.locale);
+  const locale = localeOrNull(body.locale);
   if (!locale) return { ok: false, status: 400, error: "translationLocaleInvalid" };
 
   const texts: HandTranslationInput["texts"] = {};
@@ -78,7 +64,7 @@ export function parseHandTranslationInput(body: {
 export type ResetInput = { locale: Locale; field: TranslatedField };
 
 export function parseResetInput(body: { locale?: unknown; field?: unknown }): { ok: true; data: ResetInput } | Failure {
-  const locale = parseLocale(body.locale);
+  const locale = localeOrNull(body.locale);
   const field = TRANSLATED_FIELDS.find((f) => f === body.field);
   if (!locale || !field) return { ok: false, status: 400, error: "translationFieldInvalid" };
   return { ok: true, data: { locale, field } };

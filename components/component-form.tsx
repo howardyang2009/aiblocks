@@ -28,7 +28,7 @@ import { isComponentWriteError } from "@/lib/commerce/component-write-errors";
 import { useErrorMessage } from "@/lib/use-error-message";
 import { routing, type Locale } from "@/i18n/routing";
 import { parseSourceLanguage, type SourceLanguage } from "@/lib/translation/source-language";
-import type { FieldState } from "@/lib/translation/seller-edit";
+import type { FieldState } from "@/lib/translation/plan";
 import type { TranslatedField } from "@/lib/translation/plan";
 
 // PublishForm and EditForm — the two things a Seller does to submit a

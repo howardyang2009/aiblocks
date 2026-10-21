@@ -6,16 +6,40 @@ import {
   type DisplayRow,
   type DisplayDb,
 } from "@/lib/translation/display";
-import type { ComponentSource } from "@/lib/translation/plan";
+import { sourceHash, type ComponentSource } from "@/lib/translation/plan";
 import type { ComponentSummary } from "@/types/database";
 
 const source: ComponentSource = { source_language: "en", description: "A tool for agents.", readme: "# Agent tool" };
 
+// Made from the current Source text of its field unless overridden.
 function row(overrides: Partial<DisplayRow> = {}): DisplayRow {
-  return { locale: "de", field: "description", kind: "machine", status: "ready", text: "Ein Werkzeug.", ...overrides };
+  const field = (overrides.field ?? "description") as "description" | "readme";
+  return {
+    locale: "de",
+    field,
+    kind: "machine",
+    status: "ready",
+    source_hash: sourceHash(source[field] ?? ""),
+    failure_reason: null,
+    text: "Ein Werkzeug.",
+    ...overrides,
+  };
 }
 
 describe("shownText", () => {
+  it("shows the Source text instead of a machine Translation of an older Source text", () => {
+    expect(shownText(source, [row({ source_hash: sourceHash("old text") })], "de", "description")).toEqual({
+      text: "A tool for agents.",
+      machineTranslatedFrom: null,
+    });
+  });
+
+  it("still shows a stale hand-edited Translation: it is the Seller's own words", () => {
+    expect(
+      shownText(source, [row({ kind: "hand", source_hash: sourceHash("old text"), text: "Von Hand." })], "de", "description")
+    ).toEqual({ text: "Von Hand.", machineTranslatedFrom: null });
+  });
+
   it("shows a ready machine Translation, labelled with the source language", () => {
     expect(shownText(source, [row()], "de", "description")).toEqual({
       text: "Ein Werkzeug.",
@@ -113,7 +137,7 @@ describe("localizeSummaries", () => {
   });
 
   it("labels a machine Translation on a card", async () => {
-    const { db } = fakeDb([{ component_id: "c1", ...row() }]);
+    const { db } = fakeDb([{ component_id: "c1", ...row({ source_hash: sourceHash("A widget.") }) }]);
     const [card] = await localizeSummaries(db, [summary()], "de");
     expect(card).toMatchObject({ description: "Ein Werkzeug.", machineTranslatedFrom: "en" });
   });

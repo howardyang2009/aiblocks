@@ -1,20 +1,30 @@
 import type { Locale } from "@/i18n/routing";
 import type { ComponentSummary } from "@/types/database";
-import { sourceLanguageOf, type ComponentSource, type TranslatedField } from "./plan";
+import { fieldState, sourceLanguageOf, type ComponentSource, type TranslatedField } from "./plan";
 import type { SourceLanguage } from "./source-language";
 
 // What readers see of a Component's Source text in a Locale (ADR 0006, #70).
 
 /** The parts of a `component_translations` row a reader-facing page needs. */
-export type DisplayRow = { locale: string; field: string; kind: string; status: string; text: string | null };
+export type DisplayRow = {
+  locale: string;
+  field: string;
+  kind: string;
+  status: string;
+  source_hash: string;
+  failure_reason: string | null;
+  text: string | null;
+};
 
 /** The text to show, and the source language when it is a machine Translation. */
 export type ShownText = { text: string; machineTranslatedFrom: SourceLanguage | null };
 
 /**
- * The ready Translation for the Locale, machine or hand, stale or not;
- * otherwise the Source text. The Locale the source is written in always
- * shows the Source text. Only a machine Translation is labelled.
+ * A hand-edited Translation (stale or not: it is the Seller's own words) or
+ * a machine Translation of the CURRENT Source text; otherwise the Source
+ * text. A machine row of an older Source text is never shown, even when the
+ * job that should redo it never ran. The Locale the source is written in
+ * always shows the Source text. Only a machine Translation is labelled.
  */
 export function shownText(
   source: ComponentSource,
@@ -23,15 +33,15 @@ export function shownText(
   field: TranslatedField
 ): ShownText {
   const language = sourceLanguageOf(source);
-  const translation =
-    language === locale
-      ? undefined
-      : rows.find((r) => r.locale === locale && r.field === field && r.status === "ready" && r.text !== null);
-  if (!translation) return { text: source[field] ?? "", machineTranslatedFrom: null };
+  const sourceText = source[field] ?? "";
+  const row = language === locale ? undefined : rows.find((r) => r.locale === locale && r.field === field);
+  const state = row && row.text !== null ? fieldState(row, sourceText) : null;
+  const translation = state === "machine" || state === "hand" || state === "stale" ? row : undefined;
+  if (!translation) return { text: sourceText, machineTranslatedFrom: null };
   return { text: translation.text!, machineTranslatedFrom: translation.kind === "machine" ? language : null };
 }
 
-const DISPLAY_COLS = "component_id, locale, field, kind, status, text";
+const DISPLAY_COLS = "component_id, locale, field, kind, status, source_hash, failure_reason, text";
 
 /** A card's Component with its description shown in the page's Locale. */
 export type LocalizedSummary = ComponentSummary & { machineTranslatedFrom: SourceLanguage | null };
