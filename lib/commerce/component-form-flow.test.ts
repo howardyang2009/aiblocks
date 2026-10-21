@@ -215,40 +215,50 @@ function fakeEditDeps(overrides: Partial<EditFlowDeps> = {}): EditFlowDeps {
 }
 
 describe("runEditFlow with a Translation", () => {
-  const translation = { locale: "de" as const, texts: { description: "Sortiert Ihren Posteingang." } };
+  // The de tab of an en Component: the form shows the de Translation.
+  const translation = {
+    locale: "de" as const,
+    source: { description: "Triages your inbox automatically", readme: "# Overview" },
+    loaded: { description: "Sortiert Ihren Posteingang.", readme: "# Überblick" },
+  };
+  const deTab = (form: { description?: string; readme?: string; sourceLanguage?: "en" | "de" } = {}) =>
+    validEditFields({ ...translation.loaded, ...form, translation });
 
-  it("saves the shared fields, then the changed Translation fields", async () => {
+  it("keeps the Source text and saves only the changed Translation fields", async () => {
     const deps = fakeEditDeps();
-    const result = await runEditFlow(deps, "comp1", validEditFields({ translation }));
+    const result = await runEditFlow(deps, "comp1", deTab({ description: "Sortiert Ihren Posteingang, von Hand." }));
 
     expect(result).toEqual({ status: "done", id: "comp1" });
-    expect(deps.updateComponent).toHaveBeenCalledOnce();
-    expect(deps.saveTranslation).toHaveBeenCalledWith("comp1", { locale: "de", description: "Sortiert Ihren Posteingang." });
+    expect(deps.updateComponent).toHaveBeenCalledWith("comp1", expect.objectContaining(translation.source));
+    expect(deps.saveTranslation).toHaveBeenCalledWith("comp1", { locale: "de", description: "Sortiert Ihren Posteingang, von Hand." });
   });
 
-  it("saves no Translation once the Seller declares this Locale the source language", async () => {
+  it("makes the form's text the Source text once the Seller declares this Locale the source language", async () => {
     const deps = fakeEditDeps();
-    await runEditFlow(deps, "comp1", validEditFields({ sourceLanguage: "de", translation }));
-    expect(deps.updateComponent).toHaveBeenCalledOnce();
+    await runEditFlow(deps, "comp1", deTab({ description: "Von Hand geschrieben, jetzt Quelle.", sourceLanguage: "de" }));
+    expect(deps.updateComponent).toHaveBeenCalledWith(
+      "comp1",
+      expect.objectContaining({ description: "Von Hand geschrieben, jetzt Quelle.", readme: "# Überblick", sourceLanguage: "de" })
+    );
     expect(deps.saveTranslation).not.toHaveBeenCalled();
   });
 
   it("saves no Translation when none of its fields changed", async () => {
     const deps = fakeEditDeps();
-    await runEditFlow(deps, "comp1", validEditFields({ translation: { locale: "de", texts: {} } }));
+    await runEditFlow(deps, "comp1", deTab());
     expect(deps.saveTranslation).not.toHaveBeenCalled();
   });
 
   it("holds a translated description to the same rule before saving anything", async () => {
     const deps = fakeEditDeps();
-    const result = await runEditFlow(deps, "comp1", validEditFields({ translation: { locale: "de", texts: { description: "kurz" } } }));
+    const result = await runEditFlow(deps, "comp1", deTab({ description: "kurz" }));
     expect(result).toEqual({ status: "error", error: "descriptionTooShort" });
     expect(deps.updateComponent).not.toHaveBeenCalled();
   });
 
   it("reports a failed Translation save", async () => {
     const deps = fakeEditDeps({ saveTranslation: vi.fn(async () => ({ ok: false as const, error: "translationSaveFailed" })) });
-    expect(await runEditFlow(deps, "comp1", validEditFields({ translation }))).toEqual({
+    expect(await runEditFlow(deps, "comp1", deTab({ description: "Sortiert Ihren Posteingang, von Hand." }))).toEqual({
       status: "error",
       error: "translationSaveFailed",
     });

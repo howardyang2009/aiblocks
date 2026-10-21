@@ -10,7 +10,6 @@ import { formatFileSize } from "@/lib/utils";
 import {
   runPublishFlow,
   runEditFlow,
-  changedTranslation,
   type PublishFlowDeps,
   type EditFlowDeps,
   type FormFlowStage,
@@ -114,8 +113,8 @@ function IntakeForm({
   const locale = useLocale();
   const formError = useFormErrorMessage();
   const [name, setName] = useState(initial.name);
-  // In a Translation, description and readme hold the Translation; the
-  // Source text in `initial` is sent back unchanged.
+  // In a Translation, description and readme hold the Translation;
+  // planEditSave (component-form-flow.ts) decides what an edit saves.
   const [description, setDescription] = useState(translation?.fields.description.text ?? initial.description);
   const [ecosystems, setEcosystems] = useState(initial.ecosystems);
   const [tags, setTags] = useState(initial.tags);
@@ -132,21 +131,14 @@ function IntakeForm({
 
   async function handleSubmit() {
     setError(null);
-    const shared = { name, ecosystems, tags, price, sourceLanguage, file };
-    const fields = translation
-      ? {
-          ...shared,
-          description: initial.description,
-          readme: initial.readme,
-          translation: {
-            locale: translation.locale,
-            texts: changedTranslation(
-              { description: translation.fields.description.text, readme: translation.fields.readme.text },
-              { description, readme }
-            ),
-          },
-        }
-      : { ...shared, description, readme };
+    const fields = {
+      name, description, readme, ecosystems, tags, price, sourceLanguage, file,
+      translation: translation && {
+        locale: translation.locale,
+        source: { description: initial.description, readme: initial.readme },
+        loaded: { description: translation.fields.description.text, readme: translation.fields.readme.text },
+      },
+    };
 
     const result =
       mode === "create"
