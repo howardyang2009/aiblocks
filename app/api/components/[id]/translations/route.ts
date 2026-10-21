@@ -8,6 +8,7 @@ import {
   saveHandTranslations,
   type SellerTranslationsDb,
 } from "@/lib/translation/seller-edit";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 // PUT /api/components/[id]/translations — the owning Seller's own
 // Translation of one Locale (ADR 0006, #71). Body: { locale, description?,
@@ -26,5 +27,6 @@ export const PUT = withAuth(async (req, { params, profile, supabase }) => {
     input: parsed.data,
   });
   if (!saved.ok) return toResponse(saved);
+  revalidateComponentPages();
   return NextResponse.json({ ok: true });
 });

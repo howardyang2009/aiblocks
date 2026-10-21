@@ -6,6 +6,7 @@ import { getEntitlement, grantEntitlement, type EntitlementLookupDb, type Entitl
 import { getPublishedComponent, type PublishedComponentDb } from "@/lib/commerce/components";
 import { authorizeDownload } from "@/lib/commerce/downloads";
 import { narrowDb } from "@/lib/db-port";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 // The paywall itself lives in lib/commerce/downloads.ts; this route only
 // wires the Supabase-backed dependencies into it.
@@ -25,5 +26,6 @@ export const POST = withAuth(async (_req, { params, profile, supabase }) => {
     { profileId: profile.id, componentId: params.id }
   );
   if (!result.ok) return toResponse(result);
+  revalidateComponentPages();
   return NextResponse.json({ url: result.url });
 });

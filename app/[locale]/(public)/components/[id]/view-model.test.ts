@@ -26,25 +26,6 @@ function component(overrides: Partial<Tables<"components">> = {}): Tables<"compo
   };
 }
 
-function profile(overrides: Partial<Tables<"profiles">> = {}): Tables<"profiles"> {
-  return {
-    avatar_url: null,
-    bio: null,
-    clerk_user_id: "",
-    created_at: "",
-    display_name: null,
-    github_url: null,
-    id: "buyer1",
-    stripe_account_id: null,
-    stripe_onboarding_done: false,
-    twitter_url: null,
-    updated_at: "",
-    username: "buyer",
-    website_url: null,
-    ...overrides,
-  };
-}
-
 // `ratings` defaults to the listed Reviews' ratings: no unlisted Reviews.
 function rows(overrides: Partial<ComponentRows> = {}): ComponentRows {
   return {
@@ -54,8 +35,6 @@ function rows(overrides: Partial<ComponentRows> = {}): ComponentRows {
     reviewRows: [],
     ratings: (overrides.reviewRows ?? []).map((r) => r.rating),
     commentRows: [],
-    starRow: null,
-    owned: false,
     reviewers: [],
     replyRows: [],
     commenters: [],
@@ -65,30 +44,8 @@ function rows(overrides: Partial<ComponentRows> = {}): ComponentRows {
 
 describe("buildComponentView", () => {
   it("passes tags through unchanged", () => {
-    const view = buildComponentView(rows({ tags: ["agent", "email"] }), null);
+    const view = buildComponentView(rows({ tags: ["agent", "email"] }));
     expect(view.tags).toEqual(["agent", "email"]);
-  });
-
-  it("marks starred true only when a star row exists", () => {
-    const notStarred = buildComponentView(rows({ starRow: null }), null);
-    expect(notStarred.starred).toBe(false);
-    const starred = buildComponentView(rows({ starRow: { user_id: "u1" } }), null);
-    expect(starred.starred).toBe(true);
-  });
-
-  it("marks isSeller only when the viewer's profile id matches the component's seller_id", () => {
-    const viewer = profile({ id: "seller1" });
-    const view = buildComponentView(rows({ component: component({ seller_id: "seller1" }) }), viewer);
-    expect(view.isSeller).toBe(true);
-
-    const otherViewer = profile({ id: "someone-else" });
-    const view2 = buildComponentView(rows({ component: component({ seller_id: "seller1" }) }), otherViewer);
-    expect(view2.isSeller).toBe(false);
-  });
-
-  it("is never the seller when signed out", () => {
-    const view = buildComponentView(rows({ component: component({ seller_id: "seller1" }) }), null);
-    expect(view.isSeller).toBe(false);
   });
 
   it("joins reviewer profiles and seller replies onto each review", () => {
@@ -97,8 +54,7 @@ describe("buildComponentView", () => {
         reviewRows: [{ id: "r1", buyer_id: "buyer1", rating: 5, body: "great", created_at: "2026-01-01" }],
         reviewers: [{ id: "buyer1", username: "buyer", display_name: "Buyer One", avatar_url: null }],
         replyRows: [{ review_id: "r1", body: "thanks!", created_at: "2026-01-02" }],
-      }),
-      null
+      })
     );
     expect(view.reviews).toEqual([
       {
@@ -113,15 +69,6 @@ describe("buildComponentView", () => {
     ]);
   });
 
-  it("marks a review as mine when the viewer is the reviewer", () => {
-    const viewer = profile({ id: "buyer1" });
-    const view = buildComponentView(
-      rows({ reviewRows: [{ id: "r1", buyer_id: "buyer1", rating: 4, body: null, created_at: "" }] }),
-      viewer
-    );
-    expect(view.reviews[0].mine).toBe(true);
-  });
-
   it("computes review count and average rating", () => {
     const view = buildComponentView(
       rows({
@@ -129,15 +76,14 @@ describe("buildComponentView", () => {
           { id: "r1", buyer_id: "b1", rating: 5, body: null, created_at: "" },
           { id: "r2", buyer_id: "b2", rating: 3, body: null, created_at: "" },
         ],
-      }),
-      null
+      })
     );
     expect(view.reviewCount).toBe(2);
     expect(view.avgRating).toBe(4);
   });
 
   it("reports a null average rating with no reviews", () => {
-    const view = buildComponentView(rows({ reviewRows: [] }), null);
+    const view = buildComponentView(rows({ reviewRows: [] }));
     expect(view.unloadedRatings).toEqual({ count: 0, sum: 0 });
     expect(view.reviewCount).toBe(0);
     expect(view.avgRating).toBeNull();
@@ -155,8 +101,7 @@ describe("buildComponentView", () => {
           { id: "seller1", username: "seller", display_name: "Seller", avatar_url: null },
         ],
         component: component({ seller_id: "seller1" }),
-      }),
-      null
+      })
     );
     expect(view.commentTree).toHaveLength(1);
     expect(view.commentTree[0].id).toBe("top1");
@@ -165,18 +110,12 @@ describe("buildComponentView", () => {
     expect(view.commentTree[0].replies[0].isSeller).toBe(true);
   });
 
-  it("returns no viewer public profile when signed out", () => {
-    const view = buildComponentView(rows(), null);
-    expect(view.viewer).toBeNull();
-  });
-
   it("counts and averages every Review, not just the listed ones", () => {
     const view = buildComponentView(
       rows({
         reviewRows: [{ id: "r1", buyer_id: "buyer1", rating: 5, body: null, created_at: "" }],
         ratings: [5, 1, 1, 1],
-      }),
-      null
+      })
     );
     expect(view.reviewCount).toBe(4);
     expect(view.avgRating).toBe(2);

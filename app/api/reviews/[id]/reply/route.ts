@@ -4,6 +4,7 @@ import { parseBody } from "@/lib/request";
 import { postReply, deleteReply, type PostReplyDb, type DeleteReplyDb } from "@/lib/engagement/replies";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 export const POST = withAuth(async (req, { params, profile, supabase }) => {
   const payload = await parseBody<{ body?: unknown }>(req);
@@ -15,11 +16,13 @@ export const POST = withAuth(async (req, { params, profile, supabase }) => {
     body: payload.body,
   });
   if (!result.ok) return toResponse(result);
+  revalidateComponentPages();
   return NextResponse.json({ reply: result.reply });
 });
 
 export const DELETE = withAuth(async (_req, { params, profile, supabase }) => {
   const result = await deleteReply(narrowDb<DeleteReplyDb>(supabase), { reviewId: params.id, sellerId: profile.id });
   if (!result.ok) return toResponse(result);
+  revalidateComponentPages();
   return NextResponse.json({ deleted: true });
 });
