@@ -400,7 +400,7 @@ export type OwnedComponent = Pick<Tables<"components">, "id" | "seller_id" | "zi
 
 // The one rule for "does this seller own this component" — shared by
 // updateComponent's own check below and by the edit page's pre-render check
-// (app/dashboard/seller/[id]/edit/page.tsx), which return different things
+// (app/[locale]/dashboard/seller/[id]/edit/page.tsx), which return different things
 // on a mismatch (403 here, a 404 there, deliberately — see that page) but
 // must never disagree about what ownership means.
 export function isOwnedBySeller(component: Pick<Tables<"components">, "seller_id">, sellerId: string): boolean {
@@ -495,4 +495,75 @@ export async function updateComponent(
     newZipPath: args.zipPath ?? null,
     sourceLanguageChanged: !!args.sourceLanguage && args.sourceLanguage !== existing.source_language,
   };
+}
+
+type RequestBody = Parameters<typeof parseEditInput>[0];
+
+// The whole Publish operation: parse -> verify the uploaded zip -> insert
+// -> queue Translations. Every dependency is a function so the sequence is
+// testable with fakes; the route wires in Supabase and the queue.
+export type PublishRequestDeps = {
+  verifyZip: (zipPath: string) => Promise<VerifyUploadResult>;
+  publish: (args: PublishInput & { sellerId: string; sizeBytes: number | null }) => Promise<PublishResult>;
+  queueTranslations: (componentId: string) => void;
+};
+
+export async function publishComponentRequest(
+  deps: PublishRequestDeps,
+  args: { body: RequestBody; sellerId: string }
+): Promise<PublishResult> {
+  const parsed = parsePublishInput(args.body, args.sellerId);
+  if (!parsed.ok) return parsed;
+
+  const verified = await deps.verifyZip(parsed.data.zipPath);
+  if (!verified.ok) return verified;
+
+  const published = await deps.publish({ ...parsed.data, sellerId: args.sellerId, sizeBytes: verified.sizeBytes });
+  if (!published.ok) return published;
+  deps.queueTranslations(published.id);
+  return published;
+}
+
+// The whole Edit operation. Its ordering rules live here and nowhere else:
+//   - the zip is verified only when the Seller replaced it;
+//   - Translations are marked as made from a different source BEFORE the
+//     job is queued, so the job sees them as out of date;
+//   - the old zip is removed only AFTER the update succeeded, best effort:
+//     a stranded blob is wasted storage, not a broken Component.
+export type EditRequestDeps = {
+  verifyZip: (zipPath: string) => Promise<VerifyUploadResult>;
+  update: (args: EditInput & { componentId: string; sellerId: string; sizeBytes: number | null }) => Promise<UpdateComponentResult>;
+  markSourceLanguageChanged: (componentId: string) => Promise<void>;
+  queueTranslations: (componentId: string) => void;
+  removeZip: (zipPath: string) => Promise<void>;
+};
+
+export async function editComponentRequest(
+  deps: EditRequestDeps,
+  args: { body: RequestBody; componentId: string; sellerId: string }
+): Promise<{ ok: true; id: string } | { ok: false; status: number; error: string }> {
+  const parsed = parseEditInput(args.body, args.sellerId);
+  if (!parsed.ok) return parsed;
+
+  let sizeBytes: number | null = null;
+  if (parsed.data.zipPath) {
+    const verified = await deps.verifyZip(parsed.data.zipPath);
+    if (!verified.ok) return verified;
+    sizeBytes = verified.sizeBytes;
+  }
+
+  const updated = await deps.update({ ...parsed.data, componentId: args.componentId, sellerId: args.sellerId, sizeBytes });
+  if (!updated.ok) return updated;
+
+  if (updated.sourceLanguageChanged) await deps.markSourceLanguageChanged(updated.id);
+  deps.queueTranslations(updated.id);
+
+  if (updated.newZipPath && updated.oldZipPath && updated.oldZipPath !== updated.newZipPath) {
+    try {
+      await deps.removeZip(updated.oldZipPath);
+    } catch {
+      // Best effort, see above.
+    }
+  }
+  return { ok: true, id: updated.id };
 }

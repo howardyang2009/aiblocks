@@ -4,7 +4,7 @@ import { withAuth } from "@/lib/identity/auth";
 import { ACTIVE_ZIP_BUCKET } from "@/lib/server-constants";
 import { parseBody } from "@/lib/request";
 import {
-  parsePublishInput,
+  publishComponentRequest,
   verifyUploadedZip,
   publishComponent,
   type VerifyUploadedZipStorage,
@@ -45,23 +45,15 @@ export const POST = withAuth(async (req, { profile, supabase }) => {
   }>(req);
   if (body instanceof NextResponse) return body;
 
-  const parsed = parsePublishInput(body, profile.id);
-  if (!parsed.ok) return toResponse(parsed);
-
-  const verified = await verifyUploadedZip(
-    narrowDb<VerifyUploadedZipStorage>(supabase),
-    ACTIVE_ZIP_BUCKET,
-    parsed.data.zipPath
+  const published = await publishComponentRequest(
+    {
+      verifyZip: (zipPath) => verifyUploadedZip(narrowDb<VerifyUploadedZipStorage>(supabase), ACTIVE_ZIP_BUCKET, zipPath),
+      publish: (args) => publishComponent(narrowDb<PublishComponentDb>(supabase), args),
+      queueTranslations: (id) => queueTranslations(id),
+    },
+    { body, sellerId: profile.id }
   );
-  if (!verified.ok) return toResponse(verified);
-
-  const published = await publishComponent(narrowDb<PublishComponentDb>(supabase), {
-    ...parsed.data,
-    sellerId: profile.id,
-    sizeBytes: verified.sizeBytes,
-  });
   if (!published.ok) return toResponse(published);
-  queueTranslations(published.id);
 
   return NextResponse.json({ id: published.id, slug: published.slug });
 });

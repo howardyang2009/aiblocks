@@ -68,7 +68,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
   ]);
   const data = buildComponentView(rows, viewerProfile);
 
-  const { seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, commentTree } = data;
+  const { seller, tags, starred, owned, viewer, isSeller, reviews, reviewCount, avgRating, unloadedRatings, commentTree } = data;
   const renderReadme = (readme: string) =>
     readme.trim() ? <MarkdownRenderer source={readme} /> : <p className="text-sm text-subtle">{t("noReadme")}</p>;
 
@@ -118,6 +118,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
         <ReviewsSection
           componentId={component.id}
           initialReviews={reviews}
+          unloadedRatings={unloadedRatings}
           canReview={owned && !isSeller}
           signedIn={!!viewerProfile}
           isSeller={isSeller}

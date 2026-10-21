@@ -90,3 +90,20 @@ export function planTranslations(
 export function isStale(row: TranslationRow, currentSourceText: string): boolean {
   return row.kind === "hand" && row.source_hash !== sourceHash(currentSourceText);
 }
+
+/**
+ * The one answer to "what state is this Translation in, given the current
+ * Source text": the planner, the Seller's edit page and readers all agree
+ * through it. A machine row made from an older Source text is pending
+ * (about to be redone), never current.
+ */
+export type FieldState = "empty" | "pending" | "failed" | "tooLong" | "machine" | "hand" | "stale";
+
+export function fieldState(row: TranslationRow | undefined, sourceText: string): FieldState {
+  if (!sourceText.trim()) return "empty";
+  if (!row) return "pending";
+  if (row.kind === "hand") return isStale(row, sourceText) ? "stale" : "hand";
+  if (row.status === "pending" || row.source_hash !== sourceHash(sourceText)) return "pending";
+  if (row.status === "failed") return row.failure_reason === "too_long" ? "tooLong" : "failed";
+  return "machine";
+}

@@ -23,61 +23,84 @@ export type PublishFormFields = {
 
 export type PublishFormValidation = { ok: true } | { ok: false; error: string };
 
-// Same rules as parsePublishInput (lib/commerce/components-write.ts) — reused, not
-// reimplemented, so client and server can't drift apart again.
-export function validatePublishForm(fields: PublishFormFields): PublishFormValidation {
-  const nameError = validateComponentName(fields.name);
-  if (nameError) return { ok: false, error: nameError };
-
-  const descriptionError = validateComponentDescription(fields.description);
-  if (descriptionError) return { ok: false, error: descriptionError };
-
-  if (!fields.file) return { ok: false, error: "zipRequired" };
-  if (exceedsZipSizeLimit(fields.file.size)) {
-    return { ok: false, error: "zipTooLarge" };
-  }
-
+// Same rules as parsePublishInput/parseEditInput (lib/commerce/components-write.ts),
+// reused, not reimplemented, so client and server can't drift apart again.
+// The rules both forms share, in the order the Seller sees them; `zipError`
+// is the one rule that differs between publish and edit.
+function validateFields(
+  fields: { name: string; description: string; price: string },
+  zipError: string | null
+): { ok: true } | { ok: false; error: string } {
   const price = parseComponentPrice(fields.price);
-  if (!price.ok) return { ok: false, error: price.error };
+  const error =
+    validateComponentName(fields.name) ??
+    validateComponentDescription(fields.description) ??
+    zipError ??
+    (price.ok ? null : price.error);
+  return error ? { ok: false, error } : { ok: true };
+}
 
-  return { ok: true };
+export function validatePublishForm(fields: PublishFormFields): PublishFormValidation {
+  const zipError = !fields.file ? "zipRequired" : exceedsZipSizeLimit(fields.file.size) ? "zipTooLarge" : null;
+  return validateFields(fields, zipError);
 }
 
 /** The Translation fields a Seller changed on the edit page of one Locale (#71). */
 export type TranslationChanges = { locale: Locale; texts: { description?: string; readme?: string } };
 
+/**
+ * What the edit page loaded for a Locale other than the source language:
+ * the Source text it must not touch, and the Translation it showed.
+ */
+export type TranslationContext = {
+  locale: Locale;
+  source: { description: string; readme: string };
+  loaded: { description: string; readme: string };
+};
+
 // Same field set as PublishFormFields, with two differences: `file` is
-// OPTIONAL — `null` means "keep the current zip", so the seller may edit
-// only metadata without re-uploading — and on a Locale other than the
-// source language `translation` carries the changed Translation fields,
-// while description/readme carry the unchanged Source text.
-export type EditFormFields = PublishFormFields & { translation?: TranslationChanges };
+// OPTIONAL (`null` keeps the current zip), and on a Translation tab
+// `translation` carries what the page loaded. description/readme are always
+// exactly what is in the form; planEditSave decides what they mean.
+export type EditFormFields = PublishFormFields & { translation?: TranslationContext };
+
+export type EditSavePlan = {
+  source: { description: string; readme: string };
+  translation: TranslationChanges | null;
+};
+
+/**
+ * The one rule for what an edit saves (#71):
+ *   - on the source-language tab, the form holds the Source text;
+ *   - on a Translation tab, the Source text is kept and only the changed
+ *     Translation fields are saved, as hand Translations;
+ *   - on a Translation tab whose Locale the Seller just declared the source
+ *     language, the form's text becomes the Source text, so nothing the
+ *     Seller typed is dropped.
+ */
+export function planEditSave(fields: EditFormFields): EditSavePlan {
+  const formText = { description: fields.description, readme: fields.readme };
+  const context = fields.translation;
+  if (!context || context.locale === fields.sourceLanguage) return { source: formText, translation: null };
+  const texts = changedTranslation(context.loaded, formText);
+  return {
+    source: context.source,
+    translation: Object.keys(texts).length ? { locale: context.locale, texts } : null,
+  };
+}
 
 export type EditFormValidation = { ok: true } | { ok: false; error: string };
 
-// Same rules as parseEditInput (lib/commerce/components-write.ts) — reused, not
-// reimplemented, so client and server can't drift apart. Difference from
-// the publish form: no file is fine (that's the "keep current zip" case);
-// when a file IS provided, the 10MB cap still applies.
+// No file is fine (keep the current zip); a new file still has the size cap.
+// A translated description is held to the same rule as the Source text.
 export function validateEditForm(fields: EditFormFields): EditFormValidation {
-  const nameError = validateComponentName(fields.name);
-  if (nameError) return { ok: false, error: nameError };
-
-  const descriptionError = validateComponentDescription(fields.description);
-  if (descriptionError) return { ok: false, error: descriptionError };
-
-  const translated = fields.translation?.texts.description;
+  const plan = planEditSave(fields);
+  const translated = plan.translation?.texts.description;
   const translatedError = translated === undefined ? null : validateComponentDescription(translated);
   if (translatedError) return { ok: false, error: translatedError };
 
-  if (fields.file && exceedsZipSizeLimit(fields.file.size)) {
-    return { ok: false, error: "zipTooLarge" };
-  }
-
-  const price = parseComponentPrice(fields.price);
-  if (!price.ok) return { ok: false, error: price.error };
-
-  return { ok: true };
+  const zipError = fields.file && exceedsZipSizeLimit(fields.file.size) ? "zipTooLarge" : null;
+  return validateFields({ ...fields, description: plan.source.description }, zipError);
 }
 
 export type RequestUploadUrlResult =
@@ -203,6 +226,7 @@ export async function runEditFlow(
 ): Promise<EditFlowResult> {
   const validation = validateEditForm(fields);
   if (!validation.ok) return { status: "error", error: validation.error };
+  const plan = planEditSave(fields);
 
   let zipPath: string | undefined;
   if (fields.file) {
@@ -214,8 +238,8 @@ export async function runEditFlow(
   deps.onStage?.("saving");
   const updated = await deps.updateComponent(componentId, {
     name: fields.name.trim(),
-    description: fields.description.trim(),
-    readme: fields.readme,
+    description: plan.source.description.trim(),
+    readme: plan.source.readme,
     ecosystems: fields.ecosystems,
     tags: fields.tags,
     price: fields.price,
@@ -224,11 +248,8 @@ export async function runEditFlow(
   });
   if (!updated.ok) return { status: "error", error: updated.error };
 
-  // Once this Locale is declared the source language, the text in the form
-  // is no longer a Translation of anything: only the shared fields save.
-  const translation = fields.translation;
-  if (translation && translation.locale !== fields.sourceLanguage && Object.keys(translation.texts).length) {
-    const saved = await deps.saveTranslation(componentId, { locale: translation.locale, ...translation.texts });
+  if (plan.translation) {
+    const saved = await deps.saveTranslation(componentId, { locale: plan.translation.locale, ...plan.translation.texts });
     if (!saved.ok) return { status: "error", error: saved.error };
   }
 

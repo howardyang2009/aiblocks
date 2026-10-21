@@ -12,7 +12,7 @@ export function markBusy(rows: RowMap, id: string): RowMap {
   return next;
 }
 
-// `result` is whatever an engagement/commerce flow (e.g. runRemoveCommentFlow)
+// `result` is whatever an engagement/commerce flow (e.g. deleteComment)
 // resolved to — every flow result already shares this status/error shape.
 // `error` is typed optional (rather than a status-discriminated union)
 // because a plain `status: string` can't be narrowed away from the literal

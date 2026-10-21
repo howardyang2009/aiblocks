@@ -8,7 +8,8 @@ import { getComponentTagNames, type ComponentTagsDb } from "@/lib/commerce/compo
 import { narrowDb } from "@/lib/db-port";
 import { EditForm, type TranslationEditing } from "@/components/component-form";
 import { TRANSLATED_FIELDS, sourceLanguageOf } from "@/lib/translation/plan";
-import { editView, fieldState, type EditableRow } from "@/lib/translation/seller-edit";
+import { editView, type EditableRow } from "@/lib/translation/seller-edit";
+import { fieldState } from "@/lib/translation/plan";
 
 // Server component: resolves who's editing, loads the component (with its
 // tags), and 404s a stranger before renderin the client form. Ownership

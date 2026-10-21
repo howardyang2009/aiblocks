@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   editView,
-  fieldState,
   parseHandTranslationInput,
   parseResetInput,
   saveHandTranslations,
@@ -10,7 +9,7 @@ import {
   type EditableRow,
   type SellerTranslationsDb,
 } from "@/lib/translation/seller-edit";
-import { sourceHash } from "@/lib/translation/plan";
+import { fieldState, sourceHash } from "@/lib/translation/plan";
 
 describe("editView", () => {
   it("edits the Source text in the Locale it is written in", () => {

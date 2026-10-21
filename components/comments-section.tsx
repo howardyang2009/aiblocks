@@ -7,9 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Spinner } from "@/components/ui/spinner";
 import type { PublicProfile } from "@/lib/identity/public-profile";
-import { requiresDeleteConfirmation, type CommentNode } from "@/lib/engagement/comments-section-state";
-import { runPostCommentFlow, runRemoveCommentFlow } from "@/lib/engagement/comments-flow";
-import { postCommentEffect, removeCommentEffect } from "@/lib/engagement/comments-effects";
+import { postComment, deleteComment, type CommentNode } from "@/lib/engagement/comment-thread";
 import { useRowMutation } from "@/lib/use-row-mutation";
 import { Link } from "@/i18n/navigation";
 
@@ -18,8 +16,6 @@ const COMPOSE = "compose";
 // reply composer gets a separate, namespaced key so replying to a comment
 // and deleting that same comment never share a busy/error slot.
 const replyKey = (parentId: string) => `reply:${parentId}`;
-
-export type { CommentNode } from "@/lib/engagement/comments-section-state";
 
 // Open comments section (V2), rendered on the component detail page
 // below the reviews. Unlike reviews, comments are ungated: any
@@ -82,29 +78,25 @@ export function CommentsSection({
 
   const count = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
 
+  // Results apply to the latest thread (functional update), never to the
+  // thread as it was when the click happened: see lib/engagement/comment-thread.ts.
   async function post(parentId: string | null) {
     const key = parentId ? replyKey(parentId) : COMPOSE;
     const result = await run(key, () =>
-      runPostCommentFlow(
+      postComment(
         {
-          postComment: (text, parentId) =>
-            postCommentEffect(fetch, componentId, text, parentId, {
-              fallback: t("errors.postFailed"),
-              network: t("errors.postNetwork"),
-            }),
+          fetch,
+          messages: {
+            fallback: t("errors.postFailed"),
+            network: t("errors.postNetwork"),
+            required: t("errors.required"),
+          },
         },
-        {
-          comments,
-          body: parentId ? replyBody : body,
-          parentId,
-          viewer,
-          isSeller,
-          messages: { required: t("errors.required") },
-        }
+        { componentId, body: parentId ? replyBody : body, parentId, viewer, isSeller }
       )
     );
     if (result.status === "error") return;
-    setComments(result.comments);
+    setComments(result.apply);
     if (parentId) {
       setReplyingTo(null);
       setReplyBody("");
@@ -114,23 +106,17 @@ export function CommentsSection({
   }
 
   async function remove(comment: CommentNode) {
-    if (requiresDeleteConfirmation(comment)) {
-      const confirmed = window.confirm(t("deleteConfirm", { count: comment.replies.length }));
-      if (!confirmed) return;
-    }
     const result = await run(comment.id, () =>
-      runRemoveCommentFlow(
+      deleteComment(
         {
-          removeComment: () =>
-            removeCommentEffect(fetch, comment.id, {
-              fallback: t("errors.deleteFailed"),
-              network: t("errors.deleteNetwork"),
-            }),
+          fetch,
+          confirm: (c) => window.confirm(t("deleteConfirm", { count: c.replies.length })),
+          messages: { fallback: t("errors.deleteFailed"), network: t("errors.deleteNetwork") },
         },
-        { comments, comment, confirmed: true }
+        comment
       )
     );
-    if (result.status === "removed") setComments(result.comments);
+    if (result.status === "removed") setComments(result.apply);
   }
 
   return (
