@@ -359,7 +359,8 @@
     "checkoutFailed": "Could not start checkout.",
     "componentUnavailable": "This component is not available.",
     "purchaseRequired": "Buy this component to download it.",
-    "downloadFailed": "Could not prepare download."
+    "downloadFailed": "Could not prepare download.",
+    "starSaveFailed": "Could not save your star."
   },
   "Metadata": {
     "title": "AiBlocks: reusable AI components",

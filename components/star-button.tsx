@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { useLocale } from "next-intl";
 import { formatNumber } from "@/lib/utils";
-import { applyOptimisticToggle, resolveToggle, type StarState } from "@/lib/engagement/star-button-state";
 import { Spinner } from "@/components/ui/spinner";
 
-// Optimistic star toggle. POSTs to /api/components/[id]/star.
+type StarState = { starred: boolean; count: number };
+
+// Optimistic Star. POSTs the state the Viewer asked for to
+// /api/components/[id]/star (idempotent, see lib/engagement/stars.ts) and
+// then shows the server's answer; a failed request reverts.
 export function StarButton({
   componentId,
   initialCount,
@@ -23,13 +26,17 @@ export function StarButton({
   async function toggle() {
     setPending(true);
     const previous = state;
-    const optimistic = applyOptimisticToggle(previous);
-    setState(optimistic);
+    const starred = !previous.starred;
+    setState({ starred, count: previous.count + (starred ? 1 : -1) });
     try {
-      const res = await fetch(`/api/components/${componentId}/star`, { method: "POST" });
-      setState(resolveToggle(previous, optimistic, res.ok));
+      const res = await fetch(`/api/components/${componentId}/star`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ starred }),
+      });
+      setState(res.ok ? ((await res.json()) as StarState) : previous);
     } catch {
-      setState(resolveToggle(previous, optimistic, false));
+      setState(previous);
     } finally {
       setPending(false);
     }

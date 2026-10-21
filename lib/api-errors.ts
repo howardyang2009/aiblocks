@@ -1,6 +1,6 @@
 // The error keys API routes return when a Viewer can act on the message:
 // the shared helpers (withAuth, parseBody), Comments, Reviews, Seller
-// replies, checkout and download. API routes have no Locale (ADR 0003):
+// replies, Stars, checkout and download. API routes have no Locale (ADR 0003):
 // they send the key, and the client translates it from messages/*.json
 // (ApiErrors) via lib/use-error-message.ts. Component form errors have
 // their own keys (lib/commerce/component-write-errors.ts).
@@ -37,6 +37,7 @@ export const API_ERRORS = [
   "componentUnavailable",
   "purchaseRequired",
   "downloadFailed",
+  "starSaveFailed",
 ] as const;
 
 export type ApiError = (typeof API_ERRORS)[number];

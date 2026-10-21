@@ -359,7 +359,8 @@
     "checkoutFailed": "无法开始付款。",
     "componentUnavailable": "此组件不可用。",
     "purchaseRequired": "购买此组件后即可下载。",
-    "downloadFailed": "无法准备下载。"
+    "downloadFailed": "无法准备下载。",
+    "starSaveFailed": "无法保存收藏。"
   },
   "Metadata": {
     "title": "AiBlocks：可复用的 AI 组件",

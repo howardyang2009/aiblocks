@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toggleStar, type ToggleStarDb } from "@/lib/engagement/stars";
+import { setStar, type SetStarDb } from "@/lib/engagement/stars";
 import type { Tables } from "@/types/database";
 
 function component(overrides: Partial<Tables<"components">> = {}): Tables<"components"> {
@@ -26,61 +26,88 @@ function component(overrides: Partial<Tables<"components">> = {}): Tables<"compo
   };
 }
 
-function fakeStarsDb(opts: {
-  component?: Tables<"components"> | null;
-  existingStar?: boolean;
-  deleteError?: { message: string } | null;
-  insertError?: { message: string } | null;
-}): ToggleStarDb {
-  return {
+// A fake whose stars table is a Set, and whose star_count follows it the
+// way the trigger does.
+function fakeStarsDb(opts: { component?: Tables<"components"> | null; starred?: string[]; writeError?: boolean } = {}) {
+  const stars = new Set(opts.starred ?? []);
+  const db = {
     from: (table: string) => {
       if (table === "components") {
-        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: opts.component ?? null }) }) }) };
-      }
-      if (table === "stars") {
         return {
           select: () => ({
             eq: () => ({
-              eq: () => ({ maybeSingle: async () => ({ data: opts.existingStar ? { user_id: "u1" } : null }) }),
+              maybeSingle: async () => ({
+                data: opts.component === null ? null : { ...(opts.component ?? component()), star_count: stars.size },
+              }),
             }),
           }),
-          delete: () => ({ eq: () => ({ eq: async () => ({ error: opts.deleteError ?? null }) }) }),
-          insert: async () => ({ error: opts.insertError ?? null }),
         };
       }
-      throw new Error(`unexpected table ${table}`);
+      const error = opts.writeError ? { message: "db down" } : null;
+      return {
+        upsert: async (row: { user_id: string }) => {
+          if (!error) stars.add(row.user_id);
+          return { error };
+        },
+        delete: () => ({
+          eq: (_c: string, userId: string) => ({
+            eq: async () => {
+              if (!error) stars.delete(userId);
+              return { error };
+            },
+          }),
+        }),
+      };
     },
-  } as unknown as ToggleStarDb;
+  } as unknown as SetStarDb;
+  return { db, stars };
 }
 
-describe("toggleStar", () => {
-  it("404s when the component doesn't exist or isn't published", async () => {
-    const db = fakeStarsDb({ component: null });
-    const result = await toggleStar(db, { componentId: "missing", userId: "u1" });
-    expect(result).toEqual({ ok: false, status: 404, error: "Component not found." });
+describe("setStar", () => {
+  it("404s with an error key when the Component isn't published", async () => {
+    const { db } = fakeStarsDb({ component: null });
+    expect(await setStar(db, { componentId: "comp1", userId: "u1", starred: true })).toEqual({
+      ok: false,
+      status: 404,
+      error: "componentNotFound",
+    });
   });
 
-  it("adds a star when none exists", async () => {
-    const db = fakeStarsDb({ component: component(), existingStar: false });
-    const result = await toggleStar(db, { componentId: "comp1", userId: "u1" });
-    expect(result).toEqual({ ok: true, starred: true });
+  it("stars and answers with the server's count", async () => {
+    const { db } = fakeStarsDb({ starred: ["other"] });
+    expect(await setStar(db, { componentId: "comp1", userId: "u1", starred: true })).toEqual({
+      ok: true,
+      starred: true,
+      count: 2,
+    });
   });
 
-  it("removes a star when one already exists", async () => {
-    const db = fakeStarsDb({ component: component(), existingStar: true });
-    const result = await toggleStar(db, { componentId: "comp1", userId: "u1" });
-    expect(result).toEqual({ ok: true, starred: false });
+  it("is idempotent: starring twice stays starred", async () => {
+    const { db } = fakeStarsDb();
+    await setStar(db, { componentId: "comp1", userId: "u1", starred: true });
+    expect(await setStar(db, { componentId: "comp1", userId: "u1", starred: true })).toEqual({
+      ok: true,
+      starred: true,
+      count: 1,
+    });
   });
 
-  it("500s when adding the star fails", async () => {
-    const db = fakeStarsDb({ component: component(), existingStar: false, insertError: { message: "db down" } });
-    const result = await toggleStar(db, { componentId: "comp1", userId: "u1" });
-    expect(result).toEqual({ ok: false, status: 500, error: "Failed to add star." });
+  it("unstars, and unstarring again stays unstarred", async () => {
+    const { db } = fakeStarsDb({ starred: ["u1"] });
+    await setStar(db, { componentId: "comp1", userId: "u1", starred: false });
+    expect(await setStar(db, { componentId: "comp1", userId: "u1", starred: false })).toEqual({
+      ok: true,
+      starred: false,
+      count: 0,
+    });
   });
 
-  it("500s when removing the star fails", async () => {
-    const db = fakeStarsDb({ component: component(), existingStar: true, deleteError: { message: "db down" } });
-    const result = await toggleStar(db, { componentId: "comp1", userId: "u1" });
-    expect(result).toEqual({ ok: false, status: 500, error: "Failed to remove star." });
+  it("500s with an error key when the write fails", async () => {
+    const { db } = fakeStarsDb({ writeError: true });
+    expect(await setStar(db, { componentId: "comp1", userId: "u1", starred: true })).toEqual({
+      ok: false,
+      status: 500,
+      error: "starSaveFailed",
+    });
   });
 });

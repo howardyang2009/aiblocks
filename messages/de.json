@@ -359,7 +359,8 @@
     "checkoutFailed": "Der Bezahlvorgang konnte nicht gestartet werden.",
     "componentUnavailable": "Diese Komponente ist nicht verfügbar.",
     "purchaseRequired": "Kaufen Sie diese Komponente, um sie herunterzuladen.",
-    "downloadFailed": "Der Download konnte nicht vorbereitet werden."
+    "downloadFailed": "Der Download konnte nicht vorbereitet werden.",
+    "starSaveFailed": "Ihr Stern konnte nicht gespeichert werden."
   },
   "Metadata": {
     "title": "AiBlocks: wiederverwendbare KI-Komponenten",
