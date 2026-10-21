@@ -4,6 +4,7 @@ import { parseBody } from "@/lib/request";
 import { postComment, type PostCommentDb } from "@/lib/engagement/comments";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 export const POST = withAuth(async (req, { params, profile, supabase }) => {
   const payload = await parseBody<{ body?: unknown; parentId?: unknown }>(req);
@@ -16,5 +17,6 @@ export const POST = withAuth(async (req, { params, profile, supabase }) => {
     parentId: payload.parentId,
   });
   if (!result.ok) return toResponse(result);
+  revalidateComponentPages();
   return NextResponse.json({ comment: result.comment });
 });

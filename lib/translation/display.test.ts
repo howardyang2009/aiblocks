@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  loadShownText,
+  loadTranslationRows,
+  shownTexts,
   localizeSummaries,
   shownText,
   type DisplayRow,
@@ -149,26 +150,27 @@ describe("localizeSummaries", () => {
   });
 });
 
-describe("loadShownText", () => {
-  it("resolves description and readme from the Component's rows for the Locale", async () => {
-    const { db, calls } = fakeDb([
-      { component_id: "c1", ...row() },
-      { component_id: "c1", ...row({ field: "readme", kind: "hand", text: "# Werkzeug" }) },
-    ]);
-    const shown = await loadShownText(db, { id: "c1", ...source }, "de");
+describe("loadTranslationRows", () => {
+  it("loads the Component's rows for the Locale", async () => {
+    const rows = [{ component_id: "c1", ...row() }];
+    const { db, calls } = fakeDb(rows);
+    expect(await loadTranslationRows(db, "c1", "de")).toEqual(rows);
+    expect(calls).toContainEqual({ method: "in", args: ["component_id", ["c1"]] });
+    expect(calls).toContainEqual({ method: "eq", args: ["locale", "de"] });
+  });
+});
 
+describe("shownTexts", () => {
+  it("resolves description and readme from the Component's rows for the Locale", () => {
+    const shown = shownTexts(source, [row(), row({ field: "readme", kind: "hand", text: "# Werkzeug" })], "de");
     expect(shown).toEqual({
       description: { text: "Ein Werkzeug.", machineTranslatedFrom: "en" },
       readme: { text: "# Werkzeug", machineTranslatedFrom: null },
     });
-    expect(calls).toContainEqual({ method: "in", args: ["component_id", ["c1"]] });
-    expect(calls).toContainEqual({ method: "eq", args: ["locale", "de"] });
   });
 
-  it("skips the query in the Locale the source is written in", async () => {
-    const { db, calls } = fakeDb([]);
-    const shown = await loadShownText(db, { id: "c1", ...source }, "en");
-    expect(shown.description.text).toBe(source.description);
-    expect(calls).toEqual([]);
+  it("shows the Source text in the Locale the source is written in", () => {
+    const shown = shownTexts(source, [row({ locale: "en" })], "en");
+    expect(shown.description).toEqual({ text: source.description, machineTranslatedFrom: null });
   });
 });

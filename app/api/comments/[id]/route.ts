@@ -3,10 +3,12 @@ import { withAuth } from "@/lib/identity/auth";
 import { deleteComment, type DeleteCommentDb } from "@/lib/engagement/comments";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 // Delete your own comment. [id] is the COMMENT id.
 export const DELETE = withAuth(async (_req, { params, profile, supabase }) => {
   const result = await deleteComment(narrowDb<DeleteCommentDb>(supabase), { commentId: params.id, userId: profile.id });
   if (!result.ok) return toResponse(result);
+  revalidateComponentPages();
   return NextResponse.json({ deleted: true });
 });

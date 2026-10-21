@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createServiceClient } from "@/lib/supabase/server";
 import { narrowDb } from "@/lib/db-port";
 import { runTranslationJob, type TranslationJobDb } from "./job";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 /**
  * Machine-translates a Component's changed Source text once the response is
@@ -16,6 +17,7 @@ export function queueTranslations(componentId: string, opts: { retry?: boolean }
   after(async () => {
     try {
       await runTranslationJob(narrowDb<TranslationJobDb>(createServiceClient()), new Anthropic(), componentId, opts);
+      revalidateComponentPages();
     } catch (error) {
       console.error("queueTranslations failed:", error instanceof Error ? error.message : error);
     }

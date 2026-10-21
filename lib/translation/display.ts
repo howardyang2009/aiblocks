@@ -84,22 +84,27 @@ export async function localizeSummaries(
   });
 }
 
+/**
+ * A Component's Translation rows in the Locale, keyed by id alone so the
+ * detail page can start this query together with the Component lookup.
+ * In the Locale the source is written in the rows are fetched but unused:
+ * shownText ignores them there.
+ */
+export async function loadTranslationRows(supabase: DisplayDb, componentId: string, locale: Locale): Promise<DisplayRow[]> {
+  const { data } = await supabase
+    .from("component_translations")
+    .select(DISPLAY_COLS)
+    .in("component_id", [componentId])
+    .eq("locale", locale);
+  return data ?? [];
+}
+
 /** A Component's description and readme as shown in the Locale: the detail page and its metadata. */
-export async function loadShownText(
-  supabase: DisplayDb,
-  component: ComponentSource & { id: string },
+export function shownTexts(
+  component: ComponentSource,
+  rows: DisplayRow[],
   locale: Locale
-): Promise<Record<TranslatedField, ShownText>> {
-  const rows =
-    sourceLanguageOf(component) === locale
-      ? []
-      : ((
-          await supabase
-            .from("component_translations")
-            .select(DISPLAY_COLS)
-            .in("component_id", [component.id])
-            .eq("locale", locale)
-        ).data ?? []);
+): Record<TranslatedField, ShownText> {
   return {
     description: shownText(component, rows, locale, "description"),
     readme: shownText(component, rows, locale, "readme"),

@@ -13,6 +13,7 @@ import {
   type VerifyUploadedZipStorage,
   type UpdateComponentDb,
 } from "@/lib/commerce/components-write";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 // The translation job runs in after() within this route's time limit; a
 // long readme in three Locales needs more than the platform default.
@@ -42,5 +43,6 @@ export const PATCH = withAuth(async (req, { params, profile, supabase }) => {
     { body, componentId: params.id, sellerId: profile.id }
   );
   if (!edited.ok) return toResponse(edited);
+  revalidateComponentPages();
   return NextResponse.json({ id: edited.id });
 });

@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { fulfillPurchase, type FulfillPurchaseDb } from "@/lib/commerce/purchases";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 // Stripe webhook. On a completed checkout we mark the purchase succeeded
 // and create the buyer's library entry, which unlocks the download.
@@ -24,5 +25,6 @@ export async function POST(req: NextRequest) {
   const result = await fulfillPurchase(narrowDb<FulfillPurchaseDb>(createServiceClient()), event);
   if (!result.ok) return toResponse(result);
 
+  revalidateComponentPages();
   return NextResponse.json({ received: true });
 }

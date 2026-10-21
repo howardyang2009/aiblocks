@@ -5,6 +5,7 @@ import { setStar, type SetStarDb } from "@/lib/engagement/stars";
 import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
 import type { ApiError } from "@/lib/api-errors";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 // POST /api/components/[id]/star — body { starred: boolean }.
 export const POST = withAuth(async (req, { params, profile, supabase }) => {
@@ -20,5 +21,6 @@ export const POST = withAuth(async (req, { params, profile, supabase }) => {
     starred: body.starred,
   });
   if (!result.ok) return toResponse(result);
+  revalidateComponentPages();
   return NextResponse.json({ starred: result.starred, count: result.count });
 });

@@ -5,6 +5,7 @@ import { narrowDb } from "@/lib/db-port";
 import { toResponse } from "@/lib/result";
 import { queueTranslations } from "@/lib/translation/queue";
 import { parseResetInput, resetToMachine, type SellerTranslationsDb } from "@/lib/translation/seller-edit";
+import { revalidateComponentPages } from "@/lib/component-page-cache";
 
 // The translation job runs in after() within this route's time limit.
 export const maxDuration = 300;
@@ -28,5 +29,6 @@ export const POST = withAuth(async (req, { params, profile, supabase }) => {
   if (!reset.ok) return toResponse(reset);
 
   queueTranslations(params.id);
+  revalidateComponentPages();
   return NextResponse.json({ queued: true }, { status: 202 });
 });
