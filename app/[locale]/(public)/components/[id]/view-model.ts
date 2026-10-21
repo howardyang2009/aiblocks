@@ -5,8 +5,8 @@ import { getComponentTagNames, type ComponentTagsDb } from "@/lib/commerce/compo
 import { narrowDb } from "@/lib/db-port";
 import { toPublicProfile } from "@/lib/identity/public-profile";
 import type { Viewer } from "@/lib/identity/viewer";
-import type { Review } from "@/components/reviews-section";
-import type { CommentNode } from "@/components/comments-section";
+import { buildReviewList } from "@/lib/engagement/review-list";
+import { buildCommentTree } from "@/lib/engagement/comment-thread";
 
 // The only part of this page that touches Supabase. Everything it returns
 // is a plain row (or already-resolved boolean) — no business logic lives
@@ -96,21 +96,10 @@ export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"p
   const starred  = !!starRow;
   const isSeller = viewerProfileId !== null && viewerProfileId === component.seller_id;
 
-  const reviewerById    = new Map((reviewers ?? []).map(p => [p.id, p]));
-  const replyByReviewId = new Map((replyRows ?? []).map(r => [r.review_id, r]));
-
-  const reviews: Review[] = (reviewRows ?? []).map(r => {
-    const p     = reviewerById.get(r.buyer_id);
-    const reply = replyByReviewId.get(r.id);
-    return {
-      id: r.id,
-      rating: r.rating,
-      body: r.body,
-      created_at: r.created_at,
-      reviewer: toPublicProfile(p),
-      mine: viewerProfileId !== null && r.buyer_id === viewerProfileId,
-      reply: reply ? { body: reply.body, created_at: reply.created_at } : null,
-    };
+  const reviews = buildReviewList(reviewRows ?? [], {
+    reviewers: reviewers ?? [],
+    replies: replyRows ?? [],
+    viewerId: viewerProfileId,
   });
 
   const reviewCount = reviews.length;
@@ -118,31 +107,11 @@ export function buildComponentView(rows: ComponentRows, viewerProfile: Tables<"p
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
     : null;
 
-  const commenterById = new Map((commenters ?? []).map(p => [p.id, p]));
-
-  const toNode = (r: NonNullable<typeof commentRows>[number]): CommentNode => {
-    const p = commenterById.get(r.user_id);
-    return {
-      id: r.id,
-      body: r.body,
-      created_at: r.created_at,
-      author: toPublicProfile(p),
-      isSeller: r.user_id === component.seller_id,
-      mine: viewerProfileId !== null && r.user_id === viewerProfileId,
-      replies: [],
-    };
-  };
-
-  const nodeById = new Map<string, CommentNode>();
-  const commentTree: CommentNode[] = [];
-  for (const r of commentRows ?? []) {
-    const node = toNode(r);
-    nodeById.set(r.id, node);
-    if (!r.parent_id) commentTree.push(node);
-  }
-  for (const r of commentRows ?? []) {
-    if (r.parent_id) nodeById.get(r.parent_id)?.replies.push(nodeById.get(r.id)!);
-  }
+  const commentTree = buildCommentTree(commentRows ?? [], {
+    authors: commenters ?? [],
+    sellerId: component.seller_id,
+    viewerId: viewerProfileId,
+  });
 
   return {
     component,

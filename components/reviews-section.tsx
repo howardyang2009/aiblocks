@@ -6,23 +6,15 @@ import { formatDate, formatRating } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Spinner } from "@/components/ui/spinner";
 import { MAX_BODY_LENGTH } from "@/lib/constants";
-import type { Review } from "@/lib/engagement/reviews-section-state";
 import {
-  runSubmitReviewFlow,
-  runRemoveReviewFlow,
-  runSaveReplyFlow,
-  runRemoveReplyFlow,
-} from "@/lib/engagement/reviews-flow";
-import {
-  submitReviewEffect,
-  removeReviewEffect,
-  saveReplyEffect,
-  removeReplyEffect,
-} from "@/lib/engagement/reviews-effects";
+  submitReview,
+  deleteReview,
+  saveReply as saveReplyRequest,
+  deleteReply,
+  type Review,
+} from "@/lib/engagement/review-list";
 import { useRowMutation } from "@/lib/use-row-mutation";
 import { Link } from "@/i18n/navigation";
-
-export type { Review } from "@/lib/engagement/reviews-section-state";
 
 // Editing/deleting your own review and a seller replying to that same
 // review are two independent actions on one row — namespaced keys keep
@@ -125,40 +117,37 @@ export function ReviewsSection({
     clear(replyKey(review.id));
   }
 
+  // Results apply to the latest list (functional update), never to the
+  // list as it was when the click happened: see lib/engagement/review-list.ts.
   async function saveReply(reviewId: string) {
     const result = await run(replyKey(reviewId), () =>
-      runSaveReplyFlow(
+      saveReplyRequest(
         {
-          saveReply: (id, body) =>
-            saveReplyEffect(fetch, id, body, {
-              fallback: t("errors.replySaveFailed"),
-              network: t("errors.replySaveNetwork"),
-            }),
+          fetch,
+          messages: {
+            fallback: t("errors.replySaveFailed"),
+            network: t("errors.replySaveNetwork"),
+            required: t("errors.replyRequired"),
+          },
         },
-        { reviews, reviewId, body: replyBody, messages: { required: t("errors.replyRequired") } }
+        { reviewId, body: replyBody }
       )
     );
     if (result.status === "error") return;
-    setReviews(result.reviews);
+    setReviews(result.apply);
     setReplyingTo(null);
     setReplyBody("");
   }
 
   async function removeReply(reviewId: string) {
     const result = await run(replyKey(reviewId), () =>
-      runRemoveReplyFlow(
-        {
-          removeReply: (id) =>
-            removeReplyEffect(fetch, id, {
-              fallback: t("errors.replyDeleteFailed"),
-              network: t("errors.replyDeleteNetwork"),
-            }),
-        },
-        { reviews, reviewId }
+      deleteReply(
+        { fetch, messages: { fallback: t("errors.replyDeleteFailed"), network: t("errors.replyDeleteNetwork") } },
+        { reviewId }
       )
     );
     if (result.status === "error") return;
-    setReviews(result.reviews);
+    setReviews(result.apply);
     setReplyingTo(null);
   }
 
@@ -169,37 +158,32 @@ export function ReviewsSection({
 
   async function submit() {
     const result = await run(reviewFormKey, () =>
-      runSubmitReviewFlow(
+      submitReview(
         {
-          submitReview: (r, b) =>
-            submitReviewEffect(fetch, componentId, r, b, {
-              fallback: t("errors.saveFailed"),
-              network: t("errors.saveNetwork"),
-            }),
+          fetch,
+          messages: {
+            fallback: t("errors.saveFailed"),
+            network: t("errors.saveNetwork"),
+            ratingRequired: t("errors.ratingRequired"),
+          },
         },
-        { reviews, rating, body, mine, messages: { ratingRequired: t("errors.ratingRequired") } }
+        { componentId, rating, body }
       )
     );
     if (result.status === "error") return;
-    setReviews(result.reviews);
+    setReviews(result.apply);
     setEditing(false);
   }
 
   async function remove() {
     const result = await run(reviewFormKey, () =>
-      runRemoveReviewFlow(
-        {
-          removeReview: () =>
-            removeReviewEffect(fetch, componentId, {
-              fallback: t("errors.deleteFailed"),
-              network: t("errors.deleteNetwork"),
-            }),
-        },
-        { reviews }
+      deleteReview(
+        { fetch, messages: { fallback: t("errors.deleteFailed"), network: t("errors.deleteNetwork") } },
+        { componentId }
       )
     );
     if (result.status === "error") return;
-    setReviews(result.reviews);
+    setReviews(result.apply);
     setRating(0);
     setBody("");
     setEditing(false);

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { requestDownloadEffect, requestCheckoutEffect } from "@/lib/commerce/download-effects";
 
-// Only each wrapper's own logic is tested here — see comments-effects.test.ts
-// for why the failure paths aren't re-tested per wrapper.
+// Only each wrapper's own logic is tested here: the failure paths belong to
+// runClientAction (lib/client-action.ts) and aren't re-tested per wrapper.
 
 function fakeFetch(response: { ok: boolean; body?: unknown }): typeof fetch {
   return vi.fn(async () => ({
