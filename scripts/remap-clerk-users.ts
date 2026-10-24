@@ -64,6 +64,13 @@ async function main() {
   const remaps: { oldId: string; newId: string; username: string }[] = [];
   for (const profile of profiles) {
     const oldId: string = profile.clerk_user_id;
+    // A Profile already remapped carries a target-instance id, which the
+    // development instance does not know.
+    const onTarget = await fetch(`${CLERK_API}/users/${oldId}`, { headers: { Authorization: `Bearer ${prodKey}` } });
+    if (onTarget.ok) {
+      console.error(`${profile.username}: already on target instance as ${oldId}`);
+      continue;
+    }
     const devUser = await clerk<ClerkUser>(devKey, `/users/${oldId}`);
     const email = primaryEmail(devUser);
 
